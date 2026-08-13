@@ -1,0 +1,16 @@
+{
+  "holdings": [
+    { "name": "华安黄金ETF联接A", "code": "000001", "amount": 0, "type": "gold", "cost": 0, "dca": { "enabled": false, "daily": 0, "lastDate": "", "acc": 0 } },
+    { "name": "摩根标普500指数(QDII)A", "code": "000002", "amount": 0, "type": "qdii", "cost": 0, "dca": { "enabled": false, "daily": 0, "lastDate": "", "acc": 0 } }
+  ],
+  "financeNews": [],
+  "operationIdeas": [],
+  "ideaLib": [],
+  "indexTrack": [
+    { "name": "黄金", "icon": "circle", "color": "#FFD700", "rows": [ { "label": "金价", "val": "待刷新" }, { "label": "实际利率", "val": "待刷新（10Y TIPS 真实值）" } ], "level": "high", "note": "个人判断长文：待刷新（发「刷新」让 AI 推送真实数据，禁止编造）。" },
+    { "name": "纳斯达克100", "icon": "circle", "color": "#1976D2", "rows": [ { "label": "当前PE", "val": "待刷新" }, { "label": "历史估值分位", "val": "待刷新" } ], "level": "high", "note": "个人判断长文：待刷新。" },
+    { "name": "红利低波", "icon": "circle", "color": "#388E3C", "rows": [ { "label": "股息率", "val": "待刷新" }, { "label": "估值分位", "val": "待刷新" } ], "level": "mid", "note": "个人判断长文：待刷新。" },
+    { "name": "标普500跟踪摩根", "icon": "circle", "color": "#7B1FA2", "rows": [ { "label": "底层标的", "val": "标普500" }, { "label": "溢价率", "val": "待刷新" }, { "label": "限购状态", "val": "待刷新（如 单日限购10元）" }, { "label": "汇率影响", "val": "待刷新" } ], "level": "mid", "note": "个人判断长文：待刷新。" }
+  ],
+  "fundQuotes": {}
+}
