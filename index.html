@@ -1711,6 +1711,21 @@ async function loadRemoteData(){
     if(!r.ok) throw new Error('HTTP '+r.status);
     const d = await r.json();
     remoteData = d;
+    // 版本自检：data.json 带 siteVersion，若与本地记录不同，说明站点已更新
+    // → 带 ?v= 重载 URL，绕过浏览器/CDN 缓存，避免"改了却看不到"
+    try{
+      const sv = d.siteVersion;
+      if(sv){
+        const seen = (function(){ try{ return localStorage.getItem('wb_site_ver'); }catch(e){ return null; } })();
+        const onUrl = location.search.indexOf('v='+encodeURIComponent(sv))>=0;
+        if(sv!==seen && !onUrl){
+          try{ localStorage.setItem('wb_site_ver', sv); }catch(e){}
+          toast('发现新版本，正在刷新…');
+          setTimeout(function(){ location.href = location.pathname + (location.pathname.slice(-1)==='/'?'':'') + '?v='+encodeURIComponent(sv); }, 700);
+          return;
+        }
+      }
+    }catch(e){}
     syncIndexTrackFromRemote();
     if(d.fundQuotes) fundQuote = d.fundQuotes;
     if(d.holdings && !localStorage.getItem('wb_holdings')){ saveData('wb_holdings', d.holdings); }
