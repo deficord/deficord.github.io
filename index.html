@@ -188,6 +188,16 @@
   .card .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
   .card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap;}
   .card-foot .upd{font-size:12px;color:var(--muted);}
+  /* 财经/运营卡片墙（多列 + 查看详情） */
+  .finance-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));align-items:start;}
+  .fn-card{display:flex;flex-direction:column;gap:8px;padding:14px;}
+  .fn-card h4{margin:0;font-size:15px;line-height:1.45;color:#111827;}
+  .fn-card .summary{font-size:13px;color:#4B5563;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  .fn-card .summary.expanded{-webkit-line-clamp:unset;}
+  .fn-card .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:12px;color:#6B7280;}
+  .fn-card .meta .src{background:#EEF2FF;color:#2563EB;padding:2px 8px;border-radius:12px;font-weight:500;}
+  .fn-card .detail-link{font-size:13px;color:#2563EB;text-decoration:none;font-weight:500;margin-top:2px;align-self:flex-start;}
+  .fn-card .detail-link:hover{text-decoration:underline;}
   .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;background:var(--bg-light);color:var(--title);}
   .tag.pending{background:#FFF3E0;color:#E65100;}
   .tag.hold{background:#ECEFF1;color:#546E7A;}
@@ -256,6 +266,7 @@
     .content{padding:52px 12px 12px;}
     .admin-layout{grid-template-columns:1fr;}
     .cm-grid.cm-span2,.cm-grid.cm-span3{grid-template-columns:1fr;}
+    .finance-grid{grid-template-columns:1fr;}
   }
 </style>
 </head>
@@ -936,17 +947,19 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
-  arr.forEach((it,i)=>{
-    const content = it.content || '';
-    const long = content.length>100;
-    html += '<div class="card" id="card_'+page+'_'+i+'"><h4>'+esc(it.title||'')+'</h4>';
-    if(long){ html += '<div class="content">'+esc(content.slice(0,100))+'… <a href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看全文 ›</a></div>'; }
-    else { html += '<div class="content">'+esc(content)+'</div>'; }
-    if(m.hasStatus && it.status){ html += '<span class="tag '+esc(it.status)+'">'+statusLabel(it.status)+'</span> '; }
-    if(it.url){ html += '<div class="row"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>'; }
-    if(it.date){ html += '<div class="row"><span class="k">日期</span>'+esc(it.date)+'</div>'; }
+  else {
+    html += '<div class="finance-grid">';
+    arr.forEach((it,i)=>{
+      const content = it.content || '';
+      html += '<div class="card fn-card" id="card_'+page+'_'+i+'">';
+      html += '<h4>'+esc(it.title||'')+'</h4>';
+      html += '<div class="summary" id="fn-sum-'+page+'-'+i+'">'+esc(content)+'</div>';
+      html += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
+      html += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span>'+(m.hasStatus&&it.status?'<span class="tag '+esc(it.status)+'">'+statusLabel(it.status)+'</span>':'')+(it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener">原文链接</a>':'')+'</div>';
+      html += '</div>';
+    });
     html += '</div>';
-  });
+  }
   body.innerHTML = html;
 }
 
@@ -958,16 +971,19 @@ function renderFinance(body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何买卖建议。</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
-  arr.forEach((it,i)=>{
-    const content = it.content || it.summary || '';
-    const long = content.length>100;
-    html += '<div class="card" id="card_finance-news_'+i+'"><h4>'+esc(it.title||'')+'</h4>';
-    if(long){ html += '<div class="content">'+esc(content.slice(0,100))+'… <a href="#" data-act="full" data-page="finance-news" data-idx="'+i+'">查看全文 ›</a></div>'; }
-    else { html += '<div class="content">'+esc(content)+'</div>'; }
-    if(it.url){ html += '<div class="row"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>'; }
-    html += '<div class="row"><span class="k">来源</span>'+esc(it.source||'--')+'　<span class="k">日期</span>'+esc(it.date||'--')+'</div>';
+  else {
+    html += '<div class="finance-grid">';
+    arr.forEach((it,i)=>{
+      const content = it.content || it.summary || '';
+      html += '<div class="card fn-card" id="card_finance-news_'+i+'">';
+      html += '<h4>'+esc(it.title||'')+'</h4>';
+      html += '<div class="summary" id="fn-sum-'+i+'">'+esc(content)+'</div>';
+      html += '<a class="detail-link" href="#" data-act="full" data-page="finance-news" data-idx="'+i+'">查看详情 ›</a>';
+      html += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span>'+(it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener">原文链接</a>':'')+'</div>';
+      html += '</div>';
+    });
     html += '</div>';
-  });
+  }
   body.innerHTML = html;
 }
 
