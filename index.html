@@ -444,7 +444,8 @@ const GROUPS = [
   {n:1, title:'📈 理财研究', items:[
     {id:'stock-analysis', label:'股票基金分析'},
     {id:'finance-news', label:'理财每日新知'},
-    {id:'asset-account', label:'持仓台账'},
+    {id:'asset-account', label:'基金持仓台账'},
+    {id:'stock-account', label:'股票持仓台账'},
     {id:'index-track', label:'指数跟踪表'},
     {id:'rebalance', label:'调仓再平衡记录'},
   ]},
@@ -534,7 +535,8 @@ const MODULES = {
   ]},
   'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle'},
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews'},
-  'asset-account':{type:'holdings', title:'持仓台账', key:'wb_holdings'},
+  'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund'},
+  'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock'},
   'index-track':{type:'indexTrack', title:'指数跟踪表', key:'indexTrack'},
   'rebalance':{type:'list', title:'调仓再平衡记录', key:'wb_rebalance', fields:[
     {k:'date',l:'时间',t:'date',title:true},{k:'target',l:'标的',t:'text'},
@@ -551,9 +553,9 @@ const MODULES = {
   'todo-list':{type:'todo', title:'今日待办清单', key:'wb_todo'},
 };
 
-const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_watchlist','wb_custom_modules','wb_group_overrides','wb_group_order'];
+const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_stock_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_watchlist','wb_custom_modules','wb_group_overrides','wb_group_order'];
 
-const TYPE_LABEL = {gold:'黄金', nasdaq:'纳斯达克100', dividend:'红利低波', qdii:'标普500跟踪摩根', other:'其它基金'};
+const TYPE_LABEL = {gold:'黄金', nasdaq:'纳斯达克100', dividend:'红利低波', qdii:'标普500跟踪摩根', other:'其它基金', stock:'股票'};
 const STATUS_LABEL = {pending:'待定', hold:'暂缓', done:'已完成'};
 function typeLabel(t){ return TYPE_LABEL[t] || '其它基金'; }
 function statusLabel(s){ return STATUS_LABEL[s] || s; }
@@ -562,12 +564,12 @@ const KB_CATS = ['理财','养生','AI','运营'];
 const CHECKIN_ITEMS = ['睡眠','运动','饮水','食疗','体感'];
 
 const ALIASES = {
-  '工作台首页':'overview','短视频脚本':'script-lib','理财台账':'asset-account','指数跟踪表':'index-track',
+  '工作台首页':'overview','短视频脚本':'script-lib','理财台账':'asset-account','基金持仓台账':'asset-account','股票持仓台账':'stock-account','指数跟踪表':'index-track',
   '调仓记录':'rebalance','今日养生打卡':'health-checkin','打卡历史汇总':'checkin-history',
   '运动规划':'health-checkin','今日待办':'todo-list','MCP开关-开':'mcpOn','MCP开关-关':'mcpOff','重置记忆':'reset'
 };
 const QUICK_JUMP = {
-  '知识库':'knowledge-base','待办':'todo-list','打卡':'health-checkin','持仓':'asset-account','指数':'index-track',
+  '知识库':'knowledge-base','待办':'todo-list','打卡':'health-checkin','持仓':'asset-account','基金持仓':'asset-account','股票持仓':'stock-account','指数':'index-track',
   '调仓':'rebalance','选品':'product-lib','脚本':'script-lib','提示词':'prompt-lib','选题':'idea-lib',
   '灵感':'side-idea','运营':'operation-ideas','理财':'finance-news','健康':'health-checkin',  '复盘':'work-review','发布':'record-review'
 };
@@ -1125,31 +1127,55 @@ function renderFinance(body){
 
 /* ============== 持仓台账 ============== */
 function renderHoldings(body){
-  const arr = loadData('wb_holdings', []);
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" '+'>🔄 刷新涨跌</button><button class="pill" data-act="add" data-page="asset-account">＋ 新增持仓</button></div>';
-  html += '<p class="hint">仅作持仓整理与估值记录，严禁任何买卖建议。QDII/美股基金日期可能 T+1 滞后，属正常。</p>';
-  if(arr.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 6 位基金代码）。</div>'; }
+  const m = MODULES[currentPage] || {};
+  const key = m.key || 'wb_holdings';
+  const isStock = (m.source==='stock');
+  const arr = loadData(key, []);
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" data-page="'+currentPage+'">🔄 刷新涨跌</button><button class="pill" data-act="add" data-page="'+currentPage+'">＋ 新增持仓</button></div>';
+  html += '<p class="hint">'+(isStock?'仅作持仓整理与估值记录，严禁任何买卖建议。':'仅作持仓整理与估值记录，严禁任何买卖建议。QDII/美股基金日期可能 T+1 滞后，属正常。')+'</p>';
+  if(arr.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
   arr.forEach((h,i)=>{
-    const q = fundQuote[h.code] || {};
-    const gz = (q.gszzl!=null) ? Number(q.gszzl) : null;
-    const up = gz>0, down = gz<0;
-    const gain = (gz!=null && h.amount!=null) ? h.amount*gz/100 : null;
-    html += '<div class="card" id="card_asset-account_'+i+'"><h4>'+esc(h.name||'')+' <span class="tag">'+esc(typeLabel(h.type))+'</span></h4>';
+    let q={}, up=false, down=false, gain=null, updTime='待刷新', pct=null, priceTxt='';
+    if(isStock){
+      const sq = stockQuotes[normCodeStr(h.code)] || {};
+      const price = (sq.price!=null)?Number(sq.price):null;
+      const pre = (sq.preClose!=null)?Number(sq.preClose):null;
+      pct = (price!=null && pre)? (price/pre-1)*100 : null;
+      up = pct>0; down = pct<0;
+      gain = (pct!=null && h.amount!=null)? h.amount*pct/100 : null;
+      updTime = (price!=null)? '今日' : '待刷新';
+      priceTxt = (price!=null)? price.toFixed(2) : '';
+      q = sq;
+    } else {
+      const fq = fundQuote[h.code] || {};
+      const gz = (fq.gszzl!=null)? Number(fq.gszzl):null;
+      pct = gz; up = gz>0; down = gz<0;
+      gain = (gz!=null && h.amount!=null)? h.amount*gz/100 : null;
+      updTime = fq.gztime || '待刷新';
+      q = fq;
+    }
+    html += '<div class="card" id="card_'+currentPage+'_'+i+'"><h4>'+esc(h.name||'')+' <span class="tag">'+esc(typeLabel(h.type))+'</span></h4>';
     html += '<div class="row"><span class="k">代码</span>'+esc(h.code||'--')+'</div>';
     html += '<div class="row"><span class="k">市值</span>'+(h.amount!=null?esc(h.amount):'--')+'</div>';
     html += '<div class="row"><span class="k">成本</span>'+(h.cost!=null?esc(h.cost):'--')+'</div>';
-    if(gz!=null){
-      html += '<div class="row"><span class="k">今日涨跌</span><span class="'+(up?'up':(down?'down':''))+'">'+(gz>0?'+':'')+gz.toFixed(2)+'%</span></div>';
+    if(isStock && priceTxt){ html += '<div class="row"><span class="k">现价</span>'+priceTxt+'</div>'; }
+    if(up||down){
+      html += '<div class="row"><span class="k">今日涨跌</span><span class="'+(up?'up':(down?'down':''))+'">'+(pct>0?'+':'')+(pct!=null?pct.toFixed(2):'')+'%</span></div>';
       if(gain!=null) html += '<div class="row"><span class="k">今日收益</span><span class="'+(up?'up':(down?'down':''))+'">'+(gain>0?'+':'')+gain.toFixed(2)+'</span></div>';
     } else { html += '<div class="row"><span class="k">涨跌</span>待刷新</div>'; }
-    if(h.dca && h.dca.enabled){ html += '<div class="row"><span class="k">定投</span>每日 '+esc(h.dca.daily)+' · 累计 '+esc(h.dca.acc||0)+'</div>'; }
-    html += '<div class="card-foot"><span class="upd">更新：'+(q.gztime||'待刷新')+'</span><span class="actions">';
-    html += '<button class="pill secondary" data-act="dca" data-idx="'+i+'">定投</button>';
-    html += '<button class="pill secondary" data-act="edit" data-page="asset-account" data-idx="'+i+'">编辑</button>';
-    html += '<button class="pill secondary" data-act="del" data-page="asset-account" data-idx="'+i+'">删除</button>';
+    if(!isStock && h.dca && h.dca.enabled){ html += '<div class="row"><span class="k">定投</span>每日 '+esc(h.dca.daily)+' · 累计 '+esc(h.dca.acc||0)+'</div>'; }
+    html += '<div class="card-foot"><span class="upd">更新：'+updTime+'</span><span class="actions">';
+    if(!isStock) html += '<button class="pill secondary" data-act="dca" data-idx="'+i+'">定投</button>';
+    html += '<button class="pill secondary" data-act="edit" data-page="'+currentPage+'" data-idx="'+i+'">编辑</button>';
+    html += '<button class="pill secondary" data-act="del" data-page="'+currentPage+'" data-idx="'+i+'">删除</button>';
     html += '</span></div></div>';
   });
   body.innerHTML = html;
+  const codes = arr.filter(h=>h.code).map(h=>String(h.code));
+  if(codes.length){
+    if(isStock) refreshStockQuotesFor(codes);
+    else liveQuotes();
+  }
 }
 
 /* ============== 指数跟踪 ============== */
@@ -1539,39 +1565,56 @@ function openKbEdit(idx){
   $('formMask').classList.add('show');
 }
 function openHoldingForm(idx){
-  formCtx = {page:'__holding', idx: idx==null?null:Number(idx)};
-  const arr = loadData('wb_holdings', []);
+  const page = currentPage;
+  const m = MODULES[page] || {};
+  const isStock = (m.source==='stock');
+  const key = m.key || 'wb_holdings';
+  formCtx = {page: page, kind:'holding', idx: idx==null?null:Number(idx)};
+  const arr = loadData(key, []);
   const h = idx==null ? {name:'',code:'',amount:0,type:'gold',cost:0,dca:{enabled:false,daily:0,lastDate:'',acc:0}} : arr[idx];
   const typeOpts = Object.keys(TYPE_LABEL).map(k=>'<option value="'+k+'"'+(h.type===k?' selected':'')+'>'+TYPE_LABEL[k]+'</option>').join('');
   $('formTitle').textContent = (idx==null?'新增':'编辑') + ' · 持仓';
-  $('formFields').innerHTML =
-    '<div class="form-field"><label>基金名称</label><input id="fi_name" type="text" value="'+esc(h.name)+'"></div>'+
-    '<div class="form-field"><label>基金代码(6位)</label><input id="fi_code" type="text" value="'+esc(h.code)+'"></div>'+
-    '<div class="form-field"><label>类型</label><select id="fi_type">'+typeOpts+'</select></div>'+
+  let fields =
+    '<div class="form-field"><label>'+(isStock?'名称':'基金名称')+'</label><input id="fi_name" type="text" value="'+esc(h.name)+'"></div>'+
+    '<div class="form-field"><label>'+(isStock?'代码(6位)':'基金代码(6位)')+'</label><input id="fi_code" type="text" value="'+esc(h.code)+'"></div>';
+  if(!isStock){
+    fields += '<div class="form-field"><label>类型</label><select id="fi_type">'+typeOpts+'</select></div>';
+  }
+  fields +=
     '<div class="form-field"><label>市值</label><input id="fi_amount" type="number" value="'+esc(h.amount!=null?h.amount:'')+'"></div>'+
-    '<div class="form-field"><label>成本</label><input id="fi_cost" type="number" value="'+esc(h.cost!=null?h.cost:'')+'"></div>'+
-    '<div class="form-field"><label>定投每日金额(0=不开启)</label><input id="fi_dca" type="number" value="'+esc((h.dca&&h.dca.daily)||0)+'"></div>';
+    '<div class="form-field"><label>成本</label><input id="fi_cost" type="number" value="'+esc(h.cost!=null?h.cost:'')+'"></div>';
+  if(!isStock){
+    fields += '<div class="form-field"><label>定投每日金额(0=不开启)</label><input id="fi_dca" type="number" value="'+esc((h.dca&&h.dca.daily)||0)+'"></div>';
+  }
+  $('formFields').innerHTML = fields;
   $('formMask').classList.add('show');
 }
 function saveHoldingForm(){
   const name = $('fi_name').value.trim();
   const code = $('fi_code').value.trim();
   if(!name || !code){ toast('名称与代码必填'); return; }
-  const type = $('fi_type').value;
+  const type = $('fi_type')? $('fi_type').value : 'stock';
   const amount = Number($('fi_amount').value)||0;
   const cost = Number($('fi_cost').value)||0;
-  const dcaDaily = Number($('fi_dca').value)||0;
-  const arr = loadData('wb_holdings', []);
+  const page = (formCtx && formCtx.page) || currentPage;
+  const m = MODULES[page] || {};
+  const key = m.key || 'wb_holdings';
+  const isStock = (m.source==='stock');
+  const arr = loadData(key, []);
   const prev = (formCtx.idx!=null)?arr[formCtx.idx]:null;
-  const dca = {enabled:dcaDaily>0, daily:dcaDaily, lastDate:(prev&&prev.dca&&prev.dca.lastDate)||'', acc:(prev&&prev.dca&&prev.dca.acc)||0};
+  let dca = {enabled:false, daily:0, lastDate:'', acc:0};
+  if(!isStock){
+    const dcaDaily = Number($('fi_dca').value)||0;
+    dca = {enabled:dcaDaily>0, daily:dcaDaily, lastDate:(prev&&prev.dca&&prev.dca.lastDate)||'', acc:(prev&&prev.dca&&prev.dca.acc)||0};
+  }
   const obj = {name,code,type,amount,cost,dca};
   if(formCtx.idx==null) arr.push(obj); else arr[formCtx.idx]=obj;
-  saveData('wb_holdings', arr);
+  saveData(key, arr);
   closeForm(); renderCurrent(); toast('已保存');
 }
 function saveForm(){
   if(!formCtx) return;
-  if(formCtx.page==='__holding'){ saveHoldingForm(); return; }
+  if(formCtx.kind==='holding'){ saveHoldingForm(); return; }
   if(formCtx.page==='__kb'){
     const cat = $('fi_cat').value;
     const title = $('fi_title').value.trim();
@@ -1659,7 +1702,7 @@ function getSearchIndex(){
         idx.push({page:pid, title, content, cardId:'card_'+pid+'_'+i});
       });
     } else if(m.type==='holdings'){
-      (loadData('wb_holdings', [])).forEach((it,i)=> idx.push({page:pid, title:it.name, content:(it.name||'')+' '+(it.code||'')+' '+typeLabel(it.type), cardId:'card_'+pid+'_'+i}));
+      (loadData(m.key, [])).forEach((it,i)=> idx.push({page:pid, title:it.name, content:(it.name||'')+' '+(it.code||'')+' '+typeLabel(it.type), cardId:'card_'+pid+'_'+i}));
     } else if(m.type==='aiText'){
       (remoteData[m.key]||[]).forEach((it,i)=> idx.push({page:pid, title:it.title, content:(it.title||'')+' '+(it.content||'')+' '+(it.url||''), cardId:'card_'+pid+'_'+i}));
     } else if(m.type==='finance'){
@@ -1776,11 +1819,31 @@ function loadFundQuote(code){
     document.body.appendChild(s);
   });
 }
-async function refreshQuotes(){
-  if(loadData('wb_holdings',[]).length===0){ toast('暂无持仓，去「持仓台账」添加'); return; }
-  toast('正在抓取基金实时估值…');
-  await liveQuotes();
-  toast('基金涨跌已刷新');
+async function refreshQuotes(page){
+  page = page || currentPage;
+  const m = MODULES[page] || {};
+  const key = m.key || 'wb_holdings';
+  const src = m.source || 'fund';
+  const arr = loadData(key, []);
+  if(arr.length===0){ toast('暂无持仓，去「'+esc(modTitle(page))+'」添加'); return; }
+  if(src==='stock'){
+    toast('正在抓取股票实时行情…');
+    await refreshStockQuotesFor(arr.map(h=>String(h.code)).filter(Boolean));
+    toast('股票涨跌已刷新');
+  } else {
+    toast('正在抓取基金实时估值…');
+    await liveQuotes();
+    toast('基金涨跌已刷新');
+  }
+}
+async function refreshStockQuotesFor(codes){
+  if(!codes || !codes.length) return;
+  try{
+    const res = await fetchQuotesBatch(codes);
+    let got=0;
+    codes.forEach(c=>{ const nc=normCodeStr(c); const q=res[c]||null; if(q){ stockQuotes[nc]=q; got++; } });
+    if(got) renderCurrent();
+  }catch(e){}
 }
 
 /* ============== 定投 ============== */
@@ -2070,7 +2133,7 @@ function bindEvents(){
       if(act==='cmDel'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ cfg.items.splice(Number(f.dataset.idx),1); saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } return; }
       if(act==='cmEdit'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ const idx=Number(f.dataset.idx); const it=cfg.items[idx]||{}; const t=prompt('标题', it.title||''); if(t!==null){ const c=prompt('内容', it.text||''); it.title=t; it.text=c; cfg.items[idx]=it; saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } } return; }
       if(act==='cmAirefresh'){ loadRemoteData(); toast('已请求刷新，AI 将按配置抓取'); return; }
-      if(act==='refreshQuote'){ refreshQuotes(); return; }
+      if(act==='refreshQuote'){ refreshQuotes(f.dataset.page||currentPage); return; }
       if(act==='full'){ showFull(page, idx); return; }
       /* ===== 股票基金分析模块事件 ===== */
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
