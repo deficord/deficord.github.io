@@ -1962,6 +1962,14 @@ function toggleSidebar(){ const s=$('sidebar'); if(s.classList.contains('open'))
 function bindEvents(){
   $('mobileMenuBtn').onclick = toggleSidebar;
   $('sidebarBackdrop').onclick = closeSidebar;
+  document.addEventListener('click', (e)=>{
+    const s = $('sidebar');
+    if(!s.classList.contains('open')) return;
+    if(s.contains(e.target)) return;
+    const mb = $('mobileMenuBtn');
+    if(mb && mb.contains(e.target)) return;
+    closeSidebar();
+  });
   $('mcpToggle').onchange = (e)=> setMcp(e.target.checked);
   $('syncBtn').onclick = openSync;
   function toggleRepoField(){
