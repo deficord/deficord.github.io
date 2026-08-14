@@ -1319,7 +1319,7 @@ function renderStockAnalysis(body){
   const m=MODULES['stock-analysis'];
   let html='<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>';
   if(stockTab==='quote') html+='<button class="pill" data-act="stock-refresh">🔄 刷新行情</button>';
-  html+='<button class="pill secondary" data-act="openStockTabEditor">⚙ 设置Tab</button>';
+  html+='<button class="pill secondary" data-act="openStockTabEditor">⚙ 设置</button>';
   html+='</div>';
   html+='<div class="stock-tabs">';
   const tabs=loadStockTabs().map(t=>[t.k, t.label]);
