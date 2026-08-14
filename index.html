@@ -1156,6 +1156,7 @@ function renderHoldings(body){
     }
     html += '<div class="card" id="card_'+currentPage+'_'+i+'"><h4>'+esc(h.name||'')+' <span class="tag">'+esc(typeLabel(h.type))+'</span></h4>';
     html += '<div class="row"><span class="k">代码</span>'+esc(h.code||'--')+'</div>';
+    if(isStock && h.sector){ html += '<div class="row"><span class="k">所属板块</span>'+esc(h.sector)+'</div>'; }
     html += '<div class="row"><span class="k">市值</span>'+(h.amount!=null?esc(h.amount):'--')+'</div>';
     html += '<div class="row"><span class="k">成本</span>'+(h.cost!=null?esc(h.cost):'--')+'</div>';
     if(isStock && priceTxt){ html += '<div class="row"><span class="k">现价</span>'+priceTxt+'</div>'; }
@@ -1575,8 +1576,11 @@ function openHoldingForm(idx){
   const typeOpts = Object.keys(TYPE_LABEL).map(k=>'<option value="'+k+'"'+(h.type===k?' selected':'')+'>'+TYPE_LABEL[k]+'</option>').join('');
   $('formTitle').textContent = (idx==null?'新增':'编辑') + ' · 持仓';
   let fields =
-    '<div class="form-field"><label>'+(isStock?'名称':'基金名称')+'</label><input id="fi_name" type="text" value="'+esc(h.name)+'"></div>'+
-    '<div class="form-field"><label>'+(isStock?'代码(6位)':'基金代码(6位)')+'</label><input id="fi_code" type="text" value="'+esc(h.code)+'"></div>';
+    '<div class="form-field"><label>'+(isStock?'股票名称':'基金名称')+'</label><input id="fi_name" type="text" value="'+esc(h.name)+'"></div>'+
+    '<div class="form-field"><label>'+(isStock?'股票代码(6位)':'基金代码(6位)')+'</label><input id="fi_code" type="text" value="'+esc(h.code)+'"></div>';
+  if(isStock){
+    fields += '<div class="form-field"><label>所属板块</label><input id="fi_sector" type="text" value="'+esc(h.sector||'')+'"></div>';
+  }
   if(!isStock){
     fields += '<div class="form-field"><label>类型</label><select id="fi_type">'+typeOpts+'</select></div>';
   }
@@ -1600,6 +1604,7 @@ function saveHoldingForm(){
   const m = MODULES[page] || {};
   const key = m.key || 'wb_holdings';
   const isStock = (m.source==='stock');
+  const sector = isStock ? (($('fi_sector')?$('fi_sector').value:'').trim()) : '';
   const arr = loadData(key, []);
   const prev = (formCtx.idx!=null)?arr[formCtx.idx]:null;
   let dca = {enabled:false, daily:0, lastDate:'', acc:0};
@@ -1608,6 +1613,7 @@ function saveHoldingForm(){
     dca = {enabled:dcaDaily>0, daily:dcaDaily, lastDate:(prev&&prev.dca&&prev.dca.lastDate)||'', acc:(prev&&prev.dca&&prev.dca.acc)||0};
   }
   const obj = {name,code,type,amount,cost,dca};
+  if(isStock) obj.sector = sector;
   if(formCtx.idx==null) arr.push(obj); else arr[formCtx.idx]=obj;
   saveData(key, arr);
   closeForm(); renderCurrent(); toast('已保存');
