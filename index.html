@@ -268,6 +268,52 @@
     .cm-grid.cm-span2,.cm-grid.cm-span3{grid-template-columns:1fr;}
     .finance-grid{grid-template-columns:1fr;}
   }
+  /* ===== 股票基金分析模块 ===== */
+  .stock-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:2px solid var(--border);margin-bottom:14px;}
+  .stock-tab{padding:9px 14px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid transparent;border-bottom:none;background:none;border-radius:8px 8px 0 0;margin-bottom:-2px;transition:.15s;}
+  .stock-tab:hover{color:var(--accent);background:#F8FAFC;}
+  .stock-tab.on{color:var(--accent);border-color:var(--border);border-bottom-color:#fff;background:#fff;}
+  .import-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
+  .import-area{width:100%;min-height:130px;font-family:UI-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;border:1px solid #D8DEE9;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box;line-height:1.6;}
+  .import-area:focus{outline:none;border-color:var(--accent);}
+  .import-hint{font-size:11px;color:var(--muted);margin:8px 0;line-height:1.6;}
+  .import-preview{background:#F8FAFC;border:1px dashed var(--border);border-radius:8px;padding:10px;font-size:12px;color:#475569;margin-top:8px;max-height:160px;overflow:auto;}
+  .watch-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;font-size:13px;}
+  .watch-row .wr-name{font-weight:600;color:#1F2937;}
+  .watch-row .wr-code{font-size:11px;color:var(--muted);}
+  .watch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;}
+  .quote-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;}
+  .quote-card .qc-top{display:flex;justify-content:space-between;align-items:baseline;}
+  .quote-card .qc-name{font-size:14px;font-weight:700;color:#1F2937;}
+  .quote-card .qc-code{font-size:11px;color:var(--muted);}
+  .quote-card .qc-price{font-size:22px;font-weight:800;line-height:1.1;}
+  .quote-card .qc-chg{font-size:13px;font-weight:600;}
+  .quote-card .qc-metrics{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .quote-card .qc-metrics span{font-size:11px;background:#F1F5F9;color:#475569;padding:2px 7px;border-radius:6px;}
+  .quote-card .qc-actions{display:flex;gap:6px;margin-top:6px;}
+  .compare-table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:12px;}
+  .compare-table th,.compare-table td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .compare-table th{background:#F8FAFC;color:#475569;font-weight:600;}
+  .compare-table td:first-child,.compare-table th:first-child{text-align:left;color:#1F2937;font-weight:600;}
+  .compare-table tr:last-child td{border-bottom:none;}
+  .calc-form{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;max-width:600px;}
+  .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .calc-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
+  .calc-field input,.calc-field select{width:100%;padding:9px 10px;border:1px solid #D8DEE9;border-radius:8px;font-size:13px;box-sizing:border-box;background:#fff;}
+  .calc-field input:focus,.calc-field select:focus{outline:none;border-color:var(--accent);}
+  .calc-result{margin-top:6px;background:#F8FAFC;border:1px solid var(--border);border-radius:10px;padding:14px;}
+  .calc-result .cr-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#475569;}
+  .calc-result .cr-row b{color:#1F2937;font-size:15px;}
+  .calc-result .cr-big{font-size:22px;font-weight:800;margin-top:8px;text-align:right;}
+  .risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;}
+  .risk-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;}
+  .risk-card .rc-name{font-size:14px;font-weight:700;margin-bottom:8px;color:#1F2937;}
+  .risk-card .rc-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed #EEF2F7;color:#475569;}
+  .risk-card .rc-row:last-child{border-bottom:none;}
+  .risk-card .rc-row span:last-child{font-weight:700;color:#1F2937;}
+  .stock-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7;}
+  .loading{color:var(--muted);font-size:13px;padding:10px 0;}
+
 </style>
 </head>
 <body>
@@ -368,6 +414,7 @@ const GROUPS = [
     {id:'project-archive', label:'项目归档复盘'},
   ]},
   {n:4, title:'📈 理财研究', items:[
+    {id:'stock-analysis', label:'股票基金分析'},
     {id:'finance-news', label:'理财每日新知'},
     {id:'asset-account', label:'持仓台账'},
     {id:'index-track', label:'指数跟踪表'},
@@ -447,6 +494,7 @@ const MODULES = {
     {k:'action',l:'动作',t:'select',options:['加','减','调']},{k:'amount',l:'金额',t:'number'},
     {k:'reason',l:'理由',t:'textarea'},
   ]},
+  'stock-analysis':{type:'stockAnalysis', title:'股票基金分析', key:'wb_watchlist'},
   'health-checkin':{type:'checkin', title:'今日打卡面板', key:'wb_checkinRecords'},
   'checkin-history':{type:'checkinHistory', title:'查看历史打卡汇总'},
   'body-note':{type:'list', title:'身体观察备忘录', key:'wb_body_note', fields:[
@@ -456,7 +504,7 @@ const MODULES = {
   'todo-list':{type:'todo', title:'今日待办清单', key:'wb_todo'},
 };
 
-const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_custom_modules','wb_group_overrides','wb_group_order'];
+const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_watchlist','wb_custom_modules','wb_group_overrides','wb_group_order'];
 
 const TYPE_LABEL = {gold:'黄金', nasdaq:'纳斯达克100', dividend:'红利低波', qdii:'标普500跟踪摩根', other:'其它基金'};
 const STATUS_LABEL = {pending:'待定', hold:'暂缓', done:'已完成'};
@@ -671,6 +719,7 @@ function renderPage(page){
   else if(m.type==='finance') renderFinance(body);
   else if(m.type==='holdings') renderHoldings(body);
   else if(m.type==='indexTrack') renderIndexTrack(body);
+  else if(m.type==='stockAnalysis') renderStockAnalysis(body);
   else if(m.type==='checkin') renderCheckin(body);
   else if(m.type==='checkinHistory') renderCheckinHistory(body);
   else if(m.type==='todo') renderTodo(body);
@@ -1033,6 +1082,214 @@ function renderIndexTrack(body){
     html += '</div>';
   });
   body.innerHTML = html;
+}
+
+/* ============== 股票基金分析（行情/自选批量导入/对比/指标/收益测算/风险） ============== */
+let stockTab='quote';
+let stockQuotes={};
+let stockKlines={};
+let stockCompareSel=[];
+function loadWatch(){ return loadData('wb_watchlist', []); }
+function saveWatch(a){ saveData('wb_watchlist', a); }
+function normCodeStr(s){ return (s||'').trim().toLowerCase(); }
+function normalizeCode(raw){
+  raw=(raw||'').trim(); if(!raw) return null;
+  const m=raw.match(/^(sh|sz|bj|xsh|xshe|xbse)?\s*([0-9]{4,6})\s*(.*)$/i);
+  if(!m) return null;
+  const pre=(m[1]||'').toLowerCase(); let code=m[2]; let market='1';
+  if(pre==='sh'||pre==='xsh') market='1';
+  else if(pre==='sz'||pre==='xshe') market='0';
+  else if(pre==='bj'||pre==='xbse') market='0';
+  else { if(/^6/.test(code)) market='1'; else if(/^(0|3)/.test(code)) market='0'; else if(/^(8|4)/.test(code)) market='0'; else market='1'; }
+  return {code, market};
+}
+function avg(a){ if(!a||!a.length) return null; return a.reduce((s,v)=>s+v,0)/a.length; }
+function fmtYi(v){ if(v==null||isNaN(v)) return '--'; const yi=v/1e8; if(yi>=10000) return (yi/10000).toFixed(2)+'万亿'; return yi.toFixed(2)+'亿'; }
+function fmtPct(v){ if(v==null||isNaN(v)) return '--'; return (v>0?'+':'')+v.toFixed(2)+'%'; }
+function emJsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='EM_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script'); let done=false;
+    const timer=setTimeout(()=>{ if(!done){ done=true; s.remove(); reject(new Error('timeout')); } }, 9000);
+    s.onerror=()=>{ if(!done){ done=true; clearTimeout(timer); s.remove(); reject(new Error('net')); } };
+    window[cb]=d=>{ if(done) return; done=true; clearTimeout(timer); s.remove(); try{delete window[cb];}catch(e){} resolve(d); };
+    s.src=url+(url.indexOf('?')<0?'?':'&')+'cb='+cb+'&_='+Date.now();
+    document.head.appendChild(s);
+  });
+}
+async function fetchQuote(item){
+  const c=normalizeCode(item.code); if(!c) return null;
+  const candidates=[c.market+'.'+c.code, (c.market==='1'?'0':'1')+'.'+c.code];
+  for(const secid of candidates){
+    try{
+      const d=await emJsonp('https://push2.eastmoney.com/api/qt/stock/get?secid='+secid+'&fields=f12,f13,f14,f43,f59,f60,f116,f117,f162,f167,f168,f169,f170,f175,f177');
+      const q=d&&d.data;
+      if(q&&q.f58){ return {secid, name:q.f58, price:q.f43, preClose:q.f60, amount:q.f59, circCap:q.f116, totalCap:q.f117, pe:q.f162, peTtm:q.f167, pb:q.f168, dy:q.f169, amp:q.f170, turnover:q.f175, volRatio:q.f177}; }
+    }catch(e){}
+  }
+  return null;
+}
+async function loadKline(code){
+  const c=normalizeCode(code); if(!c) return null;
+  const secid=c.market+'.'+c.code;
+  try{
+    const d=await emJsonp('https://push2his.eastmoney.com/api/qt/stock/kline2/get?secid='+secid+'&fields1=f1,f2,f3&fields2=f51,f53&klt=101&fqt=1&lmt=180');
+    const kl=d&&d.data&&d.data.klines; if(!kl) return null;
+    const closes=kl.map(s=>{ const p=parseFloat(s.split(',')[2]); return isNaN(p)?null:p; }).filter(v=>v!=null);
+    return {closes};
+  }catch(e){ return null; }
+}
+function calcRisk(closes){
+  if(!closes||closes.length<5) return null;
+  const rets=[]; for(let i=1;i<closes.length;i++){ rets.push((closes[i]-closes[i-1])/closes[i-1]); }
+  const mean=avg(rets); const variance=rets.reduce((a,b)=>a+(b-mean)*(b-mean),0)/rets.length;
+  const vol=Math.sqrt(variance)*Math.sqrt(252);
+  let peak=closes[0], mdd=0; closes.forEach(v=>{ peak=Math.max(peak,v); mdd=Math.max(mdd,(peak-v)/peak); });
+  const yRet=(closes[closes.length-1]-closes[0])/closes[0];
+  const ma20=avg(closes.slice(-20)); const ma60=avg(closes.slice(-60));
+  return {vol, mdd, yRet, ma20, ma60};
+}
+function quoteInner(code, q, item){
+  const man=(item&&item.manual)||{};
+  const price=(man.price!=null)?man.price:(q?q.price:null);
+  const preClose=(q?q.preClose:null);
+  const chg=(price!=null&&preClose&&preClose>0)?((price-preClose)/preClose*100):null;
+  const chgCls= chg>0?'up':(chg<0?'down':'');
+  let h='<div class="qc-top"><div><div class="qc-name">'+(item&&item.name?esc(item.name):(q?esc(q.name):'--'))+'</div><div class="qc-code">'+esc(normCodeStr(code))+'</div></div>';
+  h+='<div style="text-align:right"><div class="qc-price '+(chgCls)+'">'+(price!=null?Number(price).toFixed(2):'--')+'</div><div class="qc-chg '+(chgCls)+'">'+(chg!=null?fmtPct(chg):'')+'</div></div></div>';
+  if(!q && man.price==null){ h+='<div class="loading">行情加载中…（点「刷新行情」）</div>'; }
+  else {
+    const pe=(man.pe!=null)?man.pe:(q?q.peTtm:null);
+    const pb=(man.pb!=null)?man.pb:(q?q.pb:null);
+    h+='<div class="qc-metrics">';
+    if(pe!=null&&!isNaN(pe)) h+='<span>PE '+(Number(pe)).toFixed(2)+'</span>';
+    if(pb!=null&&!isNaN(pb)) h+='<span>PB '+(Number(pb)).toFixed(2)+'</span>';
+    if(man.price!=null) h+='<span>手动价</span>';
+    if(q&&q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>';
+    if(q&&q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>';
+    if(q&&q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>';
+    h+='</div>';
+  }
+  return h;
+}
+function renderStockAnalysis(body){
+  const m=MODULES['stock-analysis'];
+  let html='<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>';
+  if(stockTab==='quote') html+='<button class="pill" data-act="stock-refresh">🔄 刷新行情</button>';
+  html+='</div>';
+  html+='<div class="stock-tabs">';
+  const tabs=[['quote','行情'],['import','自选批量导入'],['compare','对比'],['metric','指标'],['calc','收益测算'],['risk','风险']];
+  tabs.forEach(t=>{ html+='<button class="stock-tab'+(stockTab===t[0]?' on':'')+'" data-act="stock-tab" data-tab="'+t[0]+'">'+t[1]+'</button>'; });
+  html+='</div>';
+  if(stockTab==='quote') html+=stockQuoteTabHtml();
+  else if(stockTab==='import') html+=stockImportTabHtml();
+  else if(stockTab==='compare') html+=stockCompareTabHtml();
+  else if(stockTab==='metric') html+=stockMetricTabHtml();
+  else if(stockTab==='calc') html+=stockCalcTabHtml();
+  else if(stockTab==='risk') html+=stockRiskTabHtml();
+  body.innerHTML=html;
+  if(stockTab==='quote'){ refreshQuotes().catch(()=>{}); }
+  if(stockTab==='metric'||stockTab==='risk'){ loadDerivedForVisible().catch(()=>{}); }
+}
+function stockQuoteTabHtml(){
+  const list=loadWatch();
+  let h='<p class="hint">实时行情来自东方财富公开接口（无需后端），关键字段可手动覆盖。仅供研究，不构成任何投资建议。</p>';
+  if(!list.length){ h+='<div class="watch-empty">暂无自选，去「自选批量导入」粘贴代码（如 600519、sh600519、000001）。</div>'; return h; }
+  h+='<div class="watch-grid">';
+  list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
+    h+='<div class="quote-card"><div id="q-'+esc(code)+'">'+quoteInner(code,q,it)+'</div><div class="qc-actions"><button class="pill secondary" data-act="stock-manual" data-code="'+esc(it.code)+'">手动覆盖</button><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function stockImportTabHtml(){
+  const list=loadWatch();
+  let h='<div class="import-box"><div class="page-title" style="font-size:14px;margin-bottom:6px;">批量导入自选</div>';
+  h+='<textarea class="import-area" id="stockImportText" placeholder="每行一个，支持：\n600519\n600519 贵州茅台\nsh600519,贵州茅台\n000001 平安银行\n300750 宁德时代"></textarea>';
+  h+='<div class="import-hint">识别规则：前 2 位字母 sh/sz/bj 指定市场，纯数字自动判断（6→沪 / 0·3→深 / 8·4→北交所）。可带名称，用英文逗号或空格分隔。</div>';
+  h+='<div style="display:flex;gap:8px"><button class="pill" data-act="stock-import">解析并导入</button><button class="pill secondary" data-act="stock-clear">清空全部</button></div>';
+  h+='<div class="import-preview" id="stockImportPreview">输入后点「解析并导入」预览结果。</div>';
+  h+='</div>';
+  h+='<div class="page-title" style="font-size:14px;margin:8px 0;">当前自选（'+list.length+'）</div>';
+  if(!list.length){ h+='<div class="watch-empty">还没有自选。</div>'; }
+  else { list.forEach(it=>{ h+='<div class="watch-row"><span><span class="wr-name">'+esc(it.name||normCodeStr(it.code))+'</span> <span class="wr-code">'+esc(normCodeStr(it.code))+'</span></span><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div>'; }); }
+  return h;
+}
+function stockCompareTabHtml(){
+  const list=loadWatch();
+  let h='<p class="hint">勾选要对比的标的（默认对比全部）。对比数据取自实时报价缓存，先到「行情」点刷新。</p>';
+  if(!list.length){ h+='<div class="watch-empty">暂无自选可供对比。</div>'; return h; }
+  h+='<div style="margin-bottom:10px">';
+  list.forEach(it=>{ const code=normCodeStr(it.code); const on=stockCompareSel.indexOf(code)>=0||stockCompareSel.length===0;
+    h+='<label style="display:inline-flex;align-items:center;gap:4px;margin-right:12px;font-size:13px;cursor:pointer"><input type="checkbox" data-act="stock-cmp" data-code="'+esc(it.code)+'" '+(on?'checked':'')+'> '+esc(it.name||code)+'</label>';
+  });
+  h+='</div>';
+  const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
+  const rows=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap']];
+  h+='<table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code]; let v=null,chgCls=''; if(q){ if(r[1]==='price'){ v=q.price; } else if(r[1]==='chg'){ v=(q.price&&q.preClose)?((q.price-q.preClose)/q.preClose*100):null; chgCls=v>0?'up':(v<0?'down':''); } else { v=q[r[1]]; } } if(r[1]==='chg'){ h+='<td class="'+chgCls+'">'+(v!=null?(v>0?'+':'')+v.toFixed(2)+'%':'--')+'</td>'; } else if(r[1]==='price'){ h+='<td>'+(v!=null?Number(v).toFixed(2):'--')+'</td>'; } else if(r[1]==='turnover'||r[1]==='amp'){ h+='<td>'+(v!=null?Number(v).toFixed(2)+'%':'--')+'</td>'; } else if(r[1]==='peTtm'||r[1]==='pb'){ h+='<td>'+(v!=null?Number(v).toFixed(2):'--')+'</td>'; } else if(r[1]==='totalCap'){ h+='<td>'+(v!=null?fmtYi(v):'--')+'</td>'; } else { h+='<td>--</td>'; } }); h+='</tr>'; });
+  h+='</tbody></table>';
+  return h;
+}
+function stockMetricTabHtml(){
+  const list=loadWatch();
+  let h='<p class="hint">指标含实时估值（PE/PB/市值/换手/振幅）与近 180 日 K 线计算的均线（MA20/MA60），自动加载。</p>';
+  if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
+  h+='<div class="watch-grid">';
+  list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
+    h+='<div class="quote-card"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
+    if(q){ if(q.peTtm!=null) h+='<span>PE '+(Number(q.peTtm)).toFixed(2)+'</span>'; if(q.pb!=null) h+='<span>PB '+(Number(q.pb)).toFixed(2)+'</span>'; if(q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>'; if(q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>'; if(q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>'; }
+    h+='</div><div id="m-'+esc(code)+'" class="loading">均线计算中…</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+function stockCalcTabHtml(){
+  const list=loadWatch();
+  let h='<p class="hint">输入买入价与数量，当前价默认取实时行情（可手填覆盖），自动测算投入、市值、盈亏与收益率。</p>';
+  h+='<div class="calc-form"><div class="calc-grid">';
+  h+='<div class="calc-field"><label>标的</label><select id="calcCode">'+(list.length?list.map(it=>'<option value="'+esc(it.code)+'">'+esc(it.name||normCodeStr(it.code))+'</option>').join(''):'<option>请先导入自选</option>')+'</select></div>';
+  h+='<div class="calc-field"><label>持仓数量（股/份）</label><input id="calcShares" type="number" min="0" step="1" placeholder="如 1000"></div>';
+  h+='<div class="calc-field"><label>买入均价</label><input id="calcBuy" type="number" min="0" step="0.01" placeholder="如 10.50"></div>';
+  h+='<div class="calc-field"><label>当前价（留空用实时价）</label><input id="calcCur" type="number" min="0" step="0.01" placeholder="留空=实时"></div>';
+  h+='</div><button class="pill" data-act="stock-calc">测算收益</button><div class="calc-result" id="calcResult">填写后点「测算收益」。</div></div>';
+  return h;
+}
+function stockRiskTabHtml(){
+  const list=loadWatch();
+  let h='<p class="hint">风险指标基于近 180 日日线：年化波动率、最大回撤、近一年涨幅、现价偏离 MA60。自动加载。</p>';
+  if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
+  h+='<div class="risk-grid">';
+  list.forEach(it=>{ const code=normCodeStr(it.code);
+    h+='<div class="risk-card"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div></div>';
+  });
+  h+='</div>';
+  return h;
+}
+async function refreshQuotes(){
+  const list=loadWatch();
+  for(const it of list){ const code=normCodeStr(it.code); const q=await fetchQuote(it); if(q) stockQuotes[code]=q; const el=document.getElementById('q-'+code); if(el) el.innerHTML=quoteInner(code,q,it); }
+  toast('行情已刷新');
+}
+async function loadDerivedForVisible(){
+  const list=loadWatch();
+  for(const it of list){ const code=normCodeStr(it.code);
+    let kl=stockKlines[code]; if(!kl){ kl=await loadKline(it.code); if(kl) stockKlines[code]=kl; }
+    const r=kl?calcRisk(kl.closes):null;
+    const mEl=document.getElementById('m-'+code); if(mEl){ if(r&&r.ma20!=null&&r.ma60!=null){ mEl.className='qc-metrics'; mEl.innerHTML='<span>MA20 '+(Number(r.ma20)).toFixed(2)+'</span><span>MA60 '+(Number(r.ma60)).toFixed(2)+'</span>'; } else { mEl.textContent='均线暂不可用'; } }
+    const rEl=document.getElementById('r-'+code); if(rEl){ if(r){ const price=stockQuotes[code]&&stockQuotes[code].price!=null?stockQuotes[code].price:null; const dev=(price!=null&&r.ma60)?((price/r.ma60-1)*100):null; rEl.className=''; rEl.innerHTML='<div class="rc-row"><span>年化波动率</span><span>'+(r.vol*100).toFixed(1)+'%</span></div><div class="rc-row"><span>最大回撤</span><span class="down">-'+(r.mdd*100).toFixed(1)+'%</span></div><div class="rc-row"><span>近一年涨跌</span><span class="'+(r.yRet>0?'up':'down')+'">'+(r.yRet>0?'+':'')+(r.yRet*100).toFixed(1)+'%</span></div><div class="rc-row"><span>现价/MA60</span><span>'+(dev!=null?((dev>0?'+':'')+dev.toFixed(1)+'%'):'--')+'</span></div>'; } else { rEl.textContent='风险数据暂不可用'; } }
+  }
+}
+function parseImport(text){
+  const lines=(text||'').split(/\r?\n/); const out=[];
+  lines.forEach(line=>{ line=line.trim(); if(!line) return;
+    let code=null,name='';
+    const cm=line.match(/^(sh|sz|bj|xsh|xshe|xbse)?\s*([0-9]{4,6})\b\s*(.*)$/i);
+    if(cm){ code=(cm[1]?cm[1]:'')+cm[2]; name=cm[3]?cm[3].replace(/[，,]/g,' ').trim():''; }
+    else { const any=line.match(/([0-9]{4,6})/); if(any){ code=any[1]; name=line.replace(any[1],'').replace(/[，,]/g,' ').trim(); } }
+    if(code){ const n=normalizeCode(code); if(n && n.code){ out.push({code, name, manual:{}}); } }
+  });
+  return out;
 }
 
 /* ============== 打卡面板 ============== */
@@ -1599,6 +1856,16 @@ function bindEvents(){
       if(act==='cmAirefresh'){ loadRemoteData(); toast('已请求刷新，AI 将按配置抓取'); return; }
       if(act==='refreshQuote'){ refreshQuotes(); return; }
       if(act==='full'){ showFull(page, idx); return; }
+      /* ===== 股票基金分析模块事件 ===== */
+      if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
+      if(act==='stock-refresh'){ refreshQuotes().catch(()=>{}); return; }
+      if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
+      if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', ()=>{ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); }); return; }
+      if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', ()=>{ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); }); return; }
+      if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
+      if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } renderCurrent(); return; }
+      if(act==='stock-calc'){ const code=($('calcCode')?$('calcCode').value:''); const shares=parseFloat($('calcShares').value); const buy=parseFloat($('calcBuy').value); let cur=parseFloat($('calcCur').value); if(isNaN(cur)){ const q=stockQuotes[normCodeStr(code)]; cur=q?q.price:null; } const box=$('calcResult'); if(!code||isNaN(shares)||isNaN(buy)){ if(box) box.textContent='请填写标的、持仓数量与买入价。'; return; } const invest=buy*shares; const mv=(cur!=null)?cur*shares:null; const pnl=(mv!=null)?mv-invest:null; const pct=(pnl!=null&&invest>0)?(pnl/invest*100):null; if(box){ let h='<div class="cr-row"><span>投入金额</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>浮动盈亏</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+(cls)+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
+      /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
       if(act==='summarize'){ summarizeCheckin(); toast('已汇总本月'); return; }
       if(act==='dca'){ setDca(idx); return; }
