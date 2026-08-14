@@ -1123,27 +1123,57 @@ function emJsonp(url){
     document.head.appendChild(s);
   });
 }
-async function fetchQuote(item){
-  const c=normalizeCode(item.code); if(!c) return null;
-  const candidates=[c.market+'.'+c.code, (c.market==='1'?'0':'1')+'.'+c.code];
-  for(const secid of candidates){
+function tencentPrefix(code){
+  const c=normalizeCode(code); if(!c) return null;
+  if(/^(8|4|920)/.test(c.code)) return 'bj'+c.code;
+  return (c.market==='1'?'sh':'sz')+c.code;
+}
+// 腾讯财经实时行情（CORS 友好，无需 JSONP 回调）；返回 {code:{...}}
+async function fetchQuotesBatch(codes){
+  const prefs=codes.map(tencentPrefix).filter(Boolean);
+  if(!prefs.length) return {};
+  let lastErr=null;
+  for(let attempt=0; attempt<3; attempt++){
     try{
-      const d=await emJsonp('https://push2.eastmoney.com/api/qt/stock/get?secid='+secid+'&fltt=2&fields=f12,f13,f14,f43,f59,f60,f116,f117,f162,f167,f168,f169,f170,f171,f175,f177');
-      const q=d&&d.data;
-      if(q&&q.f58){ return {secid, name:q.f58, price:q.f43, preClose:q.f60, amount:q.f59, circCap:q.f116, totalCap:q.f117, peTtm:q.f162, pb:q.f167, turnover:q.f168, dy:q.f169, amp:q.f170, volRatio:q.f171, weak:q.f175}; }
-    }catch(e){}
+      const res=await fetch('https://qt.gtimg.cn/q='+prefs.join(','), {cache:'no-store'});
+      const buf=await res.arrayBuffer();
+      let txt; try{ txt=new TextDecoder('gbk').decode(buf); }catch(e){ txt=new TextDecoder().decode(buf); }
+      if(txt.indexOf('none_match')>=0){ lastErr='none_match'; await new Promise(r=>setTimeout(r,700)); continue; }
+      const out={};
+      txt.split(';').forEach(line=>{
+        line=line.trim(); if(!line||line.indexOf('=')<0) return;
+        const eq=line.indexOf('='); const val=line.slice(eq+1).trim().replace(/^"|"$/g,'');
+        const f=val.split('~'); if(f.length<40||!f[2]) return;
+        const price=parseFloat(f[3]), preClose=parseFloat(f[4]), high=parseFloat(f[33]), low=parseFloat(f[34]);
+        const pe=parseFloat(f[52]), pbRaw=parseFloat(f[46]), turnover=parseFloat(f[38]), capYi=parseFloat(f[44]);
+        out[f[2]]={ name:f[1], price:isNaN(price)?null:price, preClose:isNaN(preClose)?null:preClose,
+          peTtm:(isNaN(pe)||pe<=0)?null:pe, pb:(isNaN(pbRaw)||pbRaw<=0)?null:pbRaw,
+          turnover:isNaN(turnover)?null:turnover, totalCap:(isNaN(capYi)?null:capYi*1e8),
+          amp:(isNaN(high)||isNaN(low)||!preClose)?null:((high-low)/preClose*100) };
+      });
+      if(Object.keys(out).length) return out;
+      lastErr='empty';
+    }catch(e){ lastErr=e; }
+    await new Promise(r=>setTimeout(r,700));
   }
-  return null;
+  if(lastErr && lastErr!=='none_match') console.warn('fetchQuotesBatch failed:', lastErr);
+  return {};
 }
 async function loadKline(code){
-  const c=normalizeCode(code); if(!c) return null;
-  const secid=c.market+'.'+c.code;
-  try{
-    const d=await emJsonp('https://push2his.eastmoney.com/api/qt/stock/kline2/get?secid='+secid+'&fields1=f1,f2,f3&fields2=f51,f53&klt=101&fqt=1&lmt=180');
-    const kl=d&&d.data&&d.data.klines; if(!kl) return null;
-    const closes=kl.map(s=>{ const p=parseFloat(s.split(',')[2]); return isNaN(p)?null:p; }).filter(v=>v!=null);
-    return {closes};
-  }catch(e){ return null; }
+  const p=tencentPrefix(code); if(!p) return null;
+  let lastErr=null;
+  for(let attempt=0; attempt<3; attempt++){
+    try{
+      const res=await fetch('https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param='+p+',day,,,180,qfq', {cache:'no-store'});
+      const d=await res.json();
+      const node=d&&d.data&&d.data[p]; if(!node) return null;
+      const arr=node.qfqday||node.day||null; if(!arr) return null;
+      const closes=arr.map(s=>{ const c=parseFloat(Array.isArray(s)?s[2]:(s&&s.close)); return isNaN(c)?null:c; }).filter(v=>v!=null);
+      return closes.length?{closes}:null;
+    }catch(e){ lastErr=e; }
+    await new Promise(r=>setTimeout(r,700));
+  }
+  return null;
 }
 function calcRisk(closes){
   if(!closes||closes.length<5) return null;
@@ -1194,12 +1224,12 @@ function renderStockAnalysis(body){
   else if(stockTab==='calc') html+=stockCalcTabHtml();
   else if(stockTab==='risk') html+=stockRiskTabHtml();
   body.innerHTML=html;
-  if(stockTab==='quote'){ refreshQuotes().catch(()=>{}); }
+  if(stockTab==='quote'||stockTab==='metric'||stockTab==='risk'){ if(!Object.keys(stockQuotes).length) refreshStockQuotes().catch(()=>{}); }
   if(stockTab==='metric'||stockTab==='risk'){ loadDerivedForVisible().catch(()=>{}); }
 }
 function stockQuoteTabHtml(){
   const list=loadWatch();
-  let h='<p class="hint">实时行情来自东方财富公开接口（无需后端），关键字段可手动覆盖。仅供研究，不构成任何投资建议。</p>';
+  let h='<p class="hint">实时行情来自腾讯财经公开接口（无需后端，浏览器直连），关键字段可手动覆盖。仅供研究，不构成任何投资建议。</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选，去「自选批量导入」粘贴代码（如 600519、sh600519、000001）。</div>'; return h; }
   h+='<div class="watch-grid">';
   list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
@@ -1272,10 +1302,15 @@ function stockRiskTabHtml(){
   h+='</div>';
   return h;
 }
-async function refreshQuotes(){
+async function refreshStockQuotes(){
   const list=loadWatch();
-  for(const it of list){ const code=normCodeStr(it.code); const q=await fetchQuote(it); if(q) stockQuotes[code]=q; const el=document.getElementById('q-'+code); if(el) el.innerHTML=quoteInner(code,q,it); }
-  toast('行情已刷新');
+  if(!list.length){ toast('请先在「自选批量导入」添加标的'); return; }
+  try{
+    const res=await fetchQuotesBatch(list.map(it=>it.code));
+    let got=0;
+    list.forEach(it=>{ const code=normCodeStr(it.code); const q=res[it.code]||null; if(q){ stockQuotes[code]=q; got++; } const el=document.getElementById('q-'+code); if(el) el.innerHTML=quoteInner(code,q,it); });
+    toast(got?('行情已刷新（'+got+' 只）'):'未获取到行情，可点「手动覆盖」填写');
+  }catch(e){ toast('行情获取失败，请检查网络或手动覆盖'); }
 }
 async function loadDerivedForVisible(){
   const list=loadWatch();
@@ -1293,7 +1328,7 @@ function parseImport(text){
     const cm=line.match(/^(sh|sz|bj|xsh|xshe|xbse)?\s*([0-9]{4,6})\b\s*(.*)$/i);
     if(cm){ code=(cm[1]?cm[1]:'')+cm[2]; name=cm[3]?cm[3].replace(/[，,]/g,' ').trim():''; }
     else { const any=line.match(/([0-9]{4,6})/); if(any){ code=any[1]; name=line.replace(any[1],'').replace(/[，,]/g,' ').trim(); } }
-    if(code){ const n=normalizeCode(code); if(n && n.code){ out.push({code, name, manual:{}}); } }
+    if(code){ const n=normalizeCode(code); if(n && n.code){ out.push({code:n.code, name, manual:{}}); } }
   });
   return out;
 }
@@ -1864,12 +1899,12 @@ function bindEvents(){
       if(act==='full'){ showFull(page, idx); return; }
       /* ===== 股票基金分析模块事件 ===== */
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
-      if(act==='stock-refresh'){ refreshQuotes().catch(()=>{}); return; }
+      if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', ()=>{ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', ()=>{ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); }); return; }
       if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
-      if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } renderCurrent(); return; }
+      if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); if(stockCompareSel.length===0){ loadWatch().forEach(it=>{ const c=normCodeStr(it.code); if(c!==code) stockCompareSel.push(c); }); } else { const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } } renderCurrent(); return; }
       if(act==='stock-calc'){ const code=($('calcCode')?$('calcCode').value:''); const shares=parseFloat($('calcShares').value); const buy=parseFloat($('calcBuy').value); let cur=parseFloat($('calcCur').value); if(isNaN(cur)){ const q=stockQuotes[normCodeStr(code)]; cur=q?q.price:null; } const box=$('calcResult'); if(!code||isNaN(shares)||isNaN(buy)){ if(box) box.textContent='请填写标的、持仓数量与买入价。'; return; } const invest=buy*shares; const mv=(cur!=null)?cur*shares:null; const pnl=(mv!=null)?mv-invest:null; const pct=(pnl!=null&&invest>0)?(pnl/invest*100):null; if(box){ let h='<div class="cr-row"><span>投入金额</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>浮动盈亏</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+(cls)+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
       /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
