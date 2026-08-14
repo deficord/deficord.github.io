@@ -108,6 +108,10 @@
   .stk-tab-row .ad-tools{display:flex;gap:2px;}
   .stk-tab-row .ad-tools button{background:none;border:1px solid var(--border);border-radius:4px;width:22px;height:22px;cursor:pointer;font-size:11px;color:#6B7280;}
   .stk-tab-row .ad-tools button:hover{background:#F3F4F6;}
+  .stk-tab-row .stk-name{flex:1;font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .idx-add{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);}
+  .idx-add-hd{font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;}
+  .idx-add-row{margin-bottom:8px;}
   /* 字段 / 分段控件（后台） */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
@@ -392,6 +396,27 @@
       <div class="modal-actions">
         <button class="pill secondary" data-act="stockTabClose">取消</button>
         <button class="pill" data-act="stockTabsSave" data-box="stockTabEditBox">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 指数跟踪表：指数顺序 / 增删设置弹窗 -->
+  <div class="modal-mask" id="idxMask">
+    <div class="modal">
+      <h3>⚙ 指数跟踪表 · 设置</h3>
+      <p class="hint" style="margin-bottom:10px">用 ↑/↓ 调整指数顺序，✕ 移除不需要的指数；下方可新增你要跟踪的指数。</p>
+      <div id="idxEditBox"></div>
+      <div class="idx-add">
+        <div class="idx-add-hd">＋ 新增指数</div>
+        <div class="idx-add-row"><input id="idxNewName" class="stk-label" placeholder="指数名称（必填，如 创业板指）"></div>
+        <div class="idx-add-row"><input id="idxNewColor" class="stk-label" placeholder="颜色代码（可选，默认 #4CAF50）" value="#4CAF50"></div>
+        <div class="idx-add-row"><input id="idxNewLabel" class="stk-label" placeholder="核心指标名（可选，如 点位）"></div>
+        <div class="idx-add-row"><input id="idxNewVal" class="stk-label" placeholder="指标值（可选，如 2150）"></div>
+        <div class="idx-add-row"><input id="idxNewNote" class="stk-label" placeholder="备注 / 判断（可选）"></div>
+        <button class="pill" data-act="idxAdd">＋ 添加</button>
+      </div>
+      <div class="modal-actions">
+        <button class="pill" data-act="idxClose">完成</button>
       </div>
     </div>
   </div>
@@ -906,6 +931,25 @@ function renderStockTabsEditor(boxId){
 }
 function openStockTabEditor(){ renderStockTabsEditor('stockTabEditBox'); $('stockTabMask').classList.add('show'); }
 function closeStockTabEditor(){ $('stockTabMask').classList.remove('show'); }
+/* 指数跟踪表：指数顺序 / 增删 编辑器 */
+function renderIdxEditor(){
+  const box=$('idxEditBox'); if(!box) return;
+  const arr=loadIndexTrack();
+  if(!arr.length){ box.innerHTML='<div class="empty">暂无指数，请在下方新增。</div>'; return; }
+  let h='';
+  arr.forEach((it,i)=>{
+    h += '<div class="stk-tab-row"><span class="stk-idx">'+(i+1)+'</span>'
+      + '<span class="stk-name"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+'</span>'
+      + '<span class="ad-tools">'
+      + '<button data-act="idxUp" data-i="'+i+'" title="上移">↑</button>'
+      + '<button data-act="idxDown" data-i="'+i+'" title="下移">↓</button>'
+      + '<button data-act="idxDel" data-i="'+i+'" title="移除">✕</button>'
+      + '</span></div>';
+  });
+  box.innerHTML=h;
+}
+function openIdxEditor(){ renderIdxEditor(); $('idxMask').classList.add('show'); }
+function closeIdxEditor(){ $('idxMask').classList.remove('show'); }
 function renderCmItemsEditor(){
   const cfg=getModuleConfig(adminSel); const box=$('cmItems'); if(!box||!cfg) return;
   const items=cfg.items||[];
@@ -956,9 +1000,10 @@ function fundTable(arr){
   return h;
 }
 function indexTable(arr){
-  if(!arr.length) return '<div class="empty">暂无指数数据，发「刷新」让 AI 推送。</div>';
+  const list = arr && arr.length ? arr : loadIndexTrack();
+  if(!list.length) return '<div class="empty">暂无指数数据，发「刷新」让 AI 推送。</div>';
   let h='<table class="ov-table"><tr><th>指数</th><th>核心指标</th><th>判断</th></tr>';
-  arr.slice(0,6).forEach(it=>{
+  list.slice(0,6).forEach(it=>{
     const rows=it.rows||[];
     const core=(rows[0]&&rows[0].val)||'--';
     h+='<tr><td>'+esc(it.name||'')+'</td><td>'+esc(core)+'</td><td>'+(it.note?esc(it.note.slice(0,12)):'--')+'</td></tr>';
@@ -1105,9 +1150,30 @@ function renderHoldings(body){
 }
 
 /* ============== 指数跟踪 ============== */
+const IDX_KEY='wb_index_track';
+function loadIndexTrack(){
+  const raw=localStorage.getItem(IDX_KEY);
+  if(raw==null){
+    const base=(remoteData.indexTrack||[]).map(it=>JSON.parse(JSON.stringify(it)));
+    if(base.length) saveData(IDX_KEY, base);
+    return base;
+  }
+  try{ const a=JSON.parse(raw); return Array.isArray(a)?a:[]; }catch(e){ return []; }
+}
+function saveIndexTrack(a){ saveData(IDX_KEY, a); }
+// AI 刷新 data.json 后，把 AI 新增但本地列表里还没有的指数补进来（不动用户已排序/编辑的内容）
+function syncIndexTrackFromRemote(){
+  const base=(remoteData.indexTrack||[]);
+  if(!base.length) return;
+  const stored=loadIndexTrack();
+  const names=new Set(stored.map(x=>x.name));
+  let added=false;
+  base.forEach(it=>{ if(!names.has(it.name)){ stored.push(JSON.parse(JSON.stringify(it))); added=true; } });
+  if(added) saveIndexTrack(stored);
+}
 function renderIndexTrack(body){
-  const arr = remoteData.indexTrack || [];
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  const arr = loadIndexTrack();
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="idx-settings">⚙ 设置</button><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">数据来源：data.json（AI 策展）。黄金显示「实际利率」（10Y TIPS 真实值），其它模块不列美债名义利率。</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
   arr.forEach((it,i)=>{
@@ -1596,7 +1662,7 @@ function getSearchIndex(){
     } else if(m.type==='finance'){
       (remoteData.financeNews||[]).forEach((it,i)=> idx.push({page:pid, title:it.title, content:(it.title||'')+' '+(it.summary||'')+' '+(it.content||''), cardId:'card_finance-news_'+i}));
     } else if(m.type==='indexTrack'){
-      (remoteData.indexTrack||[]).forEach((it,i)=> idx.push({page:pid, title:it.name, content:(it.name||'')+' '+(it.rows||[]).map(r=>r.label+r.val).join(' ')+' '+(it.note||''), cardId:'card_index-track_'+i}));
+      loadIndexTrack().forEach((it,i)=> idx.push({page:pid, title:it.name, content:(it.name||'')+' '+(it.rows||[]).map(r=>r.label+r.val).join(' ')+' '+(it.note||''), cardId:'card_index-track_'+i}));
     }
   });
   return idx;
@@ -1645,6 +1711,7 @@ async function loadRemoteData(){
     if(!r.ok) throw new Error('HTTP '+r.status);
     const d = await r.json();
     remoteData = d;
+    syncIndexTrackFromRemote();
     if(d.fundQuotes) fundQuote = d.fundQuotes;
     if(d.holdings && !localStorage.getItem('wb_holdings')){ saveData('wb_holdings', d.holdings); }
     $('demoBanner').style.display='none';
@@ -1901,6 +1968,31 @@ function bindEvents(){
     if(act==='stkDown'){ const k=f.dataset.k; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveStockTabs(a); } renderStockTabsEditor('stockTabEditBox'); return; }
     if(act==='stockTabsSave'){ const a=loadStockTabs(); document.querySelectorAll('#stockTabEditBox .stk-label').forEach(inp=>{ const k=inp.dataset.k; const t=a.find(x=>x.k===k); if(t) t.label=inp.value.trim()||t.label; }); saveStockTabs(a); toast('已保存 Tab 名称与顺序'); closeStockTabEditor(); renderCurrent(); return; }
   });
+  const idxm = $('idxMask');
+  if(idxm) idxm.addEventListener('click', e=>{
+    const f=e.target.closest('[data-act]'); if(!f) return;
+    const act=f.dataset.act;
+    if(act==='idxClose'){ closeIdxEditor(); return; }
+    if(act==='idxUp'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
+    if(act==='idxDown'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
+    if(act==='idxDel'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); a.splice(i,1); saveIndexTrack(a); renderIdxEditor(); toast('已移除'); return; }
+    if(act==='idxAdd'){
+      const name=$('idxNewName').value.trim();
+      if(!name){ toast('请填写指数名称'); return; }
+      const color=$('idxNewColor').value.trim()||'#4CAF50';
+      const label=$('idxNewLabel').value.trim();
+      const val=$('idxNewVal').value.trim();
+      const note=$('idxNewNote').value.trim();
+      const rows=[];
+      if(label||val) rows.push({label: label||'数值', val: val});
+      const a=loadIndexTrack();
+      a.push({name, icon:'circle', color, rows, level:'custom', note});
+      saveIndexTrack(a);
+      $('idxNewName').value=''; $('idxNewLabel').value=''; $('idxNewVal').value=''; $('idxNewNote').value='';
+      renderIdxEditor(); toast('已新增「'+name+'」');
+      return;
+    }
+  });
 
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
   $('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') handleSearchInput($('globalSearch').value); });
@@ -1954,6 +2046,8 @@ function bindEvents(){
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
       if(act==='openStockTabEditor'){ openStockTabEditor(); return; }
       if(act==='stockTabClose'){ closeStockTabEditor(); return; }
+      if(act==='idx-settings'){ openIdxEditor(); return; }
+      if(act==='idxClose'){ closeIdxEditor(); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', ()=>{ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); }); return; }
