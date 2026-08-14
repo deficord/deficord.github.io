@@ -740,6 +740,7 @@ function ensureCustomPage(id){
 
 /* ============== 导航 ============== */
 function navigate(page){
+  disarmStockAutoRefresh();
   if(page.indexOf('custom_')===0) ensureCustomPage(page.slice(7));
   const isSys = MODULES[page] || page.indexOf('custom_')===0 || page==='admin';
   if(!isSys) page='knowledge-base';
@@ -1136,13 +1137,24 @@ function renderHoldings(body){
   if(arr.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
   arr.forEach((h,i)=>{
     let q={}, up=false, down=false, gain=null, updTime='待刷新', pct=null, priceTxt='';
+    let marketValueTxt='--', costTxt='--', profitTxt='', sharesTxt='--';
     if(isStock){
       const sq = stockQuotes[normCodeStr(h.code)] || {};
       const price = (sq.price!=null)?Number(sq.price):null;
       const pre = (sq.preClose!=null)?Number(sq.preClose):null;
       pct = (price!=null && pre)? (price/pre-1)*100 : null;
       up = pct>0; down = pct<0;
-      gain = (pct!=null && h.amount!=null)? h.amount*pct/100 : null;
+      const shares = (h.shares!=null)? Number(h.shares):null;
+      const costPx = (h.costPx!=null)? Number(h.costPx):null;
+      sharesTxt = (shares!=null)? esc(shares) : '待填写';
+      costTxt = (costPx!=null)? costPx.toFixed(2) : '待填写';
+      if(shares!=null && price!=null){
+        const mv = shares*price;
+        marketValueTxt = mv.toFixed(2) + ' <span class="tag">实时</span>';
+        if(costPx!=null){ const profit=(price-costPx)*shares; profitTxt = (profit>0?'+':'')+profit.toFixed(2)+'（'+((profit/(costPx*shares))*100).toFixed(2)+'%）'; }
+      } else if(shares!=null){
+        marketValueTxt = '待刷新';
+      }
       updTime = (price!=null)? '今日' : '待刷新';
       priceTxt = (price!=null)? price.toFixed(2) : '';
       q = sq;
@@ -1157,13 +1169,23 @@ function renderHoldings(body){
     html += '<div class="card" id="card_'+currentPage+'_'+i+'"><h4>'+esc(h.name||'')+' <span class="tag">'+esc(typeLabel(h.type))+'</span></h4>';
     html += '<div class="row"><span class="k">代码</span>'+esc(h.code||'--')+'</div>';
     if(isStock && h.sector){ html += '<div class="row"><span class="k">所属板块</span>'+esc(h.sector)+'</div>'; }
-    html += '<div class="row"><span class="k">市值</span>'+(h.amount!=null?esc(h.amount):'--')+'</div>';
-    html += '<div class="row"><span class="k">成本</span>'+(h.cost!=null?esc(h.cost):'--')+'</div>';
-    if(isStock && priceTxt){ html += '<div class="row"><span class="k">现价</span>'+priceTxt+'</div>'; }
+    if(isStock){
+      html += '<div class="row"><span class="k">持股数量</span>'+sharesTxt+'</div>';
+      html += '<div class="row"><span class="k">成本价</span>'+costTxt+'</div>';
+      if(priceTxt){ html += '<div class="row"><span class="k">现价</span>'+priceTxt+'</div>'; }
+      html += '<div class="row"><span class="k">市值</span>'+marketValueTxt+'</div>';
+      if(profitTxt){ const pp=(profitTxt.indexOf('+')===0); html += '<div class="row"><span class="k">持仓盈亏</span><span class="'+(pp?'up':'down')+'">'+profitTxt+'</span></div>'; }
+    } else {
+      html += '<div class="row"><span class="k">市值</span>'+(h.amount!=null?esc(h.amount):'--')+'</div>';
+      html += '<div class="row"><span class="k">成本</span>'+(h.cost!=null?esc(h.cost):'--')+'</div>';
+    }
+    if(isStock && (h.shares==null)){
+      html += '<div class="row"><span class="k" style="color:#c0392b">提示</span><span style="color:#c0392b">旧数据，请点「编辑」补填持股数量与成本价</span></div>';
+    }
     if(up||down){
       html += '<div class="row"><span class="k">今日涨跌</span><span class="'+(up?'up':(down?'down':''))+'">'+(pct>0?'+':'')+(pct!=null?pct.toFixed(2):'')+'%</span></div>';
       if(gain!=null) html += '<div class="row"><span class="k">今日收益</span><span class="'+(up?'up':(down?'down':''))+'">'+(gain>0?'+':'')+gain.toFixed(2)+'</span></div>';
-    } else { html += '<div class="row"><span class="k">涨跌</span>待刷新</div>'; }
+    } else if(!isStock){ html += '<div class="row"><span class="k">涨跌</span>待刷新</div>'; }
     if(!isStock && h.dca && h.dca.enabled){ html += '<div class="row"><span class="k">定投</span>每日 '+esc(h.dca.daily)+' · 累计 '+esc(h.dca.acc||0)+'</div>'; }
     html += '<div class="card-foot"><span class="upd">更新：'+updTime+'</span><span class="actions">';
     if(!isStock) html += '<button class="pill secondary" data-act="dca" data-idx="'+i+'">定投</button>';
@@ -1177,6 +1199,7 @@ function renderHoldings(body){
     if(isStock) refreshStockQuotesFor(codes);
     else liveQuotes();
   }
+  if(isStock) armStockAutoRefresh();
 }
 
 /* ============== 指数跟踪 ============== */
@@ -1580,13 +1603,18 @@ function openHoldingForm(idx){
     '<div class="form-field"><label>'+(isStock?'股票代码(6位)':'基金代码(6位)')+'</label><input id="fi_code" type="text" value="'+esc(h.code)+'"></div>';
   if(isStock){
     fields += '<div class="form-field"><label>所属板块</label><input id="fi_sector" type="text" value="'+esc(h.sector||'')+'"></div>';
+    const shares = (h.shares!=null)? h.shares : (h.amount!=null? h.amount : '');
+    const costPx = (h.costPx!=null)? h.costPx : (h.cost!=null? h.cost : '');
+    fields += '<div class="form-field"><label>持股数量(股)</label><input id="fi_shares" type="number" value="'+esc(shares)+'" placeholder="如 1000"></div>';
+    fields += '<div class="form-field"><label>成本价(元/股)</label><input id="fi_cost" type="number" value="'+esc(costPx)+'" placeholder="如 12.50"></div>';
+    fields += '<p class="hint" style="margin:2px 0 0">市值将按「持股数量 × 实时现价」自动计算，无需手动填。</p>';
   }
   if(!isStock){
     fields += '<div class="form-field"><label>类型</label><select id="fi_type">'+typeOpts+'</select></div>';
+    fields +=
+      '<div class="form-field"><label>市值</label><input id="fi_amount" type="number" value="'+esc(h.amount!=null?h.amount:'')+'"></div>'+
+      '<div class="form-field"><label>成本</label><input id="fi_cost" type="number" value="'+esc(h.cost!=null?h.cost:'')+'"></div>';
   }
-  fields +=
-    '<div class="form-field"><label>市值</label><input id="fi_amount" type="number" value="'+esc(h.amount!=null?h.amount:'')+'"></div>'+
-    '<div class="form-field"><label>成本</label><input id="fi_cost" type="number" value="'+esc(h.cost!=null?h.cost:'')+'"></div>';
   if(!isStock){
     fields += '<div class="form-field"><label>定投每日金额(0=不开启)</label><input id="fi_dca" type="number" value="'+esc((h.dca&&h.dca.daily)||0)+'"></div>';
   }
@@ -1598,22 +1626,26 @@ function saveHoldingForm(){
   const code = $('fi_code').value.trim();
   if(!name || !code){ toast('名称与代码必填'); return; }
   const type = $('fi_type')? $('fi_type').value : 'stock';
-  const amount = Number($('fi_amount').value)||0;
-  const cost = Number($('fi_cost').value)||0;
   const page = (formCtx && formCtx.page) || currentPage;
   const m = MODULES[page] || {};
   const key = m.key || 'wb_holdings';
   const isStock = (m.source==='stock');
-  const sector = isStock ? (($('fi_sector')?$('fi_sector').value:'').trim()) : '';
   const arr = loadData(key, []);
   const prev = (formCtx.idx!=null)?arr[formCtx.idx]:null;
-  let dca = {enabled:false, daily:0, lastDate:'', acc:0};
-  if(!isStock){
+  let obj;
+  if(isStock){
+    const shares = Number($('fi_shares').value)||0;
+    const costPx = Number($('fi_cost').value)||0;
+    const sector = (($('fi_sector')?$('fi_sector').value:'').trim());
+    obj = {name,code,type:'stock',shares,costPx,sector};
+  } else {
+    const amount = Number($('fi_amount').value)||0;
+    const cost = Number($('fi_cost').value)||0;
+    let dca = {enabled:false, daily:0, lastDate:'', acc:0};
     const dcaDaily = Number($('fi_dca').value)||0;
     dca = {enabled:dcaDaily>0, daily:dcaDaily, lastDate:(prev&&prev.dca&&prev.dca.lastDate)||'', acc:(prev&&prev.dca&&prev.dca.acc)||0};
+    obj = {name,code,type,amount,cost,dca};
   }
-  const obj = {name,code,type,amount,cost,dca};
-  if(isStock) obj.sector = sector;
   if(formCtx.idx==null) arr.push(obj); else arr[formCtx.idx]=obj;
   saveData(key, arr);
   closeForm(); renderCurrent(); toast('已保存');
@@ -1850,6 +1882,29 @@ async function refreshStockQuotesFor(codes){
     codes.forEach(c=>{ const nc=normCodeStr(c); const q=res[c]||null; if(q){ stockQuotes[nc]=q; got++; } });
     if(got) renderCurrent();
   }catch(e){}
+}
+/* ===== 股票台账：交易时段定时自动刷新 ===== */
+let stockAutoTimer = null;
+function isTradingTime(){
+  const now = new Date();
+  const day = now.getDay();
+  if(day===0 || day===6) return false;
+  const h = now.getHours(), m = now.getMinutes();
+  const t = h*60 + m;
+  return (t>= 9*60+30 && t<= 11*60+30) || (t>= 13*60 && t<= 15*60);
+}
+function armStockAutoRefresh(){
+  disarmStockAutoRefresh();
+  stockAutoTimer = setInterval(()=>{
+    if(currentPage!=='stock-account'){ disarmStockAutoRefresh(); return; }
+    if(!isTradingTime()) return;
+    const arr = loadData('wb_stock_holdings', []);
+    const codes = arr.filter(h=>h.code).map(h=>String(h.code));
+    if(codes.length) refreshStockQuotesFor(codes);
+  }, 60000);
+}
+function disarmStockAutoRefresh(){
+  if(stockAutoTimer){ clearInterval(stockAutoTimer); stockAutoTimer=null; }
 }
 
 /* ============== 定投 ============== */
@@ -2198,6 +2253,7 @@ function bindEvents(){
 
   // hash 导航(快捷指令/deeplink)
   window.addEventListener('hashchange', ()=>{ const h=location.hash.replace('#',''); if(h && (MODULES[h]||h.indexOf('custom_')===0||h==='admin')) navigate(h); });
+  window.addEventListener('beforeunload', ()=>{ disarmStockAutoRefresh(); });
 }
 
 /* ============== 初始化 ============== */
