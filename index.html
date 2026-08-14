@@ -406,7 +406,7 @@
   <!-- 指数跟踪表：指数顺序 / 增删设置弹窗 -->
   <div class="modal-mask" id="idxMask">
     <div class="modal">
-      <h3>⚙ 指数跟踪表 · 设置</h3>
+      <h3>⚙ 指数跟踪数据 · 设置</h3>
       <p class="hint" style="margin-bottom:10px">用 ↑/↓ 调整指数顺序，✕ 移除不需要的指数；下方可新增你要跟踪的指数。</p>
       <div id="idxEditBox"></div>
       <div class="idx-add">
@@ -442,12 +442,12 @@
 /* ============== 配置 ============== */
 const GROUPS = [
   {n:1, title:'📈 理财研究', items:[
-    {id:'stock-analysis', label:'股票基金分析'},
     {id:'finance-news', label:'理财每日新知'},
-    {id:'asset-account', label:'基金持仓台账'},
+    {id:'stock-analysis', label:'股票基金分析'},
+    {id:'index-track', label:'指数跟踪数据'},
     {id:'stock-account', label:'股票持仓台账'},
-    {id:'index-track', label:'指数跟踪表'},
-    {id:'rebalance', label:'调仓再平衡记录'},
+    {id:'asset-account', label:'基金持仓台账'},
+    {id:'rebalance', label:'调仓平衡记录'},
   ]},
   {n:2, title:'🚀 AI新账号运营', items:[
     {id:'operation-ideas', label:'运营思路&选题素材库'},
@@ -537,8 +537,8 @@ const MODULES = {
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews'},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund'},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock'},
-  'index-track':{type:'indexTrack', title:'指数跟踪表', key:'indexTrack'},
-  'rebalance':{type:'list', title:'调仓再平衡记录', key:'wb_rebalance', fields:[
+  'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack'},
+  'rebalance':{type:'list', title:'调仓平衡记录', key:'wb_rebalance', fields:[
     {k:'date',l:'时间',t:'date',title:true},{k:'target',l:'标的',t:'text'},
     {k:'action',l:'动作',t:'select',options:['加','减','调']},{k:'amount',l:'金额',t:'number'},
     {k:'reason',l:'理由',t:'textarea'},
@@ -564,8 +564,8 @@ const KB_CATS = ['理财','养生','AI','运营'];
 const CHECKIN_ITEMS = ['睡眠','运动','饮水','食疗','体感'];
 
 const ALIASES = {
-  '工作台首页':'overview','短视频脚本':'script-lib','理财台账':'asset-account','基金持仓台账':'asset-account','股票持仓台账':'stock-account','指数跟踪表':'index-track',
-  '调仓记录':'rebalance','今日养生打卡':'health-checkin','打卡历史汇总':'checkin-history',
+  '工作台首页':'overview','短视频脚本':'script-lib','理财台账':'asset-account','基金持仓台账':'asset-account','股票持仓台账':'stock-account','指数跟踪表':'index-track','指数跟踪数据':'index-track',
+  '调仓记录':'rebalance','调仓再平衡记录':'rebalance','调仓平衡记录':'rebalance','今日养生打卡':'health-checkin','打卡历史汇总':'checkin-history',
   '运动规划':'health-checkin','今日待办':'todo-list','MCP开关-开':'mcpOn','MCP开关-关':'mcpOff','重置记忆':'reset'
 };
 const QUICK_JUMP = {
