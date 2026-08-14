@@ -121,6 +121,22 @@
   .admin-sys-row .ad-tools{display:flex;gap:4px;flex-shrink:0;}
   .admin-sys-row .ad-tools button{background:none;border:1px solid var(--border);border-radius:4px;padding:3px 9px;cursor:pointer;font-size:12px;color:#374151;white-space:nowrap;}
   .admin-sys-row .ad-tools button:hover{background:#F3F4F6;}
+  /* 后台分组（大类）层级 */
+  .admin-cats{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;max-height:72vh;overflow-y:auto;}
+  .admin-cat{border-bottom:1px solid #F3F4F6;}
+  .admin-cat:last-child{border-bottom:none;}
+  .admin-cat.hidden{opacity:.6;background:#F9FAFB;}
+  .admin-cat-h{display:flex;align-items:center;gap:8px;padding:9px 12px;background:#F3F4F6;border-bottom:1px solid #F3F4F6;}
+  .admin-cat-h .cat-title{flex:1;font-weight:700;font-size:13px;color:#111827;border:1px solid transparent;background:transparent;border-radius:6px;padding:4px 8px;}
+  .admin-cat-h .cat-title:hover,.admin-cat-h .cat-title:focus{border-color:var(--accent);background:#fff;outline:none;}
+  .admin-cat-h .cat-title-static{flex:1;font-weight:700;font-size:13px;color:#111827;}
+  .admin-cat-h .ad-tools{display:flex;gap:2px;}
+  .admin-cat-h .ad-tools button{background:none;border:1px solid var(--border);border-radius:4px;width:24px;height:24px;cursor:pointer;font-size:11px;color:#6B7280;}
+  .admin-cat-h .ad-tools button:hover{background:#E5E7EB;}
+  .admin-cat-items{padding:2px 0;}
+  .admin-cat-items .admin-row{margin:0 0 0 18px;border-bottom:1px solid #F3F4F6;}
+  .admin-cat-items .admin-row:last-child{border-bottom:none;}
+  .admin-cat-items .admin-row.sel{border-left:3px solid var(--accent);}
   .switch-row{display:flex;align-items:center;justify-content:space-between;background:#F9FAFB;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
   .hint{font-size:11px;color:#9CA3AF;line-height:1.5;margin-top:6px;}
   .sw{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;}
@@ -392,7 +408,7 @@ const MODULES = {
   'todo-list':{type:'todo', title:'今日待办清单', key:'wb_todo'},
 };
 
-const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_custom_modules'];
+const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_custom_modules','wb_group_overrides','wb_group_order'];
 
 const TYPE_LABEL = {gold:'黄金', nasdaq:'纳斯达克100', dividend:'红利低波', qdii:'标普500跟踪摩根', other:'其它基金'};
 const STATUS_LABEL = {pending:'待定', hold:'暂缓', done:'已完成'};
@@ -461,6 +477,18 @@ function modMove(id, dir){
   [order[i],order[j]]=[order[j],order[i]]; saveOrder(order); buildSidebar(); renderAdmin($('body-admin'));
 }
 
+/* 大类（分组）改名 / 隐藏 / 排序 */
+const GROUP_OVERRIDE_STORE = 'wb_group_overrides';
+const GROUP_ORDER_STORE = 'wb_group_order';
+function loadGroupOverrides(){ return loadData(GROUP_OVERRIDE_STORE, {}); }
+function saveGroupOverrides(o){ saveData(GROUP_OVERRIDE_STORE, o); }
+function groupTitle(n){ const o=loadGroupOverrides()[n]; if(o&&o.title) return o.title; const g=GROUPS.find(x=>x.n===n); return g?g.title:('大类'+n); }
+function isGroupHidden(n){ const o=loadGroupOverrides()[n]; return !!(o&&o.hidden); }
+function loadGroupOrder(){ let o=loadData(GROUP_ORDER_STORE,null); if(!o){ o=GROUPS.map(g=>g.n); saveData(GROUP_ORDER_STORE,o);} return o; }
+function saveGroupOrder(a){ saveData(GROUP_ORDER_STORE, a); }
+function groupMove(n, dir){ const o=loadGroupOrder(); const i=o.indexOf(n); const j=i+dir; if(i<0||j<0||j>=o.length) return; [o[i],o[j]]=[o[j],o[i]]; saveGroupOrder(o); }
+
+
 /* ============== 状态 ============== */
 let adminSel = null;
 let remoteData = {};
@@ -497,11 +525,14 @@ function buildSidebar(){
   let html = '<div class="nav-brand"><svg class="bd" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="28" height="28" rx="8" fill="#2563EB"/><path d="M8 22 L14 15 L19 18 L25 9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="9" r="3" fill="#fff"/></svg>GLUCK 工作台</div>';
   html += '<div class="nav-scroll">';
   html += '<div class="sub-item nav-top" data-page="overview" onclick="navigate(\'overview\')">📊 数据概览</div>';
-  GROUPS.forEach(g=>{
+  const gOrder = loadGroupOrder();
+  gOrder.forEach(n=>{
+    const g = GROUPS.find(x=>x.n===n); if(!g) return;
+    if(isGroupHidden(n)) return;
     const ids = g.items.map(it=>it.id).filter(id=>!isHidden(id));
     ids.sort((a,b)=> order.indexOf(a)-order.indexOf(b));
     if(!ids.length) return;
-    html += '<div class="group-title" onclick="toggleGroup('+g.n+',this)"><span class="arrow">▼</span>'+esc(g.title)+'</div><div class="group-items">';
+    html += '<div class="group-title" onclick="toggleGroup('+n+',this)"><span class="arrow">▼</span>'+esc(groupTitle(n))+'</div><div class="group-items">';
     ids.forEach(id=>{ html += '<div class="sub-item" data-page="'+id+'" onclick="navigate(\''+id+'\')">'+esc(modTitle(id))+'</div>'; });
     html += '</div>';
   });
@@ -646,23 +677,44 @@ function renderCmItem(m, it, i){
   return '<div class="card theme-'+m.theme+'">'+inner+acts+'</div>';
 }
 
-/* ============== 后台管理（统一模块列表） ============== */
+/* ============== 后台管理（与前台一致的分组层级） ============== */
 function renderAdmin(body){
   const order = loadOrder();
-  if(adminSel==null || order.indexOf(adminSel)<0) adminSel = order.length?order[0]:null;
+  if(adminSel==null || order.indexOf(adminSel)<0) adminSel = order.find(()=>true) || null;
   let html = '<div class="page-head"><h2 class="page-title">⚙ 后台设置 · 模块管理</h2><button class="pill" data-act="cmNew">＋ 新增模块</button></div>';
-  html += '<div class="admin-layout"><div class="admin-list"><div class="admin-list-h">全部模块（共 '+order.length+'，可改名 / 排序 / 隐藏 / 删除）</div>';
-  order.forEach(id=>{
-    const cfg=getModuleConfig(id); if(!cfg) return;
-    const hidden=isHidden(id);
-    const sel=(id===adminSel)?' sel':'';
-    const typeLabel = CM_TYPES[cfg.type]?CM_TYPES[cfg.type].label:(cfg.isCustom?'自定义':'专用');
-    html += '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+id+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+id+'" title="上移">↑</button><button data-act="cmDown" data-id="'+id+'" title="下移">↓</button><button data-act="cmDelMod" data-id="'+id+'" title="'+(hidden?'恢复':'删除/隐藏')+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+id+'" title="打开">↗</button></span></div>';
+  html += '<div class="admin-layout"><div class="admin-cats">';
+  const gOrder = loadGroupOrder();
+  gOrder.forEach(n=>{
+    const g = GROUPS.find(x=>x.n===n); if(!g) return;
+    const go = loadGroupOverrides()[n]||{};
+    const gHidden = go.hidden;
+    html += '<div class="admin-cat'+(gHidden?' hidden':'')+'">';
+    html += '<div class="admin-cat-h"><input class="cat-title" data-n="'+n+'" value="'+esc(groupTitle(n))+'"><span class="ad-tools"><button data-act="catUp" data-n="'+n+'" title="上移大类">↑</button><button data-act="catDown" data-n="'+n+'" title="下移大类">↓</button><button data-act="catHide" data-n="'+n+'" title="'+(gHidden?'恢复显示':'隐藏大类')+'">'+(gHidden?'恢复':'隐藏')+'</button></span></div>';
+    html += '<div class="admin-cat-items">';
+    g.items.forEach(it=>{
+      const id=it.id; const cfg=getModuleConfig(id); if(!cfg) return;
+      const hidden=isHidden(id); const sel=(id===adminSel)?' sel':'';
+      const typeLabel = CM_TYPES[cfg.type]?CM_TYPES[cfg.type].label:(cfg.isCustom?'自定义':'专用');
+      html += '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+id+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+id+'" title="上移">↑</button><button data-act="cmDown" data-id="'+id+'" title="下移">↓</button><button data-act="cmDelMod" data-id="'+id+'" title="'+(hidden?'恢复':'删除')+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+id+'" title="打开">↗</button></span></div>';
+    });
+    html += '</div></div>';
   });
+  const cms = loadCustomModules();
+  if(cms.length){
+    html += '<div class="admin-cat">';
+    html += '<div class="admin-cat-h"><span class="cat-title-static">⚙ 我的模块</span><span class="ad-tools"></span></div>';
+    html += '<div class="admin-cat-items">';
+    cms.forEach(m=>{
+      const pid='custom_'+m.id; const cfg=getModuleConfig(pid); const hidden=isHidden(pid); const sel=(pid===adminSel)?' sel':'';
+      const typeLabel = CM_TYPES[cfg.type]?CM_TYPES[cfg.type].label:'自定义';
+      html += '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+pid+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+pid+'">↑</button><button data-act="cmDown" data-id="'+pid+'">↓</button><button data-act="cmDelMod" data-id="'+pid+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+pid+'">↗</button></span></div>';
+    });
+    html += '</div></div>';
+  }
   html += '</div>';
   const cfg=getModuleConfig(adminSel);
   html += '<div class="admin-edit">';
-  if(!cfg){ html += '<div class="empty">无可编辑模块。</div>'; }
+  if(!cfg){ html += '<div class="empty">从左侧选择模块编辑，或点「＋ 新增模块」。</div>'; }
   else {
     html += '<div class="field"><label>模块标题</label><input id="cmTitle" value="'+esc(cfg.title)+'"></div>';
     const typeMap={};
@@ -671,7 +723,7 @@ function renderAdmin(body){
     html += '<div class="field"><label>模块类型</label><div class="seg" id="cmType"></div><div class="hint">'+(cfg.isCustom?'':'⚠️ 改选通用类型后，该模块改用通用卡片渲染，原专用界面（如持仓计算 / 打卡）不再生效。')+'</div></div>';
     html += '<div class="field"><label>列宽（布局占比）</label><div class="seg" id="cmSpan"></div></div>';
     html += '<div class="field"><label>视觉风格模板</label><div class="seg" id="cmTheme"></div></div>';
-    html += '<div class="field"><label>AI 自动抓取主题</label><textarea id="cmAiTopic">'+esc(cfg.aiTopic||'')+'</textarea><div class="hint">开启下方开关后，发「刷新」时 AI 按此主题联网抓取并填入本模块。</div></div>';
+    html += '<div class="field"><label>AI 自动抓取主题（留空则按模块标题抓取）</label><textarea id="cmAiTopic">'+esc(cfg.aiTopic||'')+'</textarea><div class="hint">开启下方开关后，发「刷新」时 AI 按「'+esc(cfg.aiTopic||cfg.title)+'」联网抓取并填入本模块；改名后抓取主题自动跟随新名称。</div></div>';
     html += '<div class="switch-row"><div><div style="font-size:13px;font-weight:600;">AI 自动抓取</div><div style="font-size:11px;color:#9CA3AF;">纳入刷新任务</div></div><label class="sw"><input type="checkbox" id="cmAiOn" '+(cfg.aiOn?'checked':'')+'><span class="cm-sw"></span></label></div>';
     if(cfg.type==='list'||cfg.type==='cards'||cfg.type==='notes'){
       html += '<div class="field"><label>手动录入内容（可选，AI 抓取会优先显示）</label><div id="cmItems"></div><button class="pill secondary" data-act="cmAddItem" data-id="'+cfg.page+'">＋ 添加一条</button></div>';
@@ -1277,6 +1329,39 @@ async function apiPut(user, repo, content, sha){
     if(r.status===409) return 'conflict'; if(!r.ok) throw new Error((sha?'PUT':'POST')+' '+r.status); return r.json();
   }
 }
+/* 通用文件读写（用于导出模块配置 moduleConfig.json，让刷新时 AI 按改名后的名称抓取） */
+async function apiGetFile(user, repo, path){
+  const p=getProvider(); const token=localStorage.getItem('syncToken');
+  if(p==='github'){ const r=await fetch('https://api.github.com/repos/'+user+'/'+repo+'/contents/'+encodeURIComponent(path), {headers:ghHeaders()}); if(r.status===404) return null; if(!r.ok) throw new Error('GET '+r.status); return r.json(); }
+  const u='https://gitee.com/api/v5/repos/'+user+'/'+repo+'/contents/'+encodeURIComponent(path)+'?access_token='+encodeURIComponent(token)+'&ref=master'; const r=await fetch(u); if(r.status===404) return null; if(!r.ok) throw new Error('GET '+r.status); return r.json();
+}
+async function apiPutFile(user, repo, path, content, sha){
+  const p=getProvider(); const token=localStorage.getItem('syncToken');
+  if(p==='github'){ const r=await fetch('https://api.github.com/repos/'+user+'/'+repo+'/contents/'+encodeURIComponent(path), {method:'PUT', headers:ghHeaders(), body:JSON.stringify({message:'cfg '+new Date().toISOString(), content, sha: sha||undefined})}); if(r.status===409) return 'conflict'; if(!r.ok) throw new Error('PUT '+r.status); return r.json(); }
+  const body={access_token:token, content, message:'cfg', branch:'master'}; if(sha) body.sha=sha; const r=await fetch('https://gitee.com/api/v5/repos/'+user+'/'+repo+'/contents/'+encodeURIComponent(path), {method: sha?'PUT':'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)}); if(r.status===409) return 'conflict'; if(!r.ok) throw new Error('PUT/POST '+r.status); return r.json();
+}
+function buildModuleConfig(){
+  const gOrder=loadGroupOrder();
+  const groups = gOrder.map(n=>{ const g=GROUPS.find(x=>x.n===n); const go=loadGroupOverrides()[n]||{}; return {n, title: groupTitle(n), hidden: !!go.hidden, items: g?g.items.map(it=>it.id):[]}; });
+  const modules={};
+  const allIds=[];
+  GROUPS.forEach(g=>g.items.forEach(it=>allIds.push(it.id)));
+  loadCustomModules().forEach(m=>allIds.push('custom_'+m.id));
+  allIds.forEach(id=>{ const cfg=getModuleConfig(id); if(cfg) modules[id]={title:cfg.title, type:cfg.type, span:cfg.span, theme:cfg.theme, aiTopic:cfg.aiTopic, aiOn:cfg.aiOn, items:cfg.items}; });
+  return {groups, modules, exportedAt:new Date().toISOString()};
+}
+async function pushModuleConfig(){
+  const user=localStorage.getItem('syncUser'), token=localStorage.getItem('syncToken');
+  if(!user||!token) return false;
+  try{
+    const repo=getRepo(user);
+    const ex=await apiGetFile(user, repo, 'moduleConfig.json');
+    const content=b64encode(JSON.stringify(buildModuleConfig(), null, 2));
+    let res=await apiPutFile(user, repo, 'moduleConfig.json', content, ex?ex.sha:null);
+    if(res==='conflict'){ const ex2=await apiGetFile(user, repo, 'moduleConfig.json'); res=await apiPutFile(user, repo, 'moduleConfig.json', content, ex2?ex2.sha:null); }
+    return true;
+  }catch(e){ return false; }
+}
 async function doUpload(){
   if(_isSyncing) return; _isSyncing=true;
   try{
@@ -1395,20 +1480,23 @@ function bindEvents(){
       if(act==='airefresh'){ loadRemoteData(); return; }
       if(act==='ovrefresh'){ loadRemoteData(); return; }
       if(act==='goto'){ navigate(page); return; }
-      if(act==='cmNew'){ const m={id:genCid(), title:'新模块', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); toast('已新增模块'); return; }
+      if(act==='cmNew'){ const m={id:genCid(), title:'新模块', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增模块'); return; }
       if(act==='cmSel'){ adminSel=f.dataset.id; renderAdmin($('body-admin')); return; }
-      if(act==='cmUp'){ const ord=loadOrder(); const i=ord.indexOf(f.dataset.id); if(i>0){ [ord[i],ord[i-1]]=[ord[i-1],ord[i]]; saveOrder(ord); buildSidebar(); renderAdmin($('body-admin')); } return; }
-      if(act==='cmDown'){ const ord=loadOrder(); const i=ord.indexOf(f.dataset.id); if(i>=0&&i<ord.length-1){ [ord[i],ord[i+1]]=[ord[i+1],ord[i]]; saveOrder(ord); buildSidebar(); renderAdmin($('body-admin')); } return; }
+      if(act==='catUp'){ groupMove(Number(f.dataset.n), -1); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); return; }
+      if(act==='catDown'){ groupMove(Number(f.dataset.n), 1); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); return; }
+      if(act==='catHide'){ const n=Number(f.dataset.n); const o=loadGroupOverrides(); o[n]=o[n]||{}; o[n].hidden=!o[n].hidden; saveGroupOverrides(o); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); return; }
+      if(act==='cmUp'){ modMove(f.dataset.id, -1); pushModuleConfig().catch(()=>{}); return; }
+      if(act==='cmDown'){ modMove(f.dataset.id, 1); pushModuleConfig().catch(()=>{}); return; }
       if(act==='cmDelMod'){
         const id=f.dataset.id;
         if(id.indexOf('custom_')===0){
-          if(confirm('确定删除该模块？删除后无法恢复。')){ const raw=id.slice(7); saveCustomModules(loadCustomModules().filter(x=>x.id!==raw)); saveOrder(loadOrder().filter(x=>x!==id)); if(adminSel===id) adminSel=loadOrder()[0]||null; buildSidebar(); renderAdmin($('body-admin')); }
+          if(confirm('确定删除该模块？删除后无法恢复。')){ const raw=id.slice(7); saveCustomModules(loadCustomModules().filter(x=>x.id!==raw)); saveOrder(loadOrder().filter(x=>x!==id)); if(adminSel===id) adminSel=loadOrder()[0]||null; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); }
         } else {
-          const o=loadOverrides(); o[id]=o[id]||{}; o[id].hidden=!o[id].hidden; saveOverrides(o); buildSidebar(); renderAdmin($('body-admin'));
+          const o=loadOverrides(); o[id]=o[id]||{}; o[id].hidden=!o[id].hidden; saveOverrides(o); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{});
         }
         return;
       }
-      if(act==='cmSave'){ const cfg=getModuleConfig(adminSel); if(cfg){ cfg.title=$('cmTitle').value; cfg.aiTopic=$('cmAiTopic').value; cfg.aiOn=$('cmAiOn').checked; saveModuleConfig(cfg); buildSidebar(); renderAdmin($('body-admin')); toast('已保存'); } return; }
+      if(act==='cmSave'){ const cfg=getModuleConfig(adminSel); if(cfg){ cfg.title=$('cmTitle').value; cfg.aiTopic=$('cmAiTopic').value; cfg.aiOn=$('cmAiOn').checked; saveModuleConfig(cfg); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已保存'); } return; }
       if(act==='cmOpen'){ navigate(f.dataset.id); return; }
       if(act==='cmAddItem'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ cfg.items=cfg.items||[]; cfg.items.push({title:'',text:''}); saveModuleConfig(cfg); renderAdmin($('body-admin')); } return; }
       if(act==='cmDelItem'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ cfg.items.splice(Number(f.dataset.i),1); saveModuleConfig(cfg); renderAdmin($('body-admin')); } return; }
@@ -1437,11 +1525,17 @@ function bindEvents(){
   });
   // 自定义模块手动录入（实时保存）
   $('content').addEventListener('input', e=>{
+    const ct = e.target.closest('.cat-title');
+    if(ct){ const n=Number(ct.dataset.n); const o=loadGroupOverrides(); o[n]=o[n]||{}; o[n].title=ct.value; saveGroupOverrides(o); buildSidebar(); return; }
     const el = e.target.closest('[data-k]');
     if(el){
       const cfg=getModuleConfig(el.dataset.id);
       if(cfg){ const i=Number(el.dataset.i); cfg.items=cfg.items||[]; cfg.items[i]=cfg.items[i]||{}; cfg.items[i][el.dataset.k]=el.value; saveModuleConfig(cfg); }
     }
+  });
+  $('content').addEventListener('change', e=>{
+    const ct = e.target.closest('.cat-title');
+    if(ct){ pushModuleConfig().catch(()=>{}); } // 大类改名后导出配置（失焦时一次）
   });
 
   // 搜索结果点击 → 跳转 + 定位
