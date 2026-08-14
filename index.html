@@ -142,6 +142,26 @@
   .add-sub:hover{background:#EFF6FF;border-color:#2563EB;}
   .switch-row{display:flex;align-items:center;justify-content:space-between;background:#F9FAFB;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
   .hint{font-size:11px;color:#9CA3AF;line-height:1.5;margin-top:6px;}
+  /* 编辑面板：分卡区块样式（样式1） */
+  .edit-card{background:#FBFCFE;border:1px solid #E5E9F2;border-radius:10px;padding:14px 14px 4px;margin-bottom:14px;}
+  .edit-card-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#0F172A;margin:-2px 0 12px;padding-bottom:8px;border-bottom:1px solid #EEF1F7;}
+  .edit-card-h .ic{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:var(--accent);color:#fff;font-size:12px;flex-shrink:0;}
+  .edit-card .field{margin-bottom:14px;}
+  .edit-card .switch-row{margin-bottom:14px;}
+
+  /* 删除/隐藏确认弹窗 */
+  .confirm-mask{position:fixed;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(2px);}
+  .confirm-mask.show{display:flex;animation:cfade .15s ease;}
+  @keyframes cfade{from{opacity:0}to{opacity:1}}
+  .confirm-box{background:#fff;border-radius:16px;padding:26px 24px 20px;width:330px;max-width:88vw;box-shadow:0 24px 60px rgba(0,0,0,.32);text-align:center;animation:cpop .18s ease;}
+  @keyframes cpop{from{transform:translateY(10px) scale(.96);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .confirm-ico{width:46px;height:46px;border-radius:50%;background:#FEF3C7;color:#D97706;font-size:26px;font-weight:700;line-height:46px;margin:0 auto 14px;}
+  .confirm-msg{font-size:14.5px;color:#111827;line-height:1.6;margin-bottom:20px;font-weight:500;}
+  .confirm-btns{display:flex;gap:12px;}
+  .confirm-btns button{flex:1;padding:10px 0;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;border:1px solid #D1D5DB;background:#fff;color:#374151;transition:.15s;}
+  .confirm-yes{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .confirm-no:hover{background:#F3F4F6;}
+  .confirm-yes:hover{filter:brightness(.95);}
   .sw{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;}
   .sw input{opacity:0;width:0;height:0;}
   .cm-sw{position:absolute;inset:0;background:#ccc;border-radius:22px;transition:.2s;}
@@ -301,6 +321,18 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- 删除/隐藏模块 确认弹窗（自定义 是/否） -->
+  <div id="confirmMask" class="confirm-mask">
+    <div class="confirm-box">
+      <div class="confirm-ico">!</div>
+      <div class="confirm-msg" id="confirmMsg"></div>
+      <div class="confirm-btns">
+        <button class="confirm-no" id="confirmNo">否</button>
+        <button class="confirm-yes" id="confirmYes">是</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 /* ============== 配置 ============== */
@@ -507,6 +539,20 @@ function $(id){ return document.getElementById(id); }
 function loadData(key, def){ try{ const v = localStorage.getItem(key); if(v==null) return def; const p = JSON.parse(v); return p==null?def:p; }catch(e){ return def; } }
 function saveData(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200); }
+/* 自定义确认弹窗（是/否），返回 Promise<boolean> */
+function confirmDialog(msg, yesText, noText){
+  return new Promise(resolve=>{
+    const mask=$('confirmMask');
+    $('confirmMsg').textContent=msg;
+    $('confirmYes').textContent=yesText||'是';
+    $('confirmNo').textContent=noText||'否';
+    const done=v=>{ mask.classList.remove('show'); $('confirmYes').onclick=null; $('confirmNo').onclick=null; mask.onclick=null; resolve(v); };
+    $('confirmYes').onclick=()=>done(true);
+    $('confirmNo').onclick=()=>done(false);
+    mask.onclick=e=>{ if(e.target===mask) done(false); };
+    mask.classList.add('show');
+  });
+}
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function dateDiff(a,b){ if(!a||!b) return 0; const d1=new Date(a), d2=new Date(b); return Math.round((d2-d1)/86400000); }
 
@@ -725,17 +771,29 @@ function renderAdmin(body){
   html += '<div class="admin-edit">';
   if(!cfg){ html += '<div class="empty">从左侧选择模块编辑，或点「＋ 新增模块」。</div>'; }
   else {
+    // 卡片：基础信息
+    html += '<div class="edit-card"><div class="edit-card-h"><span class="ic">①</span>基础信息</div>';
     html += '<div class="field"><label>模块标题</label><input id="cmTitle" value="'+esc(cfg.title)+'"></div>';
     const typeMap={};
     if(!cfg.isCustom && cfg.nativeType) typeMap[cfg.nativeType]={label:'专用（保留原功能）'};
     Object.keys(CM_TYPES).forEach(k=>typeMap[k]=CM_TYPES[k]);
     html += '<div class="field"><label>模块类型</label><div class="seg" id="cmType"></div><div class="hint">'+(cfg.isCustom?'':'⚠️ 改选通用类型后，该模块改用通用卡片渲染，原专用界面（如持仓计算 / 打卡）不再生效。')+'</div></div>';
+    html += '</div>';
+    // 卡片：外观布局
+    html += '<div class="edit-card"><div class="edit-card-h"><span class="ic">②</span>外观布局</div>';
     html += '<div class="field"><label>列宽（布局占比）</label><div class="seg" id="cmSpan"></div></div>';
     html += '<div class="field"><label>视觉风格模板</label><div class="seg" id="cmTheme"></div></div>';
-    html += '<div class="field"><label>AI 自动抓取主题（留空则按模块标题抓取）</label><textarea id="cmAiTopic">'+esc(cfg.aiTopic||'')+'</textarea><div class="hint">开启下方开关后，发「刷新」时 AI 按「'+esc(cfg.aiTopic||cfg.title)+'」联网抓取并填入本模块；改名后抓取主题自动跟随新名称。</div></div>';
+    html += '</div>';
+    // 卡片：AI 自动抓取
+    html += '<div class="edit-card"><div class="edit-card-h"><span class="ic">③</span>AI 自动抓取</div>';
+    html += '<div class="field"><label>抓取主题（留空则按模块标题抓取）</label><textarea id="cmAiTopic">'+esc(cfg.aiTopic||'')+'</textarea><div class="hint">开启下方开关后，发「刷新」时 AI 按「'+esc(cfg.aiTopic||cfg.title)+'」联网抓取并填入本模块；改名后抓取主题自动跟随新名称。</div></div>';
     html += '<div class="switch-row"><div><div style="font-size:13px;font-weight:600;">AI 自动抓取</div><div style="font-size:11px;color:#9CA3AF;">纳入刷新任务</div></div><label class="sw"><input type="checkbox" id="cmAiOn" '+(cfg.aiOn?'checked':'')+'><span class="cm-sw"></span></label></div>';
+    html += '</div>';
+    // 卡片：内容录入
     if(cfg.type==='list'||cfg.type==='cards'||cfg.type==='notes'){
+      html += '<div class="edit-card"><div class="edit-card-h"><span class="ic">④</span>内容录入</div>';
       html += '<div class="field"><label>手动录入内容（可选，AI 抓取会优先显示）</label><div id="cmItems"></div><button class="pill secondary" data-act="cmAddItem" data-id="'+cfg.page+'">＋ 添加一条</button></div>';
+      html += '</div>';
     }
     html += '<div class="admin-actions"><button class="pill" data-act="cmSave">保存修改</button><button class="pill secondary" data-act="cmOpen" data-id="'+cfg.page+'">打开该模块</button></div>';
   }
@@ -1500,9 +1558,16 @@ function bindEvents(){
       if(act==='cmDelMod'){
         const id=f.dataset.id;
         if(id.indexOf('custom_')===0){
-          if(confirm('确定删除该模块？删除后无法恢复。')){ const raw=id.slice(7); saveCustomModules(loadCustomModules().filter(x=>x.id!==raw)); saveOrder(loadOrder().filter(x=>x!==id)); if(adminSel===id) adminSel=loadOrder()[0]||null; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); }
+          confirmDialog('确定要删除该模块吗？删除后无法恢复。', '删除', '否').then(ok=>{
+            if(!ok) return;
+            const raw=id.slice(7); saveCustomModules(loadCustomModules().filter(x=>x.id!==raw)); saveOrder(loadOrder().filter(x=>x!==id)); if(adminSel===id) adminSel=loadOrder()[0]||null; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{});
+          });
         } else {
-          const o=loadOverrides(); o[id]=o[id]||{}; o[id].hidden=!o[id].hidden; saveOverrides(o); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{});
+          const willHide = !isHidden(id);
+          confirmDialog(willHide?'确定要隐藏该模块吗？可在后台随时恢复显示。':'确定要恢复显示该模块吗？', willHide?'隐藏':'恢复', '否').then(ok=>{
+            if(!ok) return;
+            const o=loadOverrides(); o[id]=o[id]||{}; o[id].hidden=!o[id].hidden; saveOverrides(o); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{});
+          });
         }
         return;
       }
