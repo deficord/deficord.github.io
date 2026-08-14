@@ -1128,7 +1128,7 @@ async function fetchQuote(item){
   const candidates=[c.market+'.'+c.code, (c.market==='1'?'0':'1')+'.'+c.code];
   for(const secid of candidates){
     try{
-      const d=await emJsonp('https://push2.eastmoney.com/api/qt/stock/get?secid='+secid+'&fields=f12,f13,f14,f43,f59,f60,f116,f117,f162,f167,f168,f169,f170,f171,f175,f177');
+      const d=await emJsonp('https://push2.eastmoney.com/api/qt/stock/get?secid='+secid+'&fltt=2&fields=f12,f13,f14,f43,f59,f60,f116,f117,f162,f167,f168,f169,f170,f171,f175,f177');
       const q=d&&d.data;
       if(q&&q.f58){ return {secid, name:q.f58, price:q.f43, preClose:q.f60, amount:q.f59, circCap:q.f116, totalCap:q.f117, peTtm:q.f162, pb:q.f167, turnover:q.f168, dy:q.f169, amp:q.f170, volRatio:q.f171, weak:q.f175}; }
     }catch(e){}
