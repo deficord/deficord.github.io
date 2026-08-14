@@ -383,6 +383,19 @@
     </div>
   </div>
 
+  <!-- 股票基金分析：六大 Tab 名称/顺序设置弹窗 -->
+  <div class="modal-mask" id="stockTabMask">
+    <div class="modal">
+      <h3>⚙ 六大功能 Tab 设置</h3>
+      <p class="hint" style="margin-bottom:10px">修改每个 Tab 的名称、用 ↑/↓ 调整顺序（仅改显示，功能不变）。点「保存」立即生效。</p>
+      <div id="stockTabEditBox"></div>
+      <div class="modal-actions">
+        <button class="pill secondary" data-act="stockTabClose">取消</button>
+        <button class="pill" data-act="stockTabsSave" data-box="stockTabEditBox">保存</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
 
   <!-- 删除/隐藏模块 确认弹窗（自定义 是/否） -->
@@ -866,7 +879,7 @@ function renderAdmin(body){
     if(adminSel==='stock-analysis'){
       html += '<div class="edit-card"><div class="edit-card-h"><span class="ic">⑤</span>六大功能 Tab 配置</div>';
       html += '<div class="field"><label>修改名称 / 调整顺序（仅改显示，功能不变）</label><div id="stockTabsEditor"></div><div class="hint">↑↓ 调整顺序，输入框改名；点「保存 Tab」生效。六个 Tab 对应：行情 / 自选批量导入 / 对比 / 指标 / 收益测算 / 风险。</div></div>';
-      html += '<button class="pill" data-act="stockTabsSave">保存 Tab</button></div>';
+      html += '<button class="pill" data-act="stockTabsSave" data-box="stockTabsEditor">保存 Tab</button></div>';
     }
     html += '<div class="admin-actions"><button class="pill" data-act="cmSave">保存修改</button><button class="pill secondary" data-act="cmOpen" data-id="'+cfg.page+'">打开该模块</button></div>';
   }
@@ -878,18 +891,21 @@ function renderAdmin(body){
     segRender('cmTheme', CM_THEMES, cfg.theme, v=>{ cfg.theme=v; saveModuleConfig(cfg); renderAdmin($('body-admin')); });
     $('cmAiOn').onchange = ()=>{ cfg.aiOn = $('cmAiOn').checked; saveModuleConfig(cfg); };
     renderCmItemsEditor();
-    if(adminSel==='stock-analysis') renderStockTabsEditor();
+    if(adminSel==='stock-analysis') renderStockTabsEditor('stockTabsEditor');
   }
 }
-function renderStockTabsEditor(){
-  const box=$('stockTabsEditor'); if(!box) return;
+function renderStockTabsEditor(boxId){
+  const box=$(boxId||'stockTabsEditor'); if(!box) return;
+  const bid=boxId||'stockTabsEditor';
   const tabs=loadStockTabs();
   let h='';
   tabs.forEach((t,i)=>{
-    h += '<div class="stk-tab-row"><span class="stk-idx">'+(i+1)+'</span><input class="stk-label" data-k="'+esc(t.k)+'" value="'+esc(t.label)+'"><span class="ad-tools"><button data-act="stkUp" data-k="'+esc(t.k)+'" title="上移">↑</button><button data-act="stkDown" data-k="'+esc(t.k)+'" title="下移">↓</button></span></div>';
+    h += '<div class="stk-tab-row"><span class="stk-idx">'+(i+1)+'</span><input class="stk-label" data-k="'+esc(t.k)+'" value="'+esc(t.label)+'"><span class="ad-tools"><button data-act="stkUp" data-box="'+bid+'" data-k="'+esc(t.k)+'" title="上移">↑</button><button data-act="stkDown" data-box="'+bid+'" data-k="'+esc(t.k)+'" title="下移">↓</button></span></div>';
   });
   box.innerHTML=h;
 }
+function openStockTabEditor(){ renderStockTabsEditor('stockTabEditBox'); $('stockTabMask').classList.add('show'); }
+function closeStockTabEditor(){ $('stockTabMask').classList.remove('show'); }
 function renderCmItemsEditor(){
   const cfg=getModuleConfig(adminSel); const box=$('cmItems'); if(!box||!cfg) return;
   const items=cfg.items||[];
@@ -1237,6 +1253,7 @@ function renderStockAnalysis(body){
   const m=MODULES['stock-analysis'];
   let html='<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>';
   if(stockTab==='quote') html+='<button class="pill" data-act="stock-refresh">🔄 刷新行情</button>';
+  html+='<button class="pill secondary" data-act="openStockTabEditor">⚙ 设置Tab</button>';
   html+='</div>';
   html+='<div class="stock-tabs">';
   const tabs=loadStockTabs().map(t=>[t.k, t.label]);
@@ -1874,6 +1891,17 @@ function bindEvents(){
   $('textClose').onclick = ()=> $('textMask').classList.remove('show');
   $('searchClose').onclick = ()=> $('searchMask').classList.remove('show');
 
+  /* 股票 Tab 设置弹窗：弹窗在 #content 之外，需独立监听（动态行也靠此捕获） */
+  const stm=$('stockTabMask');
+  if(stm) stm.addEventListener('click', e=>{
+    const f=e.target.closest('[data-act]'); if(!f) return;
+    const act=f.dataset.act;
+    if(act==='stockTabClose'){ closeStockTabEditor(); return; }
+    if(act==='stkUp'){ const k=f.dataset.k; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderStockTabsEditor('stockTabEditBox'); return; }
+    if(act==='stkDown'){ const k=f.dataset.k; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveStockTabs(a); } renderStockTabsEditor('stockTabEditBox'); return; }
+    if(act==='stockTabsSave'){ const a=loadStockTabs(); document.querySelectorAll('#stockTabEditBox .stk-label').forEach(inp=>{ const k=inp.dataset.k; const t=a.find(x=>x.k===k); if(t) t.label=inp.value.trim()||t.label; }); saveStockTabs(a); toast('已保存 Tab 名称与顺序'); closeStockTabEditor(); renderCurrent(); return; }
+  });
+
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
   $('globalSearch').addEventListener('keydown', e=>{ if(e.key==='Enter') handleSearchInput($('globalSearch').value); });
 
@@ -1924,15 +1952,17 @@ function bindEvents(){
       if(act==='full'){ showFull(page, idx); return; }
       /* ===== 股票基金分析模块事件 ===== */
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
+      if(act==='openStockTabEditor'){ openStockTabEditor(); return; }
+      if(act==='stockTabClose'){ closeStockTabEditor(); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', ()=>{ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', ()=>{ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); }); return; }
       if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
       if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); if(stockCompareSel.length===0){ loadWatch().forEach(it=>{ const c=normCodeStr(it.code); if(c!==code) stockCompareSel.push(c); }); } else { const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } } renderCurrent(); return; }
-      if(act==='stkUp'){ const k=f.dataset.k; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderAdmin($('body-admin')); return; }
-      if(act==='stkDown'){ const k=f.dataset.k; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveStockTabs(a); } renderAdmin($('body-admin')); return; }
-      if(act==='stockTabsSave'){ const a=loadStockTabs(); document.querySelectorAll('#stockTabsEditor .stk-label').forEach(inp=>{ const k=inp.dataset.k; const t=a.find(x=>x.k===k); if(t) t.label=inp.value.trim()||t.label; }); saveStockTabs(a); toast('已保存 Tab 名称与顺序'); renderAdmin($('body-admin')); return; }
+      if(act==='stkUp'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
+      if(act==='stkDown'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
+      if(act==='stockTabsSave'){ const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); document.querySelectorAll('#'+box+' .stk-label').forEach(inp=>{ const k=inp.dataset.k; const t=a.find(x=>x.k===k); if(t) t.label=inp.value.trim()||t.label; }); saveStockTabs(a); toast('已保存 Tab 名称与顺序'); if(box==='stockTabEditBox'){ closeStockTabEditor(); renderCurrent(); } else { renderAdmin($('body-admin')); } return; }
       if(act==='stock-calc'){ const code=($('calcCode')?$('calcCode').value:''); const shares=parseFloat($('calcShares').value); const buy=parseFloat($('calcBuy').value); let cur=parseFloat($('calcCur').value); if(isNaN(cur)){ const q=stockQuotes[normCodeStr(code)]; cur=q?q.price:null; } const box=$('calcResult'); if(!code||isNaN(shares)||isNaN(buy)){ if(box) box.textContent='请填写标的、持仓数量与买入价。'; return; } const invest=buy*shares; const mv=(cur!=null)?cur*shares:null; const pnl=(mv!=null)?mv-invest:null; const pct=(pnl!=null&&invest>0)?(pnl/invest*100):null; if(box){ let h='<div class="cr-row"><span>投入金额</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>浮动盈亏</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+(cls)+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
       /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
