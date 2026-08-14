@@ -137,6 +137,9 @@
   .admin-cat-items .admin-row{margin:0 0 0 18px;border-bottom:1px solid #F3F4F6;}
   .admin-cat-items .admin-row:last-child{border-bottom:none;}
   .admin-cat-items .admin-row.sel{border-left:3px solid var(--accent);}
+  .admin-cat-items .admin-row.add{padding:8px 12px 10px;border-bottom:none;margin-left:18px;}
+  .add-sub{width:100%;text-align:left;background:#F3F4F6;border:1px dashed #CBD5E1;color:#2563EB;border-radius:8px;padding:8px 10px;cursor:pointer;font-size:13px;font-weight:600;}
+  .add-sub:hover{background:#EFF6FF;border-color:#2563EB;}
   .switch-row{display:flex;align-items:center;justify-content:space-between;background:#F9FAFB;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px;}
   .hint{font-size:11px;color:#9CA3AF;line-height:1.5;margin-top:6px;}
   .sw{position:relative;display:inline-block;width:40px;height:22px;cursor:pointer;}
@@ -466,7 +469,7 @@ function modTitle(id){
   return id;
 }
 function groupIndexOf(id){
-  if(id.indexOf('custom_')===0) return 999;
+  if(id.indexOf('custom_')===0){ const c=getCustom(id.slice(7)); return (c && typeof c.group==='number')?c.group:999; }
   for(let i=0;i<GROUPS.length;i++){ if(GROUPS[i].items.some(it=>it.id===id)) return i; }
   return -1;
 }
@@ -526,19 +529,21 @@ function buildSidebar(){
   html += '<div class="nav-scroll">';
   html += '<div class="sub-item nav-top" data-page="overview" onclick="navigate(\'overview\')">📊 数据概览</div>';
   const gOrder = loadGroupOrder();
+  const allCms = loadCustomModules();
   gOrder.forEach(n=>{
     const g = GROUPS.find(x=>x.n===n); if(!g) return;
     if(isGroupHidden(n)) return;
     const ids = g.items.map(it=>it.id).filter(id=>!isHidden(id));
+    allCms.forEach(m=>{ if(m.group===n) ids.push('custom_'+m.id); });
     ids.sort((a,b)=> order.indexOf(a)-order.indexOf(b));
     if(!ids.length) return;
     html += '<div class="group-title" onclick="toggleGroup('+n+',this)"><span class="arrow">▼</span>'+esc(groupTitle(n))+'</div><div class="group-items">';
     ids.forEach(id=>{ html += '<div class="sub-item" data-page="'+id+'" onclick="navigate(\''+id+'\')">'+esc(modTitle(id))+'</div>'; });
     html += '</div>';
   });
-  const cms = loadCustomModules();
-  if(cms.length){
-    const cids = cms.map(m=>'custom_'+m.id).filter(id=>!isHidden(id)).sort((a,b)=> order.indexOf(a)-order.indexOf(b));
+  const legacy = allCms.filter(m=>typeof m.group!=='number');
+  if(legacy.length){
+    const cids = legacy.map(m=>'custom_'+m.id).filter(id=>!isHidden(id)).sort((a,b)=> order.indexOf(a)-order.indexOf(b));
     if(cids.length){
       html += '<div class="group-title" onclick="toggleGroup(99,this)"><span class="arrow">▼</span>⚙ 我的模块</div><div class="group-items">';
       cids.forEach(id=>{ html += '<div class="sub-item" data-page="'+id+'" onclick="navigate(\''+id+'\')">'+esc(modTitle(id))+'</div>'; });
@@ -691,24 +696,28 @@ function renderAdmin(body){
     html += '<div class="admin-cat'+(gHidden?' hidden':'')+'">';
     html += '<div class="admin-cat-h"><input class="cat-title" data-n="'+n+'" value="'+esc(groupTitle(n))+'"><span class="ad-tools"><button data-act="catUp" data-n="'+n+'" title="上移大类">↑</button><button data-act="catDown" data-n="'+n+'" title="下移大类">↓</button><button data-act="catHide" data-n="'+n+'" title="'+(gHidden?'恢复显示':'隐藏大类')+'">'+(gHidden?'恢复':'隐藏')+'</button></span></div>';
     html += '<div class="admin-cat-items">';
-    g.items.forEach(it=>{
-      const id=it.id; const cfg=getModuleConfig(id); if(!cfg) return;
+    const renderRow = (id)=>{
+      const cfg=getModuleConfig(id); if(!cfg) return '';
       const hidden=isHidden(id); const sel=(id===adminSel)?' sel':'';
       const typeLabel = CM_TYPES[cfg.type]?CM_TYPES[cfg.type].label:(cfg.isCustom?'自定义':'专用');
-      html += '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+id+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+id+'" title="上移">↑</button><button data-act="cmDown" data-id="'+id+'" title="下移">↓</button><button data-act="cmDelMod" data-id="'+id+'" title="'+(hidden?'恢复':'删除')+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+id+'" title="打开">↗</button></span></div>';
-    });
+      return '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+id+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+id+'" title="上移">↑</button><button data-act="cmDown" data-id="'+id+'" title="下移">↓</button><button data-act="cmDelMod" data-id="'+id+'" title="'+(hidden?'恢复':'删除')+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+id+'" title="打开">↗</button></span></div>';
+    };
+    g.items.forEach(it=>{ html += renderRow(it.id); });
+    loadCustomModules().forEach(m=>{ if(m.group===n) html += renderRow('custom_'+m.id); });
+    html += '<div class="admin-row add"><button class="add-sub" data-act="catAddMod" data-n="'+n+'">＋ 新增小类</button></div>';
     html += '</div></div>';
   });
-  const cms = loadCustomModules();
-  if(cms.length){
+  const legacyCms = loadCustomModules().filter(m=>typeof m.group!=='number');
+  if(legacyCms.length){
     html += '<div class="admin-cat">';
     html += '<div class="admin-cat-h"><span class="cat-title-static">⚙ 我的模块</span><span class="ad-tools"></span></div>';
     html += '<div class="admin-cat-items">';
-    cms.forEach(m=>{
+    legacyCms.forEach(m=>{
       const pid='custom_'+m.id; const cfg=getModuleConfig(pid); const hidden=isHidden(pid); const sel=(pid===adminSel)?' sel':'';
       const typeLabel = CM_TYPES[cfg.type]?CM_TYPES[cfg.type].label:'自定义';
       html += '<div class="admin-row'+sel+(hidden?' hidden':'')+'" data-act="cmSel" data-id="'+pid+'"><span class="mt">'+esc(cfg.title)+'</span><span class="tag">'+typeLabel+'</span>'+(cfg.aiOn?'<span class="ai">AI</span>':'')+'<span class="ad-tools"><button data-act="cmUp" data-id="'+pid+'">↑</button><button data-act="cmDown" data-id="'+pid+'">↓</button><button data-act="cmDelMod" data-id="'+pid+'">'+(hidden?'恢复':'✕')+'</button><button data-act="cmOpen" data-id="'+pid+'">↗</button></span></div>';
     });
+    html += '<div class="admin-row add"><button class="add-sub" data-act="catAddMod" data-n="99">＋ 新增小类</button></div>';
     html += '</div></div>';
   }
   html += '</div>';
@@ -1342,7 +1351,7 @@ async function apiPutFile(user, repo, path, content, sha){
 }
 function buildModuleConfig(){
   const gOrder=loadGroupOrder();
-  const groups = gOrder.map(n=>{ const g=GROUPS.find(x=>x.n===n); const go=loadGroupOverrides()[n]||{}; return {n, title: groupTitle(n), hidden: !!go.hidden, items: g?g.items.map(it=>it.id):[]}; });
+  const groups = gOrder.map(n=>{ const g=GROUPS.find(x=>x.n===n); const go=loadGroupOverrides()[n]||{}; const items = g?g.items.map(it=>it.id):[]; loadCustomModules().forEach(m=>{ if(m.group===n) items.push('custom_'+m.id); }); return {n, title: groupTitle(n), hidden: !!go.hidden, items}; });
   const modules={};
   const allIds=[];
   GROUPS.forEach(g=>g.items.forEach(it=>allIds.push(it.id)));
@@ -1481,6 +1490,7 @@ function bindEvents(){
       if(act==='ovrefresh'){ loadRemoteData(); return; }
       if(act==='goto'){ navigate(page); return; }
       if(act==='cmNew'){ const m={id:genCid(), title:'新模块', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增模块'); return; }
+      if(act==='catAddMod'){ const n=Number(f.dataset.n); const m={id:genCid(), title:'新小类', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; if(n!==99) m.group=n; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增小类'); return; }
       if(act==='cmSel'){ adminSel=f.dataset.id; renderAdmin($('body-admin')); return; }
       if(act==='catUp'){ groupMove(Number(f.dataset.n), -1); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); return; }
       if(act==='catDown'){ groupMove(Number(f.dataset.n), 1); buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); return; }
