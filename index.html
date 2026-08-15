@@ -126,8 +126,14 @@
   .draggable-cards .card,.draggable-cards .quote-card,.draggable-cards .risk-card{cursor:grab;touch-action:manipulation;-webkit-touch-callout:none;}
   .draggable-cards .card:active,.draggable-cards .quote-card:active,.draggable-cards .risk-card:active{cursor:grabbing;}
   /* 长按“拿起中”提示 */
-  .draggable-cards .card.arming,.draggable-cards .quote-card.arming,.draggable-cards .risk-card.arming{transform:scale(1.025);box-shadow:0 6px 18px rgba(15,23,42,.16);transition:transform .12s ease,box-shadow .12s ease;}
-  .draggable-cards .card.dragging,.draggable-cards .quote-card.dragging,.draggable-cards .risk-card.dragging{opacity:.45;cursor:grabbing;box-shadow:0 10px 28px rgba(15,23,42,.28);transform:none!important;z-index:50;}
+  .draggable-cards .card.arming,.draggable-cards .quote-card.arming,.draggable-cards .risk-card.arming{transform:scale(1.03);box-shadow:0 6px 18px rgba(15,23,42,.16);transition:transform .12s ease,box-shadow .12s ease;}
+  /* 拿起后：卡片浮起跟随手指（固定定位，自由上下左右拖动） */
+  .draggable-cards .card.dragging,.draggable-cards .quote-card.dragging,.draggable-cards .risk-card.dragging{
+    position:fixed;z-index:1000;pointer-events:none;opacity:.92;cursor:grabbing;
+    box-shadow:0 16px 36px rgba(15,23,42,.34);transform:rotate(1.5deg);will-change:top,left;
+  }
+  /* 拖拽时占位的虚线空隙 */
+  .card-drag-placeholder{border:2px dashed var(--border);border-radius:12px;background:rgba(37,99,235,.05);box-sizing:border-box;margin-bottom:12px;}
   body.dragging-active{user-select:none;-webkit-user-select:none;}
   /* 拖拽进行中锁定主内容区滚动（防止手机端页面跟着滚） */
   body.dragging-active #content{overflow:hidden;touch-action:none;}
@@ -2731,40 +2737,74 @@ function bindEvents(){
     const td = e.target.closest('.tdone');
     if(td){ const arr=loadData('wb_todo',[]); arr[td.dataset.idx].done = td.checked; saveData('wb_todo', arr); return; }
   });
-  // ===== 卡片拖拽排序（Pointer 事件；触摸=长按拿起，鼠标=滑动拖拽，插入式）=====
+  // ===== 卡片拖拽排序（Pointer 事件；触摸=长按拿起后自由拖动松手落位，鼠标=按住拖动）=====
   (function initCardDrag(){
-    const DRAG_THRESHOLD = 6;   // 移动超过该值判定为“滑动/滚动”
-    const LONG_PRESS_MS = 450;  // 触摸长按多久后“拿起”卡片
-    let st = null; // {card, container, page, pointerId, pointerType, startX, startY, dragging, timer}
+    const DRAG_THRESHOLD = 8;   // 触摸：长按前手指移动超过该值=滚动页面，取消拖拽
+    const LONG_PRESS_MS = 420;  // 触摸长按多久后“拿起”卡片
+    let st = null; // {card, container, page, pointerId, pointerType, startX, startY, lastX, lastY, dragging, timer, placeholder, offsetX, offsetY}
     const content = $('content');
     if(!content) return;
-    function cardDragAfter(container, x, y){
-      const els = [...container.querySelectorAll('.card:not(.dragging), .quote-card:not(.dragging), .risk-card:not(.dragging)')];
-      let closest=null, closestDist=Infinity;
-      for(const el of els){
+    function otherCards(container){
+      return [...container.children].filter(el =>
+        el!==st.card && el!==st.placeholder &&
+        (el.classList.contains('card')||el.classList.contains('quote-card')||el.classList.contains('risk-card'))
+      );
+    }
+    // 根据指针位置，算出占位符应插入到哪张卡之前（2D 网格适用，上下左右均可）
+    function placeholderTarget(x, y){
+      const cards = otherCards(st.container);
+      if(!cards.length) return null;
+      let closest=null, cd=Infinity;
+      for(const el of cards){
         const r=el.getBoundingClientRect();
-        const cx=r.left+r.width/2, cy=r.top+r.height/2;
-        const d=Math.hypot(x-cx, y-cy);
-        if(d<closestDist){ closestDist=d; closest=el; }
+        const d=Math.hypot(x-(r.left+r.width/2), y-(r.top+r.height/2));
+        if(d<cd){ cd=d; closest=el; }
       }
       if(!closest) return null;
       const r=closest.getBoundingClientRect();
       const cx=r.left+r.width/2, cy=r.top+r.height/2;
-      if(x<cx && y<cy) return closest;
-      const next=closest.nextElementSibling;
-      return (next && (next.classList.contains('card')||next.classList.contains('quote-card')||next.classList.contains('risk-card'))) ? next : null;
+      // 指针偏左或偏上 → 插到该卡前面；否则插到它后面
+      if(x < cx || (Math.abs(x-cx) <= r.width/2 && y < cy)) return closest;
+      return closest.nextElementSibling; // 可能为 null（末尾）
+    }
+    function movePlaceholder(){
+      const target = placeholderTarget(st.lastX, st.lastY);
+      if(target===null) st.container.appendChild(st.placeholder);
+      else if(target!==st.placeholder) st.container.insertBefore(st.placeholder, target);
     }
     function beginDrag(){
       if(!st || st.dragging) return;
       st.dragging = true;
-      st.card.classList.remove('arming');
-      st.card.classList.add('dragging');
+      const card = st.card;
+      const r = card.getBoundingClientRect();
+      st.offsetX = st.startX - r.left;
+      st.offsetY = st.startY - r.top;
+      // 占位符占住原位置（同尺寸虚线框）
+      const ph = document.createElement('div');
+      ph.className = 'card-drag-placeholder';
+      ph.style.width = r.width + 'px';
+      ph.style.height = r.height + 'px';
+      card.parentNode.insertBefore(ph, card);
+      st.placeholder = ph;
+      // 卡片浮起跟随手指
+      card.style.width = r.width + 'px';
+      card.style.height = r.height + 'px';
+      card.classList.remove('arming');
+      card.classList.add('dragging');
+      card.style.left = (st.startX - st.offsetX) + 'px';
+      card.style.top = (st.startY - st.offsetY) + 'px';
       document.body.classList.add('dragging-active'); // 锁定主内容区滚动
-      try{ st.card.style.touchAction='none'; }catch(_){}
-      try{ st.card.setPointerCapture(st.pointerId); }catch(_){}
+      try{ card.setPointerCapture(st.pointerId); }catch(_){}
       try{ if(navigator.vibrate) navigator.vibrate(15); }catch(_){}
     }
     function cancelTimer(){ if(st && st.timer){ clearTimeout(st.timer); st.timer=null; } }
+    function resetCardStyle(card){
+      card.classList.remove('dragging','arming');
+      card.style.position=''; card.style.left=''; card.style.top='';
+      card.style.width=''; card.style.height=''; card.style.zIndex='';
+      card.style.pointerEvents=''; card.style.opacity=''; card.style.boxShadow='';
+      card.style.transform=''; card.style.touchAction='';
+    }
     content.addEventListener('pointerdown', e=>{
       if(e.button!=null && e.button!==0) return; // 仅左键/触摸
       const card=e.target.closest('.card, .quote-card, .risk-card');
@@ -2772,10 +2812,10 @@ function bindEvents(){
       const container=card.closest('.draggable-cards');
       if(!container) return;
       if(e.target.closest('button, a, input, textarea, select, [data-act], .tdone')) return; // 排除交互元素
-      st={ card, container, page:container.dataset.dragPage, pointerId:e.pointerId, pointerType:e.pointerType, startX:e.clientX, startY:e.clientY, dragging:false, timer:null };
-      // 触摸/笔：长按 450ms 自动“拿起”卡片（手机体验：长按而非滑动）
+      st={ card, container, page:container.dataset.dragPage, pointerId:e.pointerId, pointerType:e.pointerType, startX:e.clientX, startY:e.clientY, lastX:e.clientX, lastY:e.clientY, dragging:false, timer:null, placeholder:null, offsetX:0, offsetY:0 };
+      // 触摸/笔：长按后“拿起”（手机体验：按住不放 → 随意拖动 → 松手落位）
       if(e.pointerType!=='mouse'){
-        st.card.classList.add('arming'); // 拿起中视觉提示
+        card.classList.add('arming');
         st.timer = setTimeout(beginDrag, LONG_PRESS_MS);
       }
     }, {passive:true});
@@ -2783,26 +2823,31 @@ function bindEvents(){
       if(!st) return;
       if(!st.dragging){
         const moved = Math.hypot(e.clientX-st.startX, e.clientY-st.startY);
-        if(moved > DRAG_THRESHOLD){
-          if(st.pointerType==='mouse'){ beginDrag(); return; } // 鼠标：滑动即拖拽
-          // 触摸：手指先移动 = 滚动页面，取消长按拖拽
-          if(st.card) st.card.classList.remove('arming');
-          cancelTimer(); st=null; return;
-        }
-        return;
+        if(moved <= DRAG_THRESHOLD) return;              // 未超过阈值：不动
+        if(st.pointerType==='mouse'){ beginDrag(); }     // 鼠标：按住移动即拖拽
+        else { card_arm_cancel(); return; }              // 触摸：先移动=滚动页面，取消
       }
-      if(e.cancelable) e.preventDefault(); // 拖拽中阻止页面滚动
-      const after=cardDragAfter(st.container, e.clientX, e.clientY);
-      if(after==null) st.container.appendChild(st.card);
-      else if(after!==st.card) st.container.insertBefore(st.card, after);
+      e.preventDefault(); // 拖拽中阻止页面滚动
+      st.lastX = e.clientX; st.lastY = e.clientY;
+      st.card.style.left = (e.clientX - st.offsetX) + 'px';
+      st.card.style.top = (e.clientY - st.offsetY) + 'px';
+      movePlaceholder();
     }, {passive:false});
+    function card_arm_cancel(){
+      if(st && st.card) st.card.classList.remove('arming');
+      cancelTimer(); st=null;
+    }
     function endDrag(){
       if(!st) return;
       cancelTimer();
-      const {card, container, page, pointerId, dragging}=st;
+      const {card, container, page, pointerId, dragging, placeholder}=st;
       if(dragging){
-        card.classList.remove('dragging');
-        card.style.touchAction='';
+        // 把卡片放回占位符位置，再移除占位符
+        if(placeholder && placeholder.parentNode){
+          container.insertBefore(card, placeholder);
+          placeholder.parentNode.removeChild(placeholder);
+        }
+        resetCardStyle(card);
         document.body.classList.remove('dragging-active');
         if(container.contains(card)){
           const order=[...container.querySelectorAll('.card[data-card-idx], .quote-card[data-card-idx], .risk-card[data-card-idx]')].map(c=>Number(c.dataset.cardIdx));
