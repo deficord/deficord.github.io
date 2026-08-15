@@ -449,7 +449,7 @@
       <p class="hint" style="margin-bottom:10px">用 ↑/↓ 调整指数顺序，✕ 移除不需要的指数；下方可新增你要跟踪的指数。</p>
       <div id="idxEditBox"></div>
       <div class="idx-tabedit">
-        <div class="idx-add-hd">✎ Tab 分类名称（自定义显示名，不改变归类）</div>
+        <div class="idx-add-hd">✎ Tab 分类名称与顺序（改名不变归类；↑/↓ 调整前后顺序）</div>
         <div id="idxTabLabels"></div>
       </div>
       <div class="idx-add">
@@ -472,9 +472,9 @@
   <div class="modal-mask" id="finMask">
     <div class="modal">
       <h3>⚙ 理财每日新知 · 设置</h3>
-      <p class="hint" style="margin-bottom:10px">下方可自定义各 Tab 分类的显示名称（不改变归类与内容）。</p>
+      <p class="hint" style="margin-bottom:10px">下方可自定义各 Tab 分类的显示名称（不改变归类与内容），并用 ↑/↓ 调整前后顺序。</p>
       <div class="idx-tabedit">
-        <div class="idx-add-hd">✎ Tab 分类名称（自定义显示名，不改变归类）</div>
+        <div class="idx-add-hd">✎ Tab 分类名称与顺序（改名不变归类；↑/↓ 调整前后顺序）</div>
         <div id="finTabLabels"></div>
       </div>
       <div class="modal-actions">
@@ -1073,9 +1073,15 @@ function renderTabLabels(page, boxId){
   const m=MODULES[page];
   const cats=(m&&m.tabs&&m.tabs.cats)||[];
   const labels=loadTabLabels(page);
+  const ordered=orderedCats(page, cats);
   let h='';
-  cats.forEach(c=>{
-    h += '<div class="idx-tab-label-row"><span class="stk-name">'+esc(c)+'</span><input class="stk-label" data-tab-key="'+esc(c)+'" data-page="'+esc(page)+'" value="'+esc(labels[c]||c)+'" placeholder="'+esc(c)+'"></div>';
+  ordered.forEach((c,i)=>{
+    h += '<div class="stk-tab-row"><span class="stk-idx">'+(i+1)+'</span>'
+      + '<input class="stk-label" data-tab-key="'+esc(c)+'" data-page="'+esc(page)+'" value="'+esc(labels[c]||c)+'" placeholder="'+esc(c)+'">'
+      + '<span class="ad-tools">'
+      + '<button data-act="tabUp" data-page="'+esc(page)+'" data-cat="'+esc(c)+'" data-box="'+esc(boxId)+'" title="上移">↑</button>'
+      + '<button data-act="tabDown" data-page="'+esc(page)+'" data-cat="'+esc(c)+'" data-box="'+esc(boxId)+'" title="下移">↓</button>'
+      + '</span></div>';
   });
   box.innerHTML=h;
 }
@@ -1542,6 +1548,32 @@ function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getIte
 function loadTabLabels(page){ const all=_ensureTabLabels(); return all[page]||{}; }
 function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
 function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
+// Tab 分类显示顺序（可在设置里通过 ↑/↓ 调整，不影响数据归类与内容）
+const TAB_ORDER_KEY='wb_tab_order';
+let _tabOrder=null;
+function _ensureTabOrder(){ if(!_tabOrder){ try{ const raw=localStorage.getItem(TAB_ORDER_KEY); _tabOrder=(raw?JSON.parse(raw):{}); }catch(e){ _tabOrder={}; } if(!_tabOrder||typeof _tabOrder!=='object') _tabOrder={}; } return _tabOrder; }
+function loadTabOrder(page){ const all=_ensureTabOrder(); return (all[page]&&Array.isArray(all[page]))?all[page]:null; }
+function saveTabOrder(page, arr){ const all=_ensureTabOrder(); all[page]=arr; saveData(TAB_ORDER_KEY, all); }
+// 把分类列表按保存的顺序排序（新出现的分类追加末尾，已不存在的去除）
+function orderedCats(page, cats){
+  const order=loadTabOrder(page);
+  if(!order||!order.length) return cats.slice();
+  const set=new Set(cats);
+  const out=order.filter(c=>set.has(c));
+  cats.forEach(c=>{ if(!out.includes(c)) out.push(c); });
+  return out;
+}
+// 调整某分类在设置里的显示顺序（↑/↓），与股票基金分析设置一致
+function moveTabOrder(page, cat, dir, boxId){
+  let order=loadTabOrder(page);
+  if(!order||!order.length){ order=(MODULES[page]&&MODULES[page].tabs&&MODULES[page].tabs.cats)||[]; }
+  const i=order.indexOf(cat), j=i+dir;
+  if(i<0||j<0||j>=order.length) return;
+  const t=order[i]; order[i]=order[j]; order[j]=t;
+  saveTabOrder(page, order);
+  if(boxId) renderTabLabels(page, boxId);
+  if(currentPage===page) renderCurrent();
+}
 // 计算 Tab 分类列表（全部 + 具体分类）
 function modTabCats(m, arr0){
   const cfg = m.tabs;
@@ -1564,8 +1596,13 @@ function modView(m, arr0, active){
   });
 }
 function modTabBarHtml(page, cats, active){
+  let live = cats.slice();
+  const head = live.includes('__all__') ? ['__all__'] : [];
+  const rest = live.filter(c=>c!=='__all__');
+  const ordered = orderedCats(page, rest);
+  const finalCats = head.concat(ordered);
   let h = '<div class="stock-tabs">';
-  cats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
+  finalCats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
   h += '</div>';
   return h;
 }
@@ -2516,6 +2553,7 @@ function bindEvents(){
     const f=e.target.closest('[data-act]'); if(!f) return;
     const act=f.dataset.act;
     if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
+    if(act==='tabUp'||act==='tabDown'){ moveTabOrder('index-track', f.dataset.cat, act==='tabUp'?-1:1, f.dataset.box); return; }
     if(act==='idxUp'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
     if(act==='idxDown'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
     if(act==='idxDel'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); a.splice(i,1); saveIndexTrack(a); renderIdxEditor(); toast('已移除'); return; }
@@ -2553,6 +2591,7 @@ function bindEvents(){
   if(finm) finm.addEventListener('click', e=>{
     const f=e.target.closest('[data-act]'); if(!f) return;
     if(f.dataset.act==='finClose'){ closeFinEditor(); if(currentPage==='finance-news') renderCurrent(); return; }
+    if(f.dataset.act==='tabUp'||f.dataset.act==='tabDown'){ moveTabOrder('finance-news', f.dataset.cat, f.dataset.act==='tabUp'?-1:1, f.dataset.box); return; }
   });
 
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
