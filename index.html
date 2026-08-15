@@ -1303,7 +1303,7 @@ function modTabCats(m, arr0){
   let cats = [];
   if(cfg.cats){
     const present = new Set();
-    arr0.forEach(it=>{ const v = cfg.field ? it[cfg.field] : ''; if(v) present.add(v); });
+    arr0.forEach(it=>{ const v = cfg.field ? it[cfg.field] : (cfg.derive ? idxRegion(it.name) : ''); if(v) present.add(v); });
     cats = cfg.cats.filter(c=>present.has(c));
   } else if(cfg.auto){ const s = new Set(); arr0.forEach(it=>{ const v = cfg.field ? it[cfg.field] : ''; if(v) s.add(v); }); cats = [...s]; }
   return ['__all__'].concat(cats);
