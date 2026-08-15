@@ -1241,7 +1241,7 @@ function syncIndexTrackFromRemote(){
 }
 // 当 data.json 的 indexTrack 规范列表有变动（重排/改名/新增指数）时，按版本号把本地 wb_index_track 重播种一次，
 // 让老用户也拿到新顺序与新指数（仅执行一次，不覆盖用户之后的手动编辑）
-const IDX_SEED_VER = 7;
+const IDX_SEED_VER = 8;
 function migrateIndexTrack(){
   let v = 0;
   try{ v = Number(localStorage.getItem('wb_index_track_ver')||'0'); }catch(e){}
@@ -1262,7 +1262,7 @@ function renderIndexTrack(body){
     const _badge='<span style="margin-left:8px;font-size:11px;font-weight:600;color:#fff;background:'+_toneColor+';padding:2px 8px;border-radius:10px;vertical-align:middle">'+esc(it.rating||'评级待定')+' · 置信'+esc(it.confidence||'-')+'</span>';
     html += '<h4><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+_badge+'</h4>';
     (it.rows||[]).forEach((r,j)=>{ html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span>'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
-    if(it.note){ html += '<div class="row"><span class="k">💡判断</span><span>'+esc(it.note)+'</span></div>'; }
+    if(it.note){ html += '<div class="row"><span class="k">判断</span><span>'+esc(it.note)+'</span></div>'; }
     html += '<div class="row"><span class="k">来源</span>AI 策展 · data.json</div>';
     html += '</div>';
   });
