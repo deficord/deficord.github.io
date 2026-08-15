@@ -21,7 +21,7 @@
     --sidebar-text:#9CA3AF;
     --sidebar-title:#C7D2E5;
     --sidebar-active:rgba(37,99,235,.16);
-    --page-bg:#F0F2F5;
+    --page-bg:#F8FAFC;
     --card-bg:#fff;
   }
   *{box-sizing:border-box;}
@@ -589,13 +589,23 @@ function genCid(){ return 'c'+Date.now().toString(36)+Math.floor(Math.random()*1
 /* 模块改名 / 隐藏 / 排序（作用于全部模块，含系统模块） */
 const OVERRIDE_STORE = 'wb_module_overrides';
 const ORDER_STORE    = 'wb_module_order';
+const ORDER_VER_STORE= 'wb_module_order_ver';
+const ORDER_VER      = 2; // 当 GROUPS 内小类顺序调整时 +1，触发一次性重新播种默认顺序
 function loadOverrides(){ return loadData(OVERRIDE_STORE, {}); }
 function saveOverrides(o){ saveData(OVERRIDE_STORE, o); }
 function loadOrder(){
+  const ver = parseInt(loadData(ORDER_VER_STORE, 0), 10) || 0;
   let o = loadData(ORDER_STORE, null);
   const allIds = [];
   GROUPS.forEach(g=>g.items.forEach(it=>allIds.push(it.id)));
   loadCustomModules().forEach(m=>allIds.push('custom_'+m.id));
+  if(ver !== ORDER_VER){
+    // 顺序版本升级：按 GROUPS 新的小类顺序重新播种默认顺序（保留旧顺序中的自定义模块）
+    const base = [];
+    GROUPS.forEach(g=>g.items.forEach(it=>base.push(it.id)));
+    (o||[]).forEach(id=>{ if(base.indexOf(id)<0 && allIds.indexOf(id)>=0) base.push(id); });
+    o = base; saveOrder(o); saveData(ORDER_VER_STORE, ORDER_VER); return o;
+  }
   if(!o){ o = allIds.slice(); saveOrder(o); return o; }
   let changed=false;
   allIds.forEach(id=>{ if(o.indexOf(id)<0){ o.push(id); changed=true; } });
