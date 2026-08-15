@@ -46,6 +46,10 @@
   .group-title.collapsed + .group-items{display:none;}
   .sub-item{padding:8px 10px;margin:2px 0;border:1px solid transparent;border-left:3px solid transparent;border-radius:6px;background:transparent;cursor:pointer;font-size:13px;color:var(--sidebar-text);}
   .sub-item:hover{background:rgba(255,255,255,.05);color:#E5E7EB;}
+  .sub-item:not(.nav-top){display:flex;align-items:center;}
+  .sub-item:not(.nav-top)::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sidebar-text);opacity:.5;margin-right:9px;flex-shrink:0;transition:background .15s ease,opacity .15s ease,box-shadow .15s ease;}
+  .sub-item:not(.nav-top):hover::before{background:#E5E7EB;opacity:1;}
+  .sub-item:not(.nav-top).active::before{background:var(--accent);opacity:1;box-shadow:0 0 6px rgba(37,99,235,.7);}
   .sub-item.active{background:var(--sidebar-active);color:#fff;font-weight:600;border-left-color:var(--accent);}
   .nav-top{color:#E5E7EB;font-weight:600;margin-bottom:4px;}
   .nav-top:hover{color:#fff;}
