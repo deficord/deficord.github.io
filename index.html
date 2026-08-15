@@ -78,7 +78,7 @@
   .card.theme-soft{background:#F9FAFB;--card-accent:#64748B;}
   .card.theme-dark .actions .pill{background:#1F2937;color:#E5E7EB;border-color:#374151;}
   /* 自定义模块网格 */
-  .cm-grid{display:grid;gap:14px;align-items:start;--card-accent:#2563EB;}
+  .cm-grid{display:grid;gap:14px;align-items:start;--card-accent:#2563EB;--card-soft:#EFF6FF;}
   .cm-grid.cm-span1{grid-template-columns:repeat(1,1fr);}
   .cm-grid.cm-span2{grid-template-columns:repeat(2,1fr);}
   .cm-grid.cm-span3{grid-template-columns:repeat(3,1fr);}
@@ -194,9 +194,9 @@
   .pill.secondary:hover{background:var(--hover);transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.07);}
   .hint{color:var(--muted);font-size:12px;margin:0 0 12px;}
   .empty{color:var(--muted);padding:24px;text-align:center;border:1px dashed var(--border);border-radius:12px;}
-  .card{position:relative;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.04),0 1px 2px rgba(15,23,42,.06);padding:14px 14px 14px 18px;margin-bottom:12px;transition:box-shadow .18s ease;overflow:hidden;}
+  .card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);padding:14px 14px 14px 18px;margin-bottom:12px;transition:box-shadow .18s ease,transform .18s ease;overflow:hidden;}
   .card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--card-accent,var(--accent));}
-  .card:hover{box-shadow:0 4px 14px rgba(15,23,42,.07);}
+  .card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-2px);}
   .card h4{margin:0 0 8px;color:var(--card-accent,#111827);font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .card .row{display:flex;gap:8px;margin:5px 0;font-size:13px;}
   .card .row .k{color:var(--muted);min-width:60px;flex-shrink:0;}
@@ -301,7 +301,8 @@
   .watch-row .wr-code{font-size:11px;color:var(--muted);}
   .watch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;}
   .watch-grid .card{margin-bottom:0;}
-  .quote-card{position:relative;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 3px rgba(15,23,42,.04),0 1px 2px rgba(15,23,42,.06);overflow:hidden;--card-accent:#2563EB;}
+  .quote-card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);overflow:hidden;--card-accent:#2563EB;transition:box-shadow .18s ease,transform .18s ease;}
+  .quote-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-2px);}
   .quote-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--card-accent);}
   .quote-card .qc-top{display:flex;justify-content:space-between;align-items:baseline;}
   .quote-card .qc-name{font-size:14px;font-weight:700;color:var(--card-accent);}
@@ -326,7 +327,8 @@
   .calc-result .cr-row b{color:#1F2937;font-size:15px;}
   .calc-result .cr-big{font-size:22px;font-weight:800;margin-top:8px;text-align:right;}
   .risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;}
-  .risk-card{position:relative;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;box-shadow:0 1px 3px rgba(15,23,42,.04),0 1px 2px rgba(15,23,42,.06);overflow:hidden;--card-accent:#2563EB;}
+  .risk-card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);overflow:hidden;--card-accent:#2563EB;transition:box-shadow .18s ease,transform .18s ease;}
+  .risk-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-2px);}
   .risk-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--card-accent);}
   .risk-card .rc-name{font-size:14px;font-weight:700;margin-bottom:8px;color:var(--card-accent);}
   .risk-card .rc-row{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed #EEF2F7;color:#475569;}
@@ -569,6 +571,47 @@ const TYPE_LABEL = {gold:'黄金', nasdaq:'纳斯达克100', dividend:'红利低
 const STATUS_LABEL = {pending:'待定', hold:'暂缓', done:'已完成'};
 function typeLabel(t){ if(!t) return '其它基金'; if(TYPE_LABEL[t]) return TYPE_LABEL[t]; return t; }
 function statusLabel(s){ return STATUS_LABEL[s] || s; }
+
+/* ============== 卡片分类淡色配色（淡色系 + 立体感的 soft 背景） ============== */
+// 每个色板：a=色条/标题强调色（稍饱和可辨），s=卡片淡渐变背景底色
+const CARD_PALETTE = [
+  {a:'#3B82F6', s:'#EFF6FF'}, // 蓝
+  {a:'#10B981', s:'#ECFDF5'}, // 绿
+  {a:'#8B5CF6', s:'#F5F3FF'}, // 紫
+  {a:'#06B6D4', s:'#ECFEFF'}, // 青
+  {a:'#F59E0B', s:'#FFFBEB'}, // 黄
+  {a:'#EF4444', s:'#FEF2F2'}, // 红
+  {a:'#EC4899', s:'#FDF2F8'}, // 粉
+  {a:'#6366F1', s:'#EEF2FF'}, // 靛
+  {a:'#14B8A6', s:'#F0FDFA'}, // 青绿
+  {a:'#F97316', s:'#FFF7ED'}, // 橙
+];
+function _hashIdx(str){ let h=0; const s=String(str||''); for(let i=0;i<s.length;i++){ h=(h*31 + s.charCodeAt(i))>>>0; } return h % CARD_PALETTE.length; }
+function palColor(str){ return CARD_PALETTE[_hashIdx(str)]; }
+// 生成卡片 inline style：--card-accent(色条) + --card-soft(淡背景)
+function cardVars(str){ const c=palColor(str); return '--card-accent:'+c.a+';--card-soft:'+c.s+';'; }
+// 预定义分类映射（命中即用，未命中回退 hash）
+const CAT_COLOR = {
+  // 理财每日新知 cat
+  '市场综述':'#3B82F6','黄金大宗':'#F97316','AI科技':'#8B5CF6','政策宏观':'#06B6D4','个股公司':'#10B981','基金ETF':'#6366F1',
+  // 调仓 action
+  '加仓':'#10B981','减仓':'#EF4444','调仓':'#3B82F6','再平衡':'#8B5CF6','平衡':'#F59E0B','建仓':'#10B981','清仓':'#EF4444',
+  // 知识库分类
+  '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
+};
+function namedCardVars(str){ if(CAT_COLOR[str]){ const a=CAT_COLOR[str]; return '--card-accent:'+a+';--card-soft:'+softOf(a)+';'; } return cardVars(str); }
+function softOf(a){ const hit=CARD_PALETTE.find(p=>p.a===a); return hit?hit.s:'#F8FAFC'; }
+// 股票基金分析：按代码区分市场类型（沪/深主板/创业板/北交所/ETF）
+function stockMarketVars(code){
+  const c=String(code||'').replace(/[^0-9]/g,'');
+  let key;
+  if(/^(8|4|920)/.test(c)) key='北交所';
+  else if(/^3/.test(c)) key='创业板';
+  else if(/^6|^5/.test(c)) key='沪市';
+  else if(/^0|^1|^2/.test(c)) key='深市';
+  else key='其它';
+  return namedCardVars(key);
+}
 
 const KB_CATS = ['理财','养生','AI','运营'];
 const CHECKIN_ITEMS = ['睡眠','运动','饮水','食疗','体感'];
@@ -1086,11 +1129,12 @@ function renderList(page, body){
   if(arr0.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无记录。</div>'; }
   else {
-    html += '<div class="watch-grid" style="--card-accent:#2563EB;">';
+    html += '<div class="watch-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
   view.forEach(o=>{ const it=o.it, i=o.i;
     const titleF = m.fields.find(f=>f.title);
     const title = it[titleF.k] || '(未命名)';
-    html += '<div class="card" id="card_'+page+'_'+i+'"><h4>'+esc(title)+'</h4>';
+    const cv = (page==='rebalance' && it.action) ? namedCardVars(it.action) : '';
+    html += '<div class="card" id="card_'+page+'_'+i+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(title)+'</h4>';
     m.fields.forEach(f=>{
       if(f.title) return;
       let v = it[f.k];
@@ -1116,11 +1160,10 @@ function renderKnowledge(body){
   const all = loadData('wb_knowledge', []);
   const list = kbFilter==='全部' ? all : all.filter(c=>c.category===kbFilter);
   if(list.length===0){ html += '<div class="empty">暂无笔记。粘贴 AI 分析结果 → 生成卡片，或切换筛选。</div>'; }
-  const kbColor={'理财':'#2563EB','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B'};
   list.forEach((c,i)=>{
     const realIdx = all.indexOf(c);
     const kbc=c.category||'未分类';
-    html += '<div class="card" id="card_knowledge-base_'+realIdx+'" style="--card-accent:'+(kbColor[kbc]||'#64748B')+';"><h4>'+esc(c.title)+' <span class="tag cat">'+esc(kbc)+'</span></h4>';
+    html += '<div class="card" id="card_knowledge-base_'+realIdx+'" style="'+namedCardVars(kbc)+'"><h4>'+esc(c.title)+' <span class="tag cat">'+esc(kbc)+'</span></h4>';
     html += '<div class="content">'+esc(c.content)+'</div>';
     html += '<div class="actions"><button class="pill secondary" data-act="kbCopy" data-idx="'+realIdx+'">⧉ 复制</button><button class="pill secondary" data-act="kbEdit" data-idx="'+realIdx+'">✎ 编辑</button><button class="pill secondary" data-act="kbDel" data-idx="'+realIdx+'">删除</button></div>';
     html += '</div>';
@@ -1136,7 +1179,7 @@ function renderAiText(page, body){
   html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
   else {
-    html += '<div class="finance-grid" style="--card-accent:#2563EB;">';
+    html += '<div class="finance-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     arr.forEach((it,i)=>{
       const content = it.content || '';
       html += '<div class="card fn-card" id="card_'+page+'_'+i+'">';
@@ -1165,10 +1208,11 @@ function renderFinance(body){
   if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
-    html += '<div class="finance-grid" style="--card-accent:#2563EB;">';
+    html += '<div class="finance-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || it.summary || '';
-      html += '<div class="card fn-card" id="card_finance-news_'+i+'">';
+      const cv = it.cat ? namedCardVars(it.cat) : '';
+      html += '<div class="card fn-card" id="card_finance-news_'+i+'"'+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
       html += '<div class="summary" id="fn-sum-'+i+'">'+esc(content)+'</div>';
       html += '<a class="detail-link" href="#" data-act="full" data-page="finance-news" data-idx="'+i+'">查看详情 ›</a>';
@@ -1194,7 +1238,7 @@ function renderHoldings(body){
   if(arr0.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无持仓。</div>'; }
   else {
-    html += '<div class="watch-grid" style="--card-accent:'+(isStock?'#8B5CF6':'#06B6D4')+';">';
+    html += '<div class="watch-grid" style="--card-accent:'+(isStock?'#8B5CF6':'#06B6D4')+';--card-soft:'+(isStock?'#F5F3FF':'#ECFEFF')+';">';
   view.forEach(o=>{ const h=o.it, i=o.i;
     let q={}, up=false, down=false, pct=null, updTime='待刷新';
     let sharesTxt='待填写', costTxt='待填写', priceLabel='现价', priceTxt='', marketValueTxt='--', profitTxt='', legacy=false;
@@ -1233,7 +1277,8 @@ function renderHoldings(body){
       legacy=true;
       if(h.amount!=null) marketValueTxt = esc(h.amount)+' <span class="tag">旧</span>';
     }
-    html += '<div class="card" id="card_'+currentPage+'_'+i+'"><h4>'+esc(h.name||'')+(isStock?' <span class="tag">股票</span>':' <span class="tag">'+esc(typeLabel(h.type))+'</span>')+'</h4>';
+    const cv = isStock ? (h.sector?namedCardVars(h.sector):'') : (h.type?namedCardVars(typeLabel(h.type)):'');
+    html += '<div class="card" id="card_'+currentPage+'_'+i+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(h.name||'')+(isStock?' <span class="tag">股票</span>':' <span class="tag">'+esc(typeLabel(h.type))+'</span>')+'</h4>';
     html += '<div class="row"><span class="k">代码</span>'+esc(h.code||'--')+'</div>';
     if(isStock && h.sector){ html += '<div class="row"><span class="k">所属板块</span>'+esc(h.sector)+'</div>'; }
     html += '<div class="row"><span class="k">'+(isStock?'持股数量':'持有份额')+'</span>'+sharesTxt+'</div>';
@@ -1304,7 +1349,7 @@ function renderIndexTrack(body){
   else if(view.length===0){ html += '<div class="empty">该分类暂无指数。</div>'; }
   view.forEach(o=>{ const it=o.it, i=o.i;
     const _toneColor={'bull':'#16A34A','neutral':'#F59E0B','bear':'#EF4444'}[it.tone||'neutral']||'#F59E0B';
-    html += '<div class="card" id="card_index-track_'+i+'" style="--card-accent:'+_toneColor+';">';
+    html += '<div class="card" id="card_index-track_'+i+'" style="--card-accent:'+_toneColor+';--card-soft:'+softOf(_toneColor)+';">';
     const _badge='<span style="margin-left:8px;font-size:11px;font-weight:600;color:#fff;background:'+_toneColor+';padding:2px 8px;border-radius:10px;vertical-align:middle">'+esc(it.rating||'评级待定')+' · 置信'+esc(it.confidence||'-')+'</span>';
     html += '<h4><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+_badge+'</h4>';
     (it.rows||[]).forEach((r,j)=>{ html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span>'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
@@ -1506,7 +1551,7 @@ function stockQuoteTabHtml(){
   if(!list.length){ h+='<div class="watch-empty">暂无自选，去「自选批量导入」粘贴代码（如 600519、sh600519、000001）。</div>'; return h; }
   h+='<div class="watch-grid">';
   list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
-    h+='<div class="quote-card"><div id="q-'+esc(code)+'">'+quoteInner(code,q,it)+'</div><div class="qc-actions"><button class="pill secondary" data-act="stock-manual" data-code="'+esc(it.code)+'">手动覆盖</button><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div></div>';
+    h+='<div class="quote-card" style="'+stockMarketVars(it.code)+'"><div id="q-'+esc(code)+'">'+quoteInner(code,q,it)+'</div><div class="qc-actions"><button class="pill secondary" data-act="stock-manual" data-code="'+esc(it.code)+'">手动覆盖</button><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div></div>';
   });
   h+='</div>';
   return h;
@@ -1546,7 +1591,7 @@ function stockMetricTabHtml(){
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
   h+='<div class="watch-grid">';
   list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
-    h+='<div class="quote-card"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
+    h+='<div class="quote-card" style="'+stockMarketVars(it.code)+'"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
     if(q){ if(q.peTtm!=null) h+='<span>PE '+(Number(q.peTtm)).toFixed(2)+'</span>'; if(q.pb!=null) h+='<span>PB '+(Number(q.pb)).toFixed(2)+'</span>'; if(q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>'; if(q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>'; if(q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>'; }
     h+='</div><div id="m-'+esc(code)+'" class="loading">均线计算中…</div></div>';
   });
@@ -1570,7 +1615,7 @@ function stockRiskTabHtml(){
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
   h+='<div class="risk-grid">';
   list.forEach(it=>{ const code=normCodeStr(it.code);
-    h+='<div class="risk-card"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div></div>';
+    h+='<div class="risk-card" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div></div>';
   });
   h+='</div>';
   return h;
@@ -1652,7 +1697,8 @@ function summarizeCheckin(){
   ['睡眠','运动','食疗','体感'].forEach(dim=>{
     let cnt=0; const recent=[];
     days.slice().sort().reverse().forEach(d=>{ const r=all[d][dim]; if(r&&r.done){ cnt++; if(recent.length<3) recent.push(d); } });
-    html += '<div class="card" style="--card-accent:'+(dimColor[dim]||'#64748B')+';"><h4>'+esc(dim)+' <span class="tag">打卡 '+cnt+' 天</span></h4><div>最近 3 天：'+(recent.length?recent.join('、'):'无')+'</div></div>';
+    const dc=dimColor[dim]||'#64748B';
+    html += '<div class="card" style="--card-accent:'+dc+';--card-soft:'+softOf(dc)+';"><h4>'+esc(dim)+' <span class="tag">打卡 '+cnt+' 天</span></h4><div>最近 3 天：'+(recent.length?recent.join('、'):'无')+'</div></div>';
   });
   const el = $('chkSummary'); if(el) el.innerHTML = html;
 }
@@ -1666,7 +1712,8 @@ function renderTodo(body){
   if(arr.length===0){ html += '<div class="empty">暂无待办，点「＋ 新增」添加。</div>'; }
   const priColor={'高':'#EF4444','中':'#F59E0B','低':'#10B981'};
   arr.forEach((t,i)=>{
-    html += '<div class="card" id="card_todo-list_'+i+'" style="--card-accent:'+(priColor[t.priority]||'#64748B')+';"><h4><input type="checkbox" class="tdone" data-idx="'+i+'"'+(t.done?' checked':'')+'> '+esc(t.content||'')+'</h4>';
+    const pc=priColor[t.priority]||'#64748B';
+    html += '<div class="card" id="card_todo-list_'+i+'" style="--card-accent:'+pc+';--card-soft:'+softOf(pc)+';"><h4><input type="checkbox" class="tdone" data-idx="'+i+'"'+(t.done?' checked':'')+'> '+esc(t.content||'')+'</h4>';
     html += '<div class="row"><span class="k">优先级</span><span class="tag">'+esc(t.priority||'中')+'</span><span class="k">时间</span>'+esc(t.time||'--')+'</div>';
     html += '<div class="actions"><button class="pill secondary" data-act="edit" data-page="todo-list" data-idx="'+i+'">✎ 编辑</button><button class="pill secondary" data-act="del" data-page="todo-list" data-idx="'+i+'">删除</button></div>';
     html += '</div>';
