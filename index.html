@@ -298,6 +298,7 @@
   .watch-row .wr-name{font-weight:600;color:#1F2937;}
   .watch-row .wr-code{font-size:11px;color:var(--muted);}
   .watch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;}
+  .watch-grid .card{margin-bottom:0;}
   .quote-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 3px rgba(15,23,42,.04),0 1px 2px rgba(15,23,42,.06);}
   .quote-card .qc-top{display:flex;justify-content:space-between;align-items:baseline;}
   .quote-card .qc-name{font-size:14px;font-weight:700;color:#1F2937;}
@@ -1080,6 +1081,8 @@ function renderList(page, body){
   if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无记录。</div>'; }
+  else {
+    html += '<div class="watch-grid">';
   view.forEach(o=>{ const it=o.it, i=o.i;
     const titleF = m.fields.find(f=>f.title);
     const title = it[titleF.k] || '(未命名)';
@@ -1094,6 +1097,8 @@ function renderList(page, body){
     html += '<div class="actions"><button class="pill secondary" data-act="edit" data-page="'+page+'" data-idx="'+i+'">✎ 编辑</button><button class="pill secondary" data-act="del" data-page="'+page+'" data-idx="'+i+'">删除</button></div>';
     html += '</div>';
   });
+    html += '</div>';
+  }
   body.innerHTML = html;
 }
 
@@ -1182,6 +1187,8 @@ function renderHoldings(body){
   if(m.tabs) html += modTabBarHtml(currentPage, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无持仓。</div>'; }
+  else {
+    html += '<div class="watch-grid">';
   view.forEach(o=>{ const h=o.it, i=o.i;
     let q={}, up=false, down=false, pct=null, updTime='待刷新';
     let sharesTxt='待填写', costTxt='待填写', priceLabel='现价', priceTxt='', marketValueTxt='--', profitTxt='', legacy=false;
@@ -1239,6 +1246,8 @@ function renderHoldings(body){
     html += '<button class="pill secondary" data-act="del" data-page="'+currentPage+'" data-idx="'+i+'">删除</button>';
     html += '</span></div></div>';
   });
+    html += '</div>';
+  }
   body.innerHTML = html;
   if(isStock) armStockAutoRefresh();
 }
