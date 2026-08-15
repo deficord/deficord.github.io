@@ -391,16 +391,6 @@
   .star-off{color:#E5E7EB;}
   .reco-num{font-size:12px;color:#92400E;margin-left:5px;font-weight:700;}
   .reco-tip{font-size:11px;color:#9CA3AF;margin-left:4px;}
-  .reco-reasons{margin-top:8px;border-top:1px dashed #EEF2F7;padding-top:7px;}
-  .reco-reasons .rr-hd{font-weight:600;color:#92400E;margin-bottom:5px;font-size:12px;}
-  .reco-reasons .rr-row{display:flex;gap:6px;align-items:flex-start;padding:2px 0;line-height:1.45;font-size:12px;}
-  .reco-reasons .rr-ico{flex:0 0 auto;width:14px;text-align:center;font-weight:700;line-height:1.45;}
-  .reco-reasons .rr-row.good .rr-ico{color:#16A34A;}
-  .reco-reasons .rr-row.mid .rr-ico{color:#D97706;}
-  .reco-reasons .rr-row.bad .rr-ico{color:#DC2626;}
-  .reco-reasons .rr-row.na .rr-ico{color:#9CA3AF;}
-  .reco-reasons .rr-lab{flex:0 0 96px;color:#475569;font-weight:600;}
-  .reco-reasons .rr-txt{flex:1;color:#64748B;}
 
 </style>
 </head>
@@ -1889,7 +1879,6 @@ function computeReco(d, csi, set){
 /* 基本面数据（data.json 快照，由 fetch_fundamentals.py 注入） */
 function getFund(code){ return (remoteData && remoteData.fundamentals && remoteData.fundamentals[code]) || null; }
 function fmtYi(v){ if(v==null) return '--'; const yi=v/1e8; if(Math.abs(yi)>=10000) return (yi/10000).toFixed(2)+'万亿'; return yi.toFixed(2)+'亿'; }
-function icoOf(v){ return v==='good'?'✓':v==='mid'?'△':v==='bad'?'✗':'–'; }
 /* ============== 基本面 6 维评分（对应推荐要求） ============== */
 function computeFundamentalReco(fund, closes){
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -1976,11 +1965,7 @@ function computeFundamentalReco(fund, closes){
   else if(kfBad||roeBad||ocfBad) stars=Math.min(stars,3);
   return {stars, score:Math.round(fscore), criteria:c};
 }
-function recoReasonsHtml(fundRec, techStars, asOf){
-  const rows=fundRec.criteria.map(c=>'<div class="rr-row '+c.verdict+'"><span class="rr-ico">'+icoOf(c.verdict)+'</span><span class="rr-lab">'+esc(c.label)+'</span><span class="rr-txt">'+esc(c.text)+'</span></div>').join('');
-  const techNote='<div class="rr-row na"><span class="rr-ico">–</span><span class="rr-lab">技术面</span><span class="rr-txt">趋势/相对强弱已按 '+techStars+'.0 星计入综合评分</span></div>';
-  return '<div class="reco-reasons"><div class="rr-hd">推荐理由（基本面 6 维 · 数据截至 '+(asOf||'快照')+'）</div>'+techNote+rows+'</div>';
-}
+
 function stockCompareTabHtml(){
   const list=loadWatch();
   let h='<p class="hint">勾选要对比的标的（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「现价/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。</p>';
@@ -2096,7 +2081,7 @@ async function loadDerivedForVisible(){
           const fundRec=computeFundamentalReco(fund, kl?kl.closes:null);
           const combined=clamp(Math.round(techStars*0.4 + fundRec.stars*0.6),1,5);
           recoEl.className='reco-badge';
-          recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(combined)+'<span class="reco-num">'+combined+'.0</span>'+recoReasonsHtml(fundRec, techStars, fund.asOf);
+          recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(combined)+'<span class="reco-num">'+combined+'.0</span>';
         } else {
           recoEl.className='reco-badge';
           recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(techStars)+'<span class="reco-num">'+techStars+'.0</span><span class="reco-tip">基本面待补充</span>';
