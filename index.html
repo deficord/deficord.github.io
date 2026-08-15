@@ -534,11 +534,11 @@ const MODULES = {
     {k:'score',l:'评分',t:'number'},{k:'conclusion',l:'结论',t:'textarea'},
   ]},
   'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle'},
-  'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews'},
-  'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund'},
-  'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock'},
-  'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack'},
-  'rebalance':{type:'list', title:'调仓平衡记录', key:'wb_rebalance', fields:[
+  'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF']}},
+  'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
+  'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
+  'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','商品·防御']}},
+  'rebalance':{type:'list', title:'调仓平衡记录', key:'wb_rebalance', tabs:{field:'action', auto:true}, fields:[
     {k:'date',l:'时间',t:'date',title:true},{k:'target',l:'标的',t:'text'},
     {k:'action',l:'动作',t:'select',options:['加','减','调']},{k:'amount',l:'金额',t:'number'},
     {k:'reason',l:'理由',t:'textarea'},
@@ -1055,10 +1055,14 @@ function renderOverview(body){
 /* ============== 通用列表模块 ============== */
 function renderList(page, body){
   const m = MODULES[page];
-  const arr = loadData(m.key, []);
+  const arr0 = loadData(m.key, []);
+  const active = modTab[page] || '__all__';
+  const view = modView(m, arr0, active);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill" data-act="add" data-page="'+page+'">＋ 新增</button></div>';
-  if(arr.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
-  arr.forEach((it,i)=>{
+  if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
+  if(arr0.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
+  else if(view.length===0){ html += '<div class="empty">该分类暂无记录。</div>'; }
+  view.forEach(o=>{ const it=o.it, i=o.i;
     const titleF = m.fields.find(f=>f.title);
     const title = it[titleF.k] || '(未命名)';
     html += '<div class="card" id="card_'+page+'_'+i+'"><h4>'+esc(title)+'</h4>';
@@ -1120,15 +1124,20 @@ function renderAiText(page, body){
 
 /* ============== 理财新知 ============== */
 function renderFinance(body){
-  const arr = remoteData.financeNews || [];
+  const m = MODULES['finance-news'];
+  const arr0 = remoteData.financeNews || [];
+  const active = modTab['finance-news'] || '__all__';
+  const view = modView(m, arr0, active);
   let lastUpdate='';
-  arr.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
+  arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何买卖建议。</p>';
-  if(arr.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
+  if(m.tabs) html += modTabBarHtml('finance-news', modTabCats(m, arr0), active);
+  if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
+  else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
     html += '<div class="finance-grid">';
-    arr.forEach((it,i)=>{
+    view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || it.summary || '';
       html += '<div class="card fn-card" id="card_finance-news_'+i+'">';
       html += '<h4>'+esc(it.title||'')+'</h4>';
@@ -1147,11 +1156,15 @@ function renderHoldings(body){
   const m = MODULES[currentPage] || {};
   const key = m.key || 'wb_holdings';
   const isStock = (m.source==='stock');
-  const arr = loadData(key, []);
+  const arr0 = loadData(key, []);
+  const active = modTab[currentPage] || '__all__';
+  const view = modView(m, arr0, active);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" data-page="'+currentPage+'">🔄 刷新涨跌</button><button class="pill" data-act="add" data-page="'+currentPage+'">＋ 新增持仓</button></div>';
   html += '<p class="hint">'+(isStock?'仅作持仓整理与估值记录，严禁任何买卖建议。':'仅作持仓整理与估值记录，严禁任何买卖建议。QDII/美股基金日期可能 T+1 滞后，属正常。')+'</p>';
-  if(arr.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
-  arr.forEach((h,i)=>{
+  if(m.tabs) html += modTabBarHtml(currentPage, modTabCats(m, arr0), active);
+  if(arr0.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
+  else if(view.length===0){ html += '<div class="empty">该分类暂无持仓。</div>'; }
+  view.forEach(o=>{ const h=o.it, i=o.i;
     let q={}, up=false, down=false, pct=null, updTime='待刷新';
     let sharesTxt='待填写', costTxt='待填写', priceLabel='现价', priceTxt='', marketValueTxt='--', profitTxt='', legacy=false;
     const shares = (h.shares!=null)? Number(h.shares):null;
@@ -1209,7 +1222,7 @@ function renderHoldings(body){
     html += '</span></div></div>';
   });
   body.innerHTML = html;
-  const codes = arr.filter(h=>h.code).map(h=>String(h.code));
+  const codes = view.map(o=>o.it).filter(h=>h.code).map(h=>String(h.code));
   if(codes.length){
     if(isStock) refreshStockQuotesFor(codes);
     else liveQuotes();
@@ -1252,21 +1265,63 @@ function migrateIndexTrack(){
   try{ localStorage.setItem('wb_index_track_ver', String(IDX_SEED_VER)); }catch(e){}
 }
 function renderIndexTrack(body){
-  const arr = loadIndexTrack();
+  const m = MODULES['index-track'];
+  const arr0 = loadIndexTrack();
+  const active = modTab['index-track'] || '__all__';
+  const view = modView(m, arr0, active);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="idx-settings">⚙ 设置</button><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」「市净率(PB)」「场内溢价率」「股息率」「风险溢价(股债利差)」「估值区间(PE近1年)」；纳指100/沪深300/中证A500/恒科另含「前十大权重」；纳指100/标普500/黄金含「美元指数/美债」联动。纳斯达克100 / 标普500 各自独立判断、不互相引用。卡片顶部彩色徽标为综合评级与判断置信度（绿=低估/看多，黄=中性，红=偏高估/谨慎）。</p>';
-  if(arr.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
-  arr.forEach((it,i)=>{
+  if(m.tabs) html += modTabBarHtml('index-track', modTabCats(m, arr0), active);
+  if(arr0.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
+  else if(view.length===0){ html += '<div class="empty">该分类暂无指数。</div>'; }
+  view.forEach(o=>{ const it=o.it, i=o.i;
     html += '<div class="card" id="card_index-track_'+i+'">';
     const _toneColor={'bull':'#16A34A','neutral':'#F59E0B','bear':'#EF4444'}[it.tone||'neutral']||'#F59E0B';
     const _badge='<span style="margin-left:8px;font-size:11px;font-weight:600;color:#fff;background:'+_toneColor+';padding:2px 8px;border-radius:10px;vertical-align:middle">'+esc(it.rating||'评级待定')+' · 置信'+esc(it.confidence||'-')+'</span>';
     html += '<h4><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+_badge+'</h4>';
     (it.rows||[]).forEach((r,j)=>{ html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span>'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
-    if(it.note){ html += '<div class="row"><span class="k">判断</span><span>'+esc(it.note)+'</span></div>'; }
+    if(it.note){ html += '<div class="row"><span class="k">判断</span><span>'+esc(it.note).replace(/\n/g,'<br>')+'</span></div>'; }
     html += '<div class="row"><span class="k">来源</span>AI 策展 · data.json</div>';
     html += '</div>';
   });
   body.innerHTML = html;
+}
+
+/* ============== 通用 Tab 分类（理财研究各小类共用） ============== */
+const modTab = {}; // page -> 当前选中的 tab key
+// 指数按市场归类（用于「指数跟踪数据」Tab）
+function idxRegion(name){
+  if(/纳斯达克|标普/.test(name)) return '美股';
+  if(/恒生/.test(name)) return '港股';
+  if(/黄金|红利低波/.test(name)) return '商品·防御';
+  return 'A股';
+}
+// 计算 Tab 分类列表（全部 + 具体分类）
+function modTabCats(m, arr0){
+  const cfg = m.tabs;
+  if(!cfg) return ['__all__'];
+  let cats = [];
+  if(cfg.cats){
+    const present = new Set();
+    arr0.forEach(it=>{ const v = cfg.field ? it[cfg.field] : ''; if(v) present.add(v); });
+    cats = cfg.cats.filter(c=>present.has(c));
+  } else if(cfg.auto){ const s = new Set(); arr0.forEach(it=>{ const v = cfg.field ? it[cfg.field] : ''; if(v) s.add(v); }); cats = [...s]; }
+  return ['__all__'].concat(cats);
+}
+// 把原数组映射为 [{it, i}]，并按 active tab 过滤（保留原始下标 i 供编辑/删除定位）
+function modView(m, arr0, active){
+  const cfg = m.tabs;
+  if(!cfg || !active || active==='__all__') return arr0.map((it,i)=>({it,i}));
+  return arr0.map((it,i)=>({it,i})).filter(o=>{
+    const v = cfg.field ? o.it[cfg.field] : (cfg.derive ? idxRegion(o.it.name) : '');
+    return v===active;
+  });
+}
+function modTabBarHtml(page, cats, active){
+  let h = '<div class="stock-tabs">';
+  cats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(k==='__all__'?'全部':k)+'</button>'; });
+  h += '</div>';
+  return h;
 }
 
 /* ============== 股票基金分析（行情/自选批量导入/对比/指标/收益测算/风险） ============== */
@@ -2231,6 +2286,7 @@ function bindEvents(){
       if(act==='cmAirefresh'){ loadRemoteData(); toast('已请求刷新，AI 将按配置抓取'); return; }
       if(act==='refreshQuote'){ refreshQuotes(f.dataset.page||currentPage); return; }
       if(act==='full'){ showFull(page, idx); return; }
+      if(act==='mod-tab'){ modTab[f.dataset.page]=f.dataset.tab; renderCurrent(); return; }
       /* ===== 股票基金分析模块事件 ===== */
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
       if(act==='openStockTabEditor'){ openStockTabEditor(); return; }
