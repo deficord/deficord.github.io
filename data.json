@@ -1,5 +1,5 @@
 {
-  "siteVersion": "2026-08-15.1860",
+  "siteVersion": "2026-08-15.1870",
   "holdings": [],
   "sideHustle": [
     {
@@ -1059,6 +1059,50 @@
       "gszzl": -0.29,
       "dwjz": 1.7166,
       "gztime": "2026-08-11"
+    }
+  },
+  "fundamentals": {
+    "600433": {
+      "asOf": "2026-08-15",
+      "name": null,
+      "industry": "造纸",
+      "kfNetProfit": [
+        -67892821.04,
+        51075362.32,
+        -279844042.6
+      ],
+      "roeAvg": 1.1680000000000001,
+      "ocfPerShare": -0.1785,
+      "epsDeduct": -0.3037,
+      "ocfRatio": -0.5877510701350016,
+      "debtRatio": 46.732421902403715,
+      "goodwillToAssets": 0.021257049162231492,
+      "pledgeRatio": null,
+      "peTtm": -177.64350614,
+      "pb": 1.31904356,
+      "totalCap": 5863435430.55,
+      "moat": 2
+    },
+    "000001": {
+      "asOf": "2026-08-15",
+      "name": null,
+      "industry": "银行Ⅱ",
+      "kfNetProfit": [
+        46431000000.0,
+        44838000000.0,
+        42624000000.0
+      ],
+      "roeAvg": 9.464,
+      "ocfPerShare": 16.2764,
+      "epsDeduct": 2.1969,
+      "ocfRatio": 7.408803313760298,
+      "debtRatio": 90.90672498687546,
+      "goodwillToAssets": 0.12553109789120032,
+      "pledgeRatio": null,
+      "peTtm": 5.00696124,
+      "pb": 0.46047267,
+      "totalCap": 215599751179.78,
+      "moat": 2
     }
   }
 }
