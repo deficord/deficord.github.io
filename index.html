@@ -1075,7 +1075,7 @@ function renderList(page, body){
   const arr0 = loadData(m.key, []);
   const active = modTab[page] || '__all__';
   const view = modView(m, arr0, active);
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill'+(page==='rebalance'?' ai':'')+'" data-act="add" data-page="'+page+'">＋ 新增</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill" data-act="add" data-page="'+page+'">＋ 新增</button></div>';
   if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无记录。</div>'; }
@@ -1176,7 +1176,7 @@ function renderHoldings(body){
   const arr0 = loadData(key, []);
   const active = modTab[currentPage] || '__all__';
   const view = modView(m, arr0, active);
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" data-page="'+currentPage+'">🔄 刷新涨跌</button><button class="pill ai" data-act="add" data-page="'+currentPage+'">＋ 新增持仓</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" data-page="'+currentPage+'">🔄 刷新涨跌</button><button class="pill" data-act="add" data-page="'+currentPage+'">＋ 新增持仓</button></div>';
   html += '<p class="hint">'+(isStock?'仅作持仓整理与估值记录，严禁任何买卖建议。':'仅作持仓整理与估值记录，严禁任何买卖建议。QDII/美股基金日期可能 T+1 滞后，属正常。')+'</p>';
   if(m.tabs) html += modTabBarHtml(currentPage, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
@@ -1467,7 +1467,7 @@ function quoteInner(code, q, item){
 function renderStockAnalysis(body){
   const m=MODULES['stock-analysis'];
   let html='<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>';
-  if(stockTab==='quote') html+='<button class="pill ai" data-act="stock-refresh">🔄 刷新行情</button>';
+  if(stockTab==='quote') html+='<button class="pill" data-act="stock-refresh">🔄 刷新行情</button>';
   html+='<button class="pill secondary" data-act="openStockTabEditor">⚙ 设置</button>';
   html+='</div>';
   html+='<div class="stock-tabs">';
