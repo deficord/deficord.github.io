@@ -122,6 +122,11 @@
   .idx-tab-label-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
   .idx-tab-label-row .stk-name{flex:0 0 96px;font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .idx-tab-label-row .stk-label{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;}
+  /* 卡片拖拽排序 */
+  .draggable-cards .card,.draggable-cards .quote-card,.draggable-cards .risk-card{cursor:grab;touch-action:manipulation;}
+  .draggable-cards .card:active,.draggable-cards .quote-card:active,.draggable-cards .risk-card:active{cursor:grabbing;}
+  .draggable-cards .card.dragging,.draggable-cards .quote-card.dragging,.draggable-cards .risk-card.dragging{opacity:.45;cursor:grabbing;box-shadow:0 10px 28px rgba(15,23,42,.28);transform:none!important;z-index:50;}
+  body.dragging-active{user-select:none;-webkit-user-select:none;}
   /* 字段 / 分段控件（后台） */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
@@ -927,8 +932,9 @@ function renderCustomModule(page, body){
   if(!data.length){
     html += '<div class="empty">暂无内容。'+(cfg.aiOn?('发「刷新」让 AI 按「'+(cfg.aiTopic||'')+'」抓取。'):'点「＋ 新增」添加。')+'</div>';
   } else {
-    html += '<div class="cm-grid cm-span'+cfg.span+'">';
-    data.forEach((it,i)=>{ html += renderCmItem(cfg, it, i); });
+    html += '<div class="cm-grid cm-span'+cfg.span+' draggable-cards" data-drag-page="'+page+'">';
+    const cmItems = data.map((it,i)=>({it,i}));
+    displayOrdered(page, data, cmItems).forEach(o=>{ html += renderCmItem(cfg, o.it, o.i); });
     html += '</div>';
   }
   body.innerHTML = html;
@@ -951,7 +957,7 @@ function renderCmItem(m, it, i){
   const isLocal = !!(m.items && m.items.indexOf(it)>=0);
   let acts='';
   if(isLocal){ acts = '<div class="actions"><button class="pill secondary" data-act="cmEdit" data-id="'+m.page+'" data-idx="'+i+'">✎ 编辑</button><button class="pill secondary" data-act="cmDel" data-id="'+m.page+'" data-idx="'+i+'">删除</button></div>'; }
-  return '<div class="card theme-'+m.theme+'">'+inner+acts+'</div>';
+  return '<div class="card theme-'+m.theme+'" data-card-idx="'+i+'" data-card-page="'+esc(m.page)+'">'+inner+acts+'</div>';
 }
 
 /* ============== 后台管理（与前台一致的分组层级） ============== */
@@ -1294,18 +1300,19 @@ function renderList(page, body){
   const m = MODULES[page];
   const arr0 = loadData(m.key, []);
   const active = modTab[page] || '__all__';
-  const view = modView(m, arr0, active);
+  let view = modView(m, arr0, active);
+  view = displayOrdered(page, arr0, view);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill" data-act="add" data-page="'+page+'">＋ 新增</button></div>';
   if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无记录，点「＋ 新增」添加第一条。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无记录。</div>'; }
   else {
-    html += '<div class="watch-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
+    html += '<div class="watch-grid draggable-cards" data-drag-page="'+page+'" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
   view.forEach(o=>{ const it=o.it, i=o.i;
     const titleF = m.fields.find(f=>f.title);
     const title = it[titleF.k] || '(未命名)';
     const cv = (page==='rebalance' && it.action) ? namedCardVars(it.action) : '';
-    html += '<div class="card" id="card_'+page+'_'+i+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(title)+'</h4>';
+    html += '<div class="card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(title)+'</h4>';
     m.fields.forEach(f=>{
       if(f.title) return;
       let v = it[f.k];
@@ -1331,14 +1338,19 @@ function renderKnowledge(body){
   const all = loadData('wb_knowledge', []);
   const list = kbFilter==='全部' ? all : all.filter(c=>c.category===kbFilter);
   if(list.length===0){ html += '<div class="empty">暂无笔记。粘贴 AI 分析结果 → 生成卡片，或切换筛选。</div>'; }
-  list.forEach((c,i)=>{
-    const realIdx = all.indexOf(c);
-    const kbc=c.category||'未分类';
-    html += '<div class="card" id="card_knowledge-base_'+realIdx+'" style="'+namedCardVars(kbc)+'"><h4>'+esc(c.title)+' <span class="tag cat">'+esc(kbc)+'</span></h4>';
-    html += '<div class="content">'+esc(c.content)+'</div>';
-    html += '<div class="actions"><button class="pill secondary" data-act="kbCopy" data-idx="'+realIdx+'">⧉ 复制</button><button class="pill secondary" data-act="kbEdit" data-idx="'+realIdx+'">✎ 编辑</button><button class="pill secondary" data-act="kbDel" data-idx="'+realIdx+'">删除</button></div>';
+  else {
+    html += '<div class="watch-grid draggable-cards" data-drag-page="knowledge-base">';
+    const items = list.map(c=>({it:c, i: all.indexOf(c)}));
+    displayOrdered('knowledge-base', all, items).forEach(o=>{
+      const c=o.it, realIdx=o.i;
+      const kbc=c.category||'未分类';
+      html += '<div class="card" id="card_knowledge-base_'+realIdx+'" data-card-idx="'+realIdx+'" data-card-page="knowledge-base" style="'+namedCardVars(kbc)+'"><h4>'+esc(c.title)+' <span class="tag cat">'+esc(kbc)+'</span></h4>';
+      html += '<div class="content">'+esc(c.content)+'</div>';
+      html += '<div class="actions"><button class="pill secondary" data-act="kbCopy" data-idx="'+realIdx+'">⧉ 复制</button><button class="pill secondary" data-act="kbEdit" data-idx="'+realIdx+'">✎ 编辑</button><button class="pill secondary" data-act="kbDel" data-idx="'+realIdx+'">删除</button></div>';
+      html += '</div>';
+    });
     html += '</div>';
-  });
+  }
   body.innerHTML = html;
 }
 
@@ -1370,7 +1382,8 @@ function renderFinance(body){
   const m = MODULES['finance-news'];
   const arr0 = remoteData.financeNews || [];
   const active = modTab['finance-news'] || '__all__';
-  const view = modView(m, arr0, active);
+  let view = modView(m, arr0, active);
+  view = displayOrdered('finance-news', arr0, view);
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button><button class="pill secondary" data-act="fin-settings">⚙ 设置</button></div>';
@@ -1379,11 +1392,11 @@ function renderFinance(body){
   if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
-    html += '<div class="finance-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
+    html += '<div class="finance-grid draggable-cards" data-drag-page="finance-news" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || it.summary || '';
       const cv = it.cat ? namedCardVars(it.cat) : '';
-      html += '<div class="card fn-card" id="card_finance-news_'+i+'"'+(cv?' style="'+cv+'"':'')+'>';
+      html += '<div class="card fn-card" id="card_finance-news_'+i+'" data-card-idx="'+i+'" data-card-page="finance-news" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
       html += '<div class="summary" id="fn-sum-'+i+'">'+esc(content)+'</div>';
       html += '<a class="detail-link" href="#" data-act="full" data-page="finance-news" data-idx="'+i+'">查看详情 ›</a>';
@@ -1402,14 +1415,15 @@ function renderHoldings(body){
   const isStock = (m.source==='stock');
   const arr0 = loadData(key, []);
   const active = modTab[currentPage] || '__all__';
-  const view = modView(m, arr0, active);
+  let view = modView(m, arr0, active);
+  view = displayOrdered(currentPage, arr0, view);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="refreshQuote" data-page="'+currentPage+'">🔄 刷新涨跌</button><button class="pill" data-act="add" data-page="'+currentPage+'">＋ 新增持仓</button></div>';
   html += '<p class="hint">'+(isStock?'仅作持仓整理与估值记录，严禁任何买卖建议。':'仅作持仓整理与估值记录，严禁任何买卖建议。QDII/美股基金日期可能 T+1 滞后，属正常。')+'</p>';
   if(m.tabs) html += modTabBarHtml(currentPage, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">暂无持仓，点「＋ 新增持仓」添加（代码需为真实 '+(isStock?'6 位股票代码':'6 位基金代码')+'）。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无持仓。</div>'; }
   else {
-    html += '<div class="watch-grid" style="--card-accent:'+(isStock?'#8B5CF6':'#06B6D4')+';--card-soft:'+(isStock?'#F5F3FF':'#ECFEFF')+';">';
+    html += '<div class="watch-grid draggable-cards" data-drag-page="'+currentPage+'" style="--card-accent:'+(isStock?'#8B5CF6':'#06B6D4')+';--card-soft:'+(isStock?'#F5F3FF':'#ECFEFF')+';">';
   view.forEach(o=>{ const h=o.it, i=o.i;
     let q={}, up=false, down=false, pct=null, updTime='待刷新';
     let sharesTxt='待填写', costTxt='待填写', priceLabel='现价', priceTxt='', marketValueTxt='--', profitTxt='', legacy=false;
@@ -1449,7 +1463,7 @@ function renderHoldings(body){
       if(h.amount!=null) marketValueTxt = esc(h.amount)+' <span class="tag">旧</span>';
     }
     const cv = isStock ? (h.sector?namedCardVars(h.sector):'') : (h.type?namedCardVars(typeLabel(h.type)):'');
-    html += '<div class="card" id="card_'+currentPage+'_'+i+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(h.name||'')+(isStock?' <span class="tag">股票</span>':' <span class="tag">'+esc(typeLabel(h.type))+'</span>')+'</h4>';
+    html += '<div class="card" id="card_'+currentPage+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+currentPage+'"'+(cv?' style="'+cv+'"':'')+'><h4>'+esc(h.name||'')+(isStock?' <span class="tag">股票</span>':' <span class="tag">'+esc(typeLabel(h.type))+'</span>')+'</h4>';
     html += '<div class="row"><span class="k">代码</span>'+esc(h.code||'--')+'</div>';
     if(isStock && h.sector){ html += '<div class="row"><span class="k">所属板块</span>'+esc(h.sector)+'</div>'; }
     html += '<div class="row"><span class="k">'+(isStock?'持股数量':'持有份额')+'</span>'+sharesTxt+'</div>';
@@ -1512,15 +1526,17 @@ function renderIndexTrack(body){
   const m = MODULES['index-track'];
   const arr0 = loadIndexTrack();
   const active = modTab['index-track'] || '__all__';
-  const view = modView(m, arr0, active);
+  let view = modView(m, arr0, active);
+  view = displayOrdered('index-track', arr0, view);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button><button class="pill secondary" data-act="idx-settings">⚙ 设置</button></div>';
   html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」「市净率(PB)」「场内溢价率」「股息率」「风险溢价(股债利差)」「估值区间(PE近1年)」；纳指100/沪深300/中证A500/恒科另含「前十大权重」；纳指100/标普500/黄金含「美元指数/美债」联动。纳斯达克100 / 标普500 各自独立判断、不互相引用。卡片顶部彩色徽标为综合评级与判断置信度（绿=低估/看多，黄=中性，红=偏高估/谨慎）。</p>';
   if(m.tabs) html += modTabBarHtml('index-track', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无指数。</div>'; }
+  html += '<div class="watch-grid draggable-cards" data-drag-page="index-track">';
   view.forEach(o=>{ const it=o.it, i=o.i;
     const _toneColor={'bull':'#16A34A','neutral':'#F59E0B','bear':'#EF4444'}[it.tone||'neutral']||'#F59E0B';
-    html += '<div class="card" id="card_index-track_'+i+'" style="--card-accent:'+_toneColor+';--card-soft:'+softOf(_toneColor)+';">';
+    html += '<div class="card" id="card_index-track_'+i+'" data-card-idx="'+i+'" data-card-page="index-track" style="--card-accent:'+_toneColor+';--card-soft:'+softOf(_toneColor)+';">';
     const _badge='<span style="margin-left:8px;font-size:11px;font-weight:600;color:#fff;background:'+_toneColor+';padding:2px 8px;border-radius:10px;vertical-align:middle">'+esc(it.rating||'评级待定')+' · 置信'+esc(it.confidence||'-')+'</span>';
     html += '<h4><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+_badge+'</h4>';
     (it.rows||[]).forEach((r,j)=>{ html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span>'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
@@ -1528,6 +1544,7 @@ function renderIndexTrack(body){
     html += '<div class="row"><span class="k">来源</span>AI 策展 · data.json</div>';
     html += '</div>';
   });
+  html += '</div>';
   body.innerHTML = html;
 }
 
@@ -1573,6 +1590,28 @@ function moveTabOrder(page, cat, dir, boxId){
   saveTabOrder(page, order);
   if(boxId) renderTabLabels(page, boxId);
   if(currentPage===page) renderCurrent();
+}
+// 卡片显示顺序（拖拽排序后保存，刷新保留；不改变数据本身）
+const CARD_ORDER_KEY='wb_card_order';
+let _cardOrder=null;
+function _ensureCardOrder(){ if(!_cardOrder){ try{ const raw=localStorage.getItem(CARD_ORDER_KEY); _cardOrder=(raw?JSON.parse(raw):{}); }catch(e){ _cardOrder={}; } if(!_cardOrder||typeof _cardOrder!=='object') _cardOrder={}; } return _cardOrder; }
+function loadCardOrder(page){ const all=_ensureCardOrder(); return (all[page]&&Array.isArray(all[page]))?all[page]:null; }
+function saveCardOrder(page, arr){ const all=_ensureCardOrder(); all[page]=arr; saveData(CARD_ORDER_KEY, all); }
+// 返回原数组下标（i）的显示顺序（越界去除，新下标追加末尾）
+function cardDisplayOrder(page, arr0){
+  const order=loadCardOrder(page);
+  const idxs=arr0.map((_,i)=>i);
+  if(!order||!order.length) return idxs;
+  const set=new Set(idxs);
+  const out=order.filter(idx=>set.has(idx));
+  idxs.forEach(i=>{ if(!out.includes(i)) out.push(i); });
+  return out;
+}
+// 把 [{it,i}] 列表按显示顺序排序（i 仍是原数组下标，供编辑/删除定位）
+function displayOrdered(page, arr0, items){
+  const order=cardDisplayOrder(page, arr0);
+  const rank=new Map(); order.forEach((idx,pos)=>rank.set(idx,pos));
+  return items.slice().sort((a,b)=> (rank.has(a.i)?rank.get(a.i):1e9) - (rank.has(b.i)?rank.get(b.i):1e9));
 }
 // 计算 Tab 分类列表（全部 + 具体分类）
 function modTabCats(m, arr0){
@@ -1759,9 +1798,10 @@ function stockQuoteTabHtml(){
   const list=loadWatch();
   let h='<p class="hint">实时行情来自腾讯财经公开接口（无需后端，浏览器直连），关键字段可手动覆盖。仅供研究，不构成任何投资建议。</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选，去「自选」粘贴代码（如 600519、sh600519、000001）。</div>'; return h; }
-  h+='<div class="watch-grid">';
-  list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
-    h+='<div class="quote-card" style="'+stockMarketVars(it.code)+'"><div id="q-'+esc(code)+'">'+quoteInner(code,q,it)+'</div><div class="qc-actions"><button class="pill secondary" data-act="stock-manual" data-code="'+esc(it.code)+'">手动覆盖</button><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div></div>';
+  h+='<div class="watch-grid draggable-cards" data-drag-page="stock-analysis">';
+  const items=list.map((it,i)=>({it,i}));
+  displayOrdered('stock-analysis', list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code); const q=stockQuotes[code];
+    h+='<div class="quote-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div id="q-'+esc(code)+'">'+quoteInner(code,q,it)+'</div><div class="qc-actions"><button class="pill secondary" data-act="stock-manual" data-code="'+esc(it.code)+'">手动覆盖</button><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div></div>';
   });
   h+='</div>';
   return h;
@@ -1799,9 +1839,10 @@ function stockMetricTabHtml(){
   const list=loadWatch();
   let h='<p class="hint">指标含实时估值（PE/PB/市值/换手/振幅）与近 180 日 K 线计算的均线（MA20/MA60），自动加载。</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
-  h+='<div class="watch-grid">';
-  list.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code];
-    h+='<div class="quote-card" style="'+stockMarketVars(it.code)+'"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
+  h+='<div class="watch-grid draggable-cards" data-drag-page="stock-analysis">';
+  const items=list.map((it,i)=>({it,i}));
+  displayOrdered('stock-analysis', list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code); const q=stockQuotes[code];
+    h+='<div class="quote-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
     if(q){ if(q.peTtm!=null) h+='<span>PE '+(Number(q.peTtm)).toFixed(2)+'</span>'; if(q.pb!=null) h+='<span>PB '+(Number(q.pb)).toFixed(2)+'</span>'; if(q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>'; if(q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>'; if(q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>'; }
     h+='</div><div id="m-'+esc(code)+'" class="loading">均线计算中…</div></div>';
   });
@@ -1823,9 +1864,10 @@ function stockRiskTabHtml(){
   const list=loadWatch();
   let h='<p class="hint">风险指标基于近 180 日日线：年化波动率、最大回撤、近一年涨幅、现价偏离 MA60。自动加载。</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
-  h+='<div class="risk-grid">';
-  list.forEach(it=>{ const code=normCodeStr(it.code);
-    h+='<div class="risk-card" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div></div>';
+  h+='<div class="risk-grid draggable-cards" data-drag-page="stock-analysis">';
+  const items=list.map((it,i)=>({it,i}));
+  displayOrdered('stock-analysis', list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code);
+    h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div></div>';
   });
   h+='</div>';
   return h;
@@ -1921,13 +1963,18 @@ function renderTodo(body){
   let html = '<div class="page-head"><h2 class="page-title">今日待办清单</h2><button class="pill" data-act="add" data-page="todo-list">＋ 新增</button></div>';
   if(arr.length===0){ html += '<div class="empty">暂无待办，点「＋ 新增」添加。</div>'; }
   const priColor={'高':'#EF4444','中':'#F59E0B','低':'#10B981'};
-  arr.forEach((t,i)=>{
+  const todoItems = arr.map((t,i)=>({it:t,i}));
+  const todoOrdered = displayOrdered('todo-list', arr, todoItems);
+  if(arr.length){ html += '<div class="watch-grid draggable-cards" data-drag-page="todo-list">'; }
+  todoOrdered.forEach(o=>{
+    const t=o.it, i=o.i;
     const pc=priColor[t.priority]||'#64748B';
-    html += '<div class="card" id="card_todo-list_'+i+'" style="--card-accent:'+pc+';--card-soft:'+softOf(pc)+';"><h4><input type="checkbox" class="tdone" data-idx="'+i+'"'+(t.done?' checked':'')+'> '+esc(t.content||'')+'</h4>';
+    html += '<div class="card" id="card_todo-list_'+i+'" data-card-idx="'+i+'" data-card-page="todo-list" style="--card-accent:'+pc+';--card-soft:'+softOf(pc)+';"><h4><input type="checkbox" class="tdone" data-idx="'+i+'"'+(t.done?' checked':'')+'> '+esc(t.content||'')+'</h4>';
     html += '<div class="row"><span class="k">优先级</span><span class="tag">'+esc(t.priority||'中')+'</span><span class="k">时间</span>'+esc(t.time||'--')+'</div>';
     html += '<div class="actions"><button class="pill secondary" data-act="edit" data-page="todo-list" data-idx="'+i+'">✎ 编辑</button><button class="pill secondary" data-act="del" data-page="todo-list" data-idx="'+i+'">删除</button></div>';
     html += '</div>';
   });
+  if(arr.length){ html += '</div>'; }
   body.innerHTML = html;
 }
 
@@ -2680,6 +2727,69 @@ function bindEvents(){
     const td = e.target.closest('.tdone');
     if(td){ const arr=loadData('wb_todo',[]); arr[td.dataset.idx].done = td.checked; saveData('wb_todo', arr); return; }
   });
+  // ===== 卡片拖拽排序（Pointer 事件，鼠标 + 触摸通用，插入式）=====
+  (function initCardDrag(){
+    const DRAG_THRESHOLD = 6;
+    let st = null; // {card, container, page, startX, startY, dragging}
+    const content = $('content');
+    if(!content) return;
+    function cardDragAfter(container, x, y){
+      const els = [...container.querySelectorAll('.card:not(.dragging), .quote-card:not(.dragging), .risk-card:not(.dragging)')];
+      let closest=null, closestDist=Infinity;
+      for(const el of els){
+        const r=el.getBoundingClientRect();
+        const cx=r.left+r.width/2, cy=r.top+r.height/2;
+        const d=Math.hypot(x-cx, y-cy);
+        if(d<closestDist){ closestDist=d; closest=el; }
+      }
+      if(!closest) return null;
+      const r=closest.getBoundingClientRect();
+      const cx=r.left+r.width/2, cy=r.top+r.height/2;
+      if(x<cx && y<cy) return closest;
+      const next=closest.nextElementSibling;
+      return (next && (next.classList.contains('card')||next.classList.contains('quote-card')||next.classList.contains('risk-card'))) ? next : null;
+    }
+    content.addEventListener('pointerdown', e=>{
+      if(e.button!=null && e.button!==0) return; // 仅左键
+      const card=e.target.closest('.card, .quote-card, .risk-card');
+      if(!card) return;
+      const container=card.closest('.draggable-cards');
+      if(!container) return;
+      if(e.target.closest('button, a, input, textarea, select, [data-act], .tdone')) return; // 排除交互元素
+      st={ card, container, page:container.dataset.dragPage, startX:e.clientX, startY:e.clientY, dragging:false };
+    }, {passive:true});
+    content.addEventListener('pointermove', e=>{
+      if(!st) return;
+      if(!st.dragging){
+        if(Math.hypot(e.clientX-st.startX, e.clientY-st.startY) < DRAG_THRESHOLD) return;
+        st.dragging=true;
+        st.card.classList.add('dragging');
+        document.body.classList.add('dragging-active');
+        try{ st.card.style.touchAction='none'; }catch(_){}
+      }
+      if(e.cancelable) e.preventDefault(); // 拖拽时阻止页面滚动
+      const after=cardDragAfter(st.container, e.clientX, e.clientY);
+      if(after==null) st.container.appendChild(st.card);
+      else if(after!==st.card) st.container.insertBefore(st.card, after);
+    }, {passive:false});
+    function endDrag(){
+      if(!st) return;
+      const {card, container, page, dragging}=st;
+      if(dragging){
+        card.classList.remove('dragging');
+        card.style.touchAction='';
+        document.body.classList.remove('dragging-active');
+        if(container.contains(card)){
+          const order=[...container.querySelectorAll('.card[data-card-idx], .quote-card[data-card-idx], .risk-card[data-card-idx]')].map(c=>Number(c.dataset.cardIdx));
+          if(order.length) saveCardOrder(page, order);
+        }
+        if(currentPage===page) renderCurrent();
+      }
+      st=null;
+    }
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+  })();
   // 自定义模块手动录入（实时保存）
   $('content').addEventListener('input', e=>{
     const ct = e.target.closest('.cat-title');
