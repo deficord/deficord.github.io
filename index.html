@@ -765,6 +765,9 @@ function navigate(page){
   setActiveSide(page);
   if(page==='knowledge-base') kbFilter='全部';
   renderPage(page);
+  /* 进入持仓台账页面时主动抓一次行情（仅一次，不在 renderHoldings 内触发，避免抓取回调整页重渲染造成的 Tab 抖动循环） */
+  if(page==='asset-account'){ liveQuotes().catch(()=>{}); }
+  else if(page==='stock-account'){ const _c=loadData('wb_stock_holdings',[]).filter(h=>h.code).map(h=>String(h.code)); if(_c.length) refreshStockQuotesFor(_c); }
   if(location.hash !== '#'+page){ history.replaceState(null,'','#'+page); }
   closeSidebar();
   window.scrollTo(0,0);
@@ -1236,11 +1239,6 @@ function renderHoldings(body){
     html += '</span></div></div>';
   });
   body.innerHTML = html;
-  const codes = view.map(o=>o.it).filter(h=>h.code).map(h=>String(h.code));
-  if(codes.length){
-    if(isStock) refreshStockQuotesFor(codes);
-    else liveQuotes();
-  }
   if(isStock) armStockAutoRefresh();
 }
 
