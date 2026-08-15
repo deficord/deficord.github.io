@@ -383,6 +383,14 @@
   .stock-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7;}
   .loading{color:var(--muted);font-size:13px;padding:10px 0;}
   .cmp-loading{color:var(--muted);}
+  .reco-set{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:12px;}
+  .reco-set-label{flex-basis:100%;font-weight:600;color:#92400E;margin-bottom:2px;line-height:1.5;}
+  .reco-set label{display:inline-flex;align-items:center;gap:5px;color:#475569;font-weight:500;}
+  .reco-set select{padding:4px 6px;border:1px solid #D8DEE9;border-radius:7px;font-size:12px;background:#fff;cursor:pointer;}
+  .stars{font-size:17px;letter-spacing:2px;white-space:nowrap;}
+  .star-on{color:#F5B301;}
+  .star-off{color:#E5E7EB;}
+  .reco-num{font-size:12px;color:#92400E;margin-left:5px;font-weight:700;}
 
 </style>
 </head>
@@ -1664,6 +1672,8 @@ function modTabBarHtml(page, cats, active){
 let stockTab='quote';
 let stockQuotes={};
 let stockKlines={};
+let compareDerivedCache={};
+let compareCsi={yRet:null, dev:null};
 let stockCompareSel=[];
 const DEFAULT_WATCHLIST=[{code:'600433',name:'冠豪高新'},{code:'510300',name:'沪深300ETF'},{code:'513180',name:'恒生科技ETF'},{code:'510500',name:'中证500ETF'}];
 // 六大功能 Tab：名称/顺序可在后台「股票基金分析」模块编辑卡片中修改（仅影响显示，功能不变）
@@ -1845,6 +1855,40 @@ function fmtCmpRt(key,v){
   if(key==='totalCap'||key==='circCap') return fmtYi(v);
   return String(v);
 }
+/* ============== 对比页·推荐指数（黄色五角星 1-5 星） ============== */
+function loadRecoSettings(){ return Object.assign({macro:0,global:0,meeting:0,industry:0}, loadData('wb_reco_settings', {})); }
+function saveRecoSettings(s){ saveData('wb_reco_settings', s); }
+function starHtml(n){ n=Math.max(1,Math.min(5, n|0)); return '<span class="star-on">'+'★'.repeat(n)+'</span><span class="star-off">'+'☆'.repeat(5-n)+'</span>'; }
+function computeReco(d, csi, set){
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const rs=(d.yRet!=null&&csi.yRet!=null)?(d.yRet-csi.yRet):0;
+  const s1=clamp((rs+0.25)/0.50,0,1);                                  // 相对强弱
+  const s2=(d.dev!=null)?clamp((d.dev+0.30)/0.60,0,1):0.5;            // 现价/MA60 趋势位置
+  const s3=(d.yRet!=null)?clamp((d.yRet+0.30)/0.60,0,1):0.5;          // 近一年涨跌
+  const s4=(d.mdd!=null)?clamp((0.45-d.mdd)/0.45,0,1):0.5;           // 最大回撤(越小越好)
+  let s5=0.5; if(d.volRatio!=null){ const qb=d.volRatio; if(qb>=0.8&&qb<=3.5) s5=1-Math.min(1,Math.abs(qb-1.8)/2.0); else if(qb<0.8) s5=qb/0.8*0.5; else s5=Math.max(0,1-(qb-3.5)/3); s5=clamp(s5,0,1); }
+  let s6=0.6; if(d.peTtm!=null&&d.peTtm>0){ const pe=d.peTtm; s6=(pe>80)?0.2:clamp(1-Math.abs(pe-25)/30,0.2,1); }
+  const s7=(d.vol!=null)?clamp((0.5-d.vol)/0.5,0,1):0.5;             // 年化波动率(越小越好)
+  const tech=(s1*0.22+s2*0.20+s3*0.18+s4*0.15+s5*0.10+s6*0.10+s7*0.05)*100;
+  let marketScore=0.5; if(csi.yRet!=null||csi.dev!=null){ const a=(csi.yRet!=null)?clamp((csi.yRet+0.20)/0.40,0,1):0.5; const b=(csi.dev!=null)?clamp((csi.dev+0.15)/0.30,0,1):0.5; marketScore=a*0.5+b*0.5; }
+  const marketAdj=(marketScore-0.5)*12;
+  const manualSum=((set.macro||0)+(set.global||0)+(set.meeting||0)+(set.industry||0))*5;
+  const raw=clamp(tech+marketAdj+manualSum, 8, 100);
+  const stars=clamp(Math.round(raw/20),1,5);
+  return {stars, tech:Math.round(tech), marketAdj:Math.round(marketAdj), manualSum:Math.round(manualSum), raw:Math.round(raw)};
+}
+function renderRecoRow(){
+  const set=loadRecoSettings();
+  const list=loadWatch();
+  const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
+  sel.forEach(it=>{ const code=normCodeStr(it.code); const el=document.getElementById('reco-'+code); if(!el) return;
+    const d=compareDerivedCache[code];
+    if(!d){ el.className='cmp-loading'; el.textContent='--'; return; }
+    const r=computeReco(d, compareCsi, set);
+    const sign=x=>(x>=0?'+':'')+x;
+    el.className=''; el.innerHTML='<span class="stars" title="技术面 '+r.tech+' · 市场 '+(sign(r.marketAdj))+' · 宏观设置 '+(sign(r.manualSum))+' → '+r.stars+' 星">'+starHtml(r.stars)+'</span><span class="reco-num">'+r.stars+'.0</span>';
+  });
+}
 function stockCompareTabHtml(){
   const list=loadWatch();
   let h='<p class="hint">勾选要对比的标的（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「现价/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。</p>';
@@ -1855,11 +1899,21 @@ function stockCompareTabHtml(){
   });
   h+='</div>';
   const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
+  // 推荐指数设置（宏观/全球/会议/行业为你的主观判断；市场与个股技术面自动）
+  const rs0=loadRecoSettings();
+  const recoOpt=(k,v,l)=>'<option value="'+v+'"'+(Number(rs0[k])===v?' selected':'')+'>'+l+'</option>';
+  h+='<div class="reco-set"><div class="reco-set-label">推荐指数：技术面与「市场行情(沪深300)」自动计算；下方四项请按你的判断选择（看多/中性/看空），会整体调高/调低星级。</div>';
+  h+='<label>宏观经济<select data-act="reco-setting" data-key="macro">'+recoOpt('macro',-1,'看空')+recoOpt('macro',0,'中性')+recoOpt('macro',1,'看多')+'</select></label>';
+  h+='<label>全球经济<select data-act="reco-setting" data-key="global">'+recoOpt('global',-1,'看空')+recoOpt('global',0,'中性')+recoOpt('global',1,'看多')+'</select></label>';
+  h+='<label>最近会议精神<select data-act="reco-setting" data-key="meeting">'+recoOpt('meeting',-1,'偏空')+recoOpt('meeting',0,'中性')+recoOpt('meeting',1,'偏多')+'</select></label>';
+  h+='<label>行业经济<select data-act="reco-setting" data-key="industry">'+recoOpt('industry',-1,'看空')+recoOpt('industry',0,'中性')+recoOpt('industry',1,'看多')+'</select></label>';
+  h+='</div>';
   // 实时列（同步渲染）
   const rtRows=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap'],['流通市值','circCap'],['量比','volRatio']];
   // 派生列（异步填充，单元格带 id 便于回填）
   const derRows=[['现价/MA60','devMA60'],['近一年涨跌','yRet'],['最大回撤','mdd'],['相对强弱(沪深300)','rs']];
   h+='<div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
+  h+='<tr><td>推荐指数 ★</td>'+sel.map(it=>{ const code=normCodeStr(it.code); return '<td id="reco-'+esc(code)+'" class="cmp-loading">--</td>'; }).join('')+'</tr>';
   rtRows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code]; let v=null,chgCls='';
       if(q){ if(r[1]==='price'){ v=q.price; } else if(r[1]==='chg'){ v=(q.price&&q.preClose)?((q.price-q.preClose)/q.preClose*100):null; chgCls=v>0?'up':(v<0?'down':''); } else { v=q[r[1]]; } }
       h+='<td class="'+(chgCls||'')+'">'+fmtCmpRt(r[1],v)+'</td>';
@@ -1873,8 +1927,9 @@ async function loadCompareDerived(){
   const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
   if(!sel.length) return;
   if(!Object.keys(stockQuotes).length){ try{ await refreshStockQuotes(); }catch(_){ } }
-  let csiYRet=null;
-  try{ const csi=await loadKline('sh000300'); if(csi){ const r=calcRisk(csi.closes); if(r) csiYRet=r.yRet; } }catch(_){}
+  let csiYRet=null, csiDev=null;
+  try{ const csi=await loadKline('sh000300'); if(csi){ const r=calcRisk(csi.closes); if(r){ csiYRet=r.yRet; csiDev=(csi.closes.length>=60)?(csi.closes[csi.closes.length-1]/r.ma60-1):null; } } }catch(_){}
+  compareCsi={yRet:csiYRet, dev:csiDev};
   for(const it of sel){
     const code=normCodeStr(it.code);
     const setCell=(metric, html)=>{ const el=document.getElementById('cmp-'+metric+'-'+code); if(el){ el.className=''; el.innerHTML=html; } };
@@ -1888,7 +1943,9 @@ async function loadCompareDerived(){
     setCell('yRet', r.yRet!=null?'<span class="'+(r.yRet>0?'up':'down')+'">'+fmtPct(r.yRet*100)+'</span>':'--');
     setCell('mdd', r.mdd!=null?'<span class="down">-'+ (r.mdd*100).toFixed(2) +'%</span>':'--');
     setCell('rs', rs!=null?'<span class="'+(rs>0?'up':'down')+'">'+fmtPct(rs*100)+'</span>':'--');
+    compareDerivedCache[code]={dev, yRet:r.yRet, mdd:r.mdd, vol:r.vol, rs, peTtm:(q&&q.peTtm!=null)?q.peTtm:null, volRatio:(q&&q.volRatio!=null)?q.volRatio:null};
   }
+  renderRecoRow();
 }
 function stockMetricTabHtml(){
   const list=loadWatch();
@@ -2938,6 +2995,8 @@ function bindEvents(){
   $('content').addEventListener('change', e=>{
     const ct = e.target.closest('.cat-title');
     if(ct){ pushModuleConfig().catch(()=>{}); } // 大类改名后导出配置（失焦时一次）
+    const rs = e.target.closest('[data-act="reco-setting"]');
+    if(rs){ const set=loadRecoSettings(); set[rs.dataset.key]=Number(rs.value); saveRecoSettings(set); renderRecoRow(); }
   });
 
   // 搜索结果点击 → 跳转 + 定位
