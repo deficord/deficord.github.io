@@ -2840,6 +2840,17 @@ function bindEvents(){
       if(st && st.card) st.card.classList.remove('arming');
       cancelTimer(); st=null;
     }
+    // 触摸专用：在长按窗口内/拖拽中阻止页面滚动（仅 touch 需要；鼠标不受影响）。
+    // 关键：不能用全局锁 #content（否则 dragging-active 没及时移除会卡死整页滚动，已修复）。
+    // Pointer 事件的 preventDefault 拦不住触摸滚动，必须用原生 touchmove 的 preventDefault 才生效。
+    content.addEventListener('touchmove', e=>{
+      if(!st || st.pointerType==='mouse') return;
+      if(st.dragging){ e.preventDefault(); return; }                 // 已拿起：阻止页面跟着滚
+      const t = (e.touches && e.touches[0]) ? e.touches[0] : e;
+      const moved = Math.hypot(t.clientX - st.startX, t.clientY - st.startY);
+      if(moved <= DRAG_THRESHOLD){ e.preventDefault(); }             // 长按窗口内基本没动 → 按住期间不让页面滚动，为“拿起”让路
+      else { card_arm_cancel(); }                                    // 明显滑动 → 判定为滚动页面，取消拖拽
+    }, {passive:false, capture:true});
     function endDrag(){
       if(!st) return;
       cancelTimer();
