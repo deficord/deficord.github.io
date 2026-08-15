@@ -123,10 +123,14 @@
   .idx-tab-label-row .stk-name{flex:0 0 96px;font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .idx-tab-label-row .stk-label{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;}
   /* 卡片拖拽排序 */
-  .draggable-cards .card,.draggable-cards .quote-card,.draggable-cards .risk-card{cursor:grab;touch-action:manipulation;}
+  .draggable-cards .card,.draggable-cards .quote-card,.draggable-cards .risk-card{cursor:grab;touch-action:manipulation;-webkit-touch-callout:none;}
   .draggable-cards .card:active,.draggable-cards .quote-card:active,.draggable-cards .risk-card:active{cursor:grabbing;}
+  /* 长按“拿起中”提示 */
+  .draggable-cards .card.arming,.draggable-cards .quote-card.arming,.draggable-cards .risk-card.arming{transform:scale(1.025);box-shadow:0 6px 18px rgba(15,23,42,.16);transition:transform .12s ease,box-shadow .12s ease;}
   .draggable-cards .card.dragging,.draggable-cards .quote-card.dragging,.draggable-cards .risk-card.dragging{opacity:.45;cursor:grabbing;box-shadow:0 10px 28px rgba(15,23,42,.28);transform:none!important;z-index:50;}
   body.dragging-active{user-select:none;-webkit-user-select:none;}
+  /* 拖拽进行中锁定主内容区滚动（防止手机端页面跟着滚） */
+  body.dragging-active #content{overflow:hidden;touch-action:none;}
   /* 字段 / 分段控件（后台） */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
@@ -2727,10 +2731,11 @@ function bindEvents(){
     const td = e.target.closest('.tdone');
     if(td){ const arr=loadData('wb_todo',[]); arr[td.dataset.idx].done = td.checked; saveData('wb_todo', arr); return; }
   });
-  // ===== 卡片拖拽排序（Pointer 事件，鼠标 + 触摸通用，插入式）=====
+  // ===== 卡片拖拽排序（Pointer 事件；触摸=长按拿起，鼠标=滑动拖拽，插入式）=====
   (function initCardDrag(){
-    const DRAG_THRESHOLD = 6;
-    let st = null; // {card, container, page, startX, startY, dragging}
+    const DRAG_THRESHOLD = 6;   // 移动超过该值判定为“滑动/滚动”
+    const LONG_PRESS_MS = 450;  // 触摸长按多久后“拿起”卡片
+    let st = null; // {card, container, page, pointerId, pointerType, startX, startY, dragging, timer}
     const content = $('content');
     if(!content) return;
     function cardDragAfter(container, x, y){
@@ -2749,32 +2754,52 @@ function bindEvents(){
       const next=closest.nextElementSibling;
       return (next && (next.classList.contains('card')||next.classList.contains('quote-card')||next.classList.contains('risk-card'))) ? next : null;
     }
+    function beginDrag(){
+      if(!st || st.dragging) return;
+      st.dragging = true;
+      st.card.classList.remove('arming');
+      st.card.classList.add('dragging');
+      document.body.classList.add('dragging-active'); // 锁定主内容区滚动
+      try{ st.card.style.touchAction='none'; }catch(_){}
+      try{ st.card.setPointerCapture(st.pointerId); }catch(_){}
+      try{ if(navigator.vibrate) navigator.vibrate(15); }catch(_){}
+    }
+    function cancelTimer(){ if(st && st.timer){ clearTimeout(st.timer); st.timer=null; } }
     content.addEventListener('pointerdown', e=>{
-      if(e.button!=null && e.button!==0) return; // 仅左键
+      if(e.button!=null && e.button!==0) return; // 仅左键/触摸
       const card=e.target.closest('.card, .quote-card, .risk-card');
       if(!card) return;
       const container=card.closest('.draggable-cards');
       if(!container) return;
       if(e.target.closest('button, a, input, textarea, select, [data-act], .tdone')) return; // 排除交互元素
-      st={ card, container, page:container.dataset.dragPage, startX:e.clientX, startY:e.clientY, dragging:false };
+      st={ card, container, page:container.dataset.dragPage, pointerId:e.pointerId, pointerType:e.pointerType, startX:e.clientX, startY:e.clientY, dragging:false, timer:null };
+      // 触摸/笔：长按 450ms 自动“拿起”卡片（手机体验：长按而非滑动）
+      if(e.pointerType!=='mouse'){
+        st.card.classList.add('arming'); // 拿起中视觉提示
+        st.timer = setTimeout(beginDrag, LONG_PRESS_MS);
+      }
     }, {passive:true});
     content.addEventListener('pointermove', e=>{
       if(!st) return;
       if(!st.dragging){
-        if(Math.hypot(e.clientX-st.startX, e.clientY-st.startY) < DRAG_THRESHOLD) return;
-        st.dragging=true;
-        st.card.classList.add('dragging');
-        document.body.classList.add('dragging-active');
-        try{ st.card.style.touchAction='none'; }catch(_){}
+        const moved = Math.hypot(e.clientX-st.startX, e.clientY-st.startY);
+        if(moved > DRAG_THRESHOLD){
+          if(st.pointerType==='mouse'){ beginDrag(); return; } // 鼠标：滑动即拖拽
+          // 触摸：手指先移动 = 滚动页面，取消长按拖拽
+          if(st.card) st.card.classList.remove('arming');
+          cancelTimer(); st=null; return;
+        }
+        return;
       }
-      if(e.cancelable) e.preventDefault(); // 拖拽时阻止页面滚动
+      if(e.cancelable) e.preventDefault(); // 拖拽中阻止页面滚动
       const after=cardDragAfter(st.container, e.clientX, e.clientY);
       if(after==null) st.container.appendChild(st.card);
       else if(after!==st.card) st.container.insertBefore(st.card, after);
     }, {passive:false});
     function endDrag(){
       if(!st) return;
-      const {card, container, page, dragging}=st;
+      cancelTimer();
+      const {card, container, page, pointerId, dragging}=st;
       if(dragging){
         card.classList.remove('dragging');
         card.style.touchAction='';
@@ -2784,11 +2809,16 @@ function bindEvents(){
           if(order.length) saveCardOrder(page, order);
         }
         if(currentPage===page) renderCurrent();
+      } else if(card){
+        card.classList.remove('arming');
       }
+      try{ card.releasePointerCapture(pointerId); }catch(_){}
       st=null;
     }
     document.addEventListener('pointerup', endDrag);
     document.addEventListener('pointercancel', endDrag);
+    // 阻止卡片区域长按弹出系统菜单（让长按=拿起卡片）
+    content.addEventListener('contextmenu', e=>{ if(e.target.closest('.draggable-cards')) e.preventDefault(); });
   })();
   // 自定义模块手动录入（实时保存）
   $('content').addEventListener('input', e=>{
