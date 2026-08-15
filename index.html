@@ -118,6 +118,10 @@
   .idx-add{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);}
   .idx-add-hd{font-size:13px;font-weight:600;color:#374151;margin-bottom:8px;}
   .idx-add-row{margin-bottom:8px;}
+  .idx-tabedit{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);}
+  .idx-tab-label-row{display:flex;align-items:center;gap:10px;margin:6px 0;}
+  .idx-tab-label-row .stk-name{flex:0 0 96px;font-size:13px;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .idx-tab-label-row .stk-label{flex:1;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:13px;font-family:inherit;}
   /* 字段 / 分段控件（后台） */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
@@ -444,6 +448,10 @@
       <h3>⚙ 指数跟踪数据 · 设置</h3>
       <p class="hint" style="margin-bottom:10px">用 ↑/↓ 调整指数顺序，✕ 移除不需要的指数；下方可新增你要跟踪的指数。</p>
       <div id="idxEditBox"></div>
+      <div class="idx-tabedit">
+        <div class="idx-add-hd">✎ Tab 分类名称（自定义显示名，不改变归类）</div>
+        <div id="idxTabLabels"></div>
+      </div>
       <div class="idx-add">
         <div class="idx-add-hd">＋ 新增指数</div>
         <div class="idx-add-row"><input id="idxNewName" class="stk-label" placeholder="指数名称（必填，如 创业板指）"></div>
@@ -573,7 +581,7 @@ const MODULES = {
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF']}},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
-  'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','商品·防御']}},
+  'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','防御']}},
   'rebalance':{type:'list', title:'调仓平衡记录', key:'wb_rebalance', tabs:{field:'action', auto:true}, fields:[
     {k:'date',l:'时间',t:'date',title:true},{k:'target',l:'标的',t:'text'},
     {k:'action',l:'动作',t:'select',options:['加仓','减仓','调仓']},{k:'amount',l:'金额',t:'number'},
@@ -1044,7 +1052,18 @@ function renderIdxEditor(){
   });
   box.innerHTML=h;
 }
-function openIdxEditor(){ renderIdxEditor(); $('idxMask').classList.add('show'); }
+function renderIdxTabLabels(){
+  const box=$('idxTabLabels'); if(!box) return;
+  const m=MODULES['index-track'];
+  const cats=(m&&m.tabs&&m.tabs.cats)||[];
+  const labels=loadIdxTabLabels();
+  let h='';
+  cats.forEach(c=>{
+    h += '<div class="idx-tab-label-row"><span class="stk-name">'+esc(c)+'</span><input class="stk-label" data-tab-key="'+esc(c)+'" value="'+esc(labels[c]||c)+'" placeholder="'+esc(c)+'"></div>';
+  });
+  box.innerHTML=h;
+}
+function openIdxEditor(){ renderIdxEditor(); renderIdxTabLabels(); $('idxMask').classList.add('show'); }
 function closeIdxEditor(){ $('idxMask').classList.remove('show'); }
 function renderCmItemsEditor(){
   const cfg=getModuleConfig(adminSel); const box=$('cmItems'); if(!box||!cfg) return;
@@ -1496,9 +1515,16 @@ const modTab = {}; // page -> 当前选中的 tab key
 function idxRegion(name){
   if(/纳斯达克|标普/.test(name)) return '美股';
   if(/恒生/.test(name)) return '港股';
-  if(/黄金|红利低波/.test(name)) return '商品·防御';
+  if(/黄金|红利低波/.test(name)) return '防御';
   return 'A股';
 }
+// Tab 分类显示名（可在「指数跟踪数据·设置」里自定义改名，不影响数据归类）
+const IDX_TAB_LABEL_KEY='wb_idx_tab_labels';
+let _idxTabLabels=null;
+function loadIdxTabLabels(){ if(_idxTabLabels) return _idxTabLabels; try{ const raw=localStorage.getItem(IDX_TAB_LABEL_KEY); _idxTabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _idxTabLabels={}; } if(!_idxTabLabels||typeof _idxTabLabels!=='object') _idxTabLabels={}; return _idxTabLabels; }
+function saveIdxTabLabels(o){ _idxTabLabels=o; saveData(IDX_TAB_LABEL_KEY, o); }
+function idxTabLabel(key){ const l=loadIdxTabLabels(); return (l&&l[key])?l[key]:key; }
+function tabDisplayName(page, k){ if(k==='__all__') return '全部'; if(page==='index-track') return idxTabLabel(k); return k; }
 // 计算 Tab 分类列表（全部 + 具体分类）
 function modTabCats(m, arr0){
   const cfg = m.tabs;
@@ -1522,7 +1548,7 @@ function modView(m, arr0, active){
 }
 function modTabBarHtml(page, cats, active){
   let h = '<div class="stock-tabs">';
-  cats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(k==='__all__'?'全部':k)+'</button>'; });
+  cats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
   h += '</div>';
   return h;
 }
@@ -2472,7 +2498,7 @@ function bindEvents(){
   if(idxm) idxm.addEventListener('click', e=>{
     const f=e.target.closest('[data-act]'); if(!f) return;
     const act=f.dataset.act;
-    if(act==='idxClose'){ closeIdxEditor(); return; }
+    if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
     if(act==='idxUp'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
     if(act==='idxDown'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveIndexTrack(a); } renderIdxEditor(); return; }
     if(act==='idxDel'){ const i=Number(f.dataset.i); const a=loadIndexTrack(); a.splice(i,1); saveIndexTrack(a); renderIdxEditor(); toast('已移除'); return; }
@@ -2492,6 +2518,13 @@ function bindEvents(){
       renderIdxEditor(); toast('已新增「'+name+'」');
       return;
     }
+  });
+  const idxTabLabelsBox=$('idxTabLabels');
+  if(idxTabLabelsBox) idxTabLabelsBox.addEventListener('input', e=>{
+    const inp=e.target.closest('input[data-tab-key]'); if(!inp) return;
+    const labels=loadIdxTabLabels(); const key=inp.dataset.tabKey; const v=inp.value.trim();
+    if(v) labels[key]=v; else delete labels[key];
+    saveIdxTabLabels(labels);
   });
 
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
@@ -2550,7 +2583,7 @@ function bindEvents(){
       if(act==='openStockTabEditor'){ openStockTabEditor(); return; }
       if(act==='stockTabClose'){ closeStockTabEditor(); return; }
       if(act==='idx-settings'){ openIdxEditor(); return; }
-      if(act==='idxClose'){ closeIdxEditor(); return; }
+      if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
