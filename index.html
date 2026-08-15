@@ -1890,6 +1890,19 @@ function locateCard(page, cardId){
 }
 
 /* ============== 远程数据 ============== */
+/* 一次性清理：移除早期种子注入的两条演示持仓（000216 黄金ETF联接A / 017641 标普500），
+   让用户从空台账自行添加。仅按代码精确删除、按版本戳只跑一次，绝不误删用户此后自行添加的内容。 */
+function cleanupSeedHoldings(){
+  try{
+    const STAMP='wb_holdings_seedclean_ver', VER=1;
+    if(parseInt(localStorage.getItem(STAMP)||'0',10)>=VER) return;
+    const arr = loadData('wb_holdings', []);
+    const removeCodes = new Set(['000216','017641']);
+    const next = arr.filter(h=> !(h.code && removeCodes.has(String(h.code))));
+    if(next.length!==arr.length) saveData('wb_holdings', next);
+    try{ localStorage.setItem(STAMP, String(VER)); }catch(e){}
+  }catch(e){}
+}
 async function loadRemoteData(){
   try{
     const r = await fetch('./data.json?t='+Date.now(), {cache:'no-store'});
@@ -1915,6 +1928,7 @@ async function loadRemoteData(){
     migrateIndexTrack();
     if(d.fundQuotes) fundQuote = d.fundQuotes;
     if(d.holdings && !localStorage.getItem('wb_holdings')){ saveData('wb_holdings', d.holdings); }
+    cleanupSeedHoldings();
     $('demoBanner').style.display='none';
     renderCurrent();
     toast('已拉取最新 data.json');
