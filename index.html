@@ -252,6 +252,22 @@
   .ov-table{width:100%;border-collapse:collapse;font-size:12px;}
   .ov-table th,.ov-table td{border-bottom:1px solid var(--border);padding:9px 8px;text-align:left;}
   .ov-table th{color:var(--muted);font-weight:500;background:#FAFAFB;}
+  /* 概览资金流向柱状图 */
+  .ff-chart{min-height:180px;padding:8px 0 4px;}
+  .ff-loading,.ff-error{color:var(--muted);font-size:13px;text-align:center;padding:46px 0 40px;}
+  .ff-error{color:#EF4444;}
+  .ff-row{display:flex;align-items:center;margin:11px 0;gap:10px;}
+  .ff-label{width:60px;font-size:12px;color:#374151;font-weight:600;text-align:right;flex-shrink:0;}
+  .ff-bar-wrap{flex:1;height:22px;background:#F1F5F9;border-radius:11px;overflow:hidden;position:relative;}
+  .ff-bar{height:100%;border-radius:11px;transition:width .55s ease;min-width:2px;}
+  .ff-bar.up{background:linear-gradient(90deg,#EF4444,#F87171);}
+  .ff-bar.down{background:linear-gradient(90deg,#16A34A,#4ADE80);}
+  .ff-value{width:84px;font-size:12px;color:#111827;font-weight:600;flex-shrink:0;text-align:right;}
+  .ff-value.up{color:#DC2626;} .ff-value.down{color:#16A34A;}
+  .ff-time{font-size:11px;color:var(--muted);text-align:right;margin-top:8px;}
+  .ff-legend{display:flex;justify-content:flex-end;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;}
+  .ff-legend span{display:inline-flex;align-items:center;gap:4px;}
+  .ff-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
   /* 弹窗 */
   .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50;}
   .modal-mask.show{display:flex;}
@@ -1064,6 +1080,65 @@ function computeStreak(rec){
 function kpiCard(label, value, cls, sub, color){
   return '<div class="kpi"'+(color?' style="--kpi-accent:'+color+';"':'')+'><div class="kpi-label">'+esc(label)+'</div><div class="kpi-value '+(cls||'')+'">'+esc(value)+'</div>'+(sub?'<div class="kpi-delta">'+esc(sub)+'</div>':'')+'</div>';
 }
+const FUND_FLOW_ASSETS = [
+  {name:'A股', secid:'1.000001', color:'#2563EB'},
+  {name:'黄金', secid:'1.518880', color:'#F59E0B'},
+  {name:'美股', secid:'1.513100', color:'#8B5CF6'}
+];
+function fetchFundFlow(secid){
+  return new Promise((resolve,reject)=>{
+    const cb = 'ffcb_'+Date.now()+'_'+Math.floor(Math.random()*1e9);
+    const url = 'https://push2.eastmoney.com/api/qt/stock/fflow/kline/get?secid='+encodeURIComponent(secid)+'&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57,f58&klt=1&lmt=1&ut=b2884a393a59ad64002292a3e90d46a5&cb='+cb;
+    const script = document.createElement('script');
+    const timer = setTimeout(()=>{ cleanup(); reject(new Error('timeout')); }, 12000);
+    function cleanup(){ try{ delete window[cb]; }catch(e){} if(script.parentNode) script.parentNode.removeChild(script); clearTimeout(timer); }
+    window[cb] = (d)=>{ cleanup(); resolve(d); };
+    script.onerror = ()=>{ cleanup(); reject(new Error('script error')); };
+    script.src = url;
+    document.head.appendChild(script);
+  });
+}
+function parseFundFlow(json){
+  const klines = json && json.data && json.data.klines;
+  if(!klines || !klines.length) return null;
+  const parts = klines[0].split(',');
+  if(parts.length < 2) return null;
+  const val = Number(parts[1]);
+  if(!isFinite(val)) return null;
+  return {time: parts[0], value: val/1e8};
+}
+async function loadFundFlowChart(){
+  const box = $('fundFlowChart');
+  if(!box) return;
+  box.innerHTML = '<div class="ff-loading">正在从东方财富获取资金流向…</div>';
+  box.className = 'ff-chart';
+  try {
+    const results = await Promise.all(FUND_FLOW_ASSETS.map(async a=>{
+      try {
+        const d = await fetchFundFlow(a.secid);
+        const p = parseFundFlow(d);
+        return {name:a.name, secid:a.secid, color:a.color, ...p, ok:!!p};
+      } catch(e) { return {name:a.name, secid:a.secid, color:a.color, ok:false, error:e.message}; }
+    }));
+    renderFundFlowChart(box, results);
+  } catch(e) {
+    box.innerHTML = '<div class="ff-error">加载失败，请稍后刷新重试</div>';
+  }
+}
+function renderFundFlowChart(box, results){
+  const ok = results.filter(r=>r.ok);
+  if(!ok.length){ box.innerHTML = '<div class="ff-error">资金流向数据暂不可用，请稍后刷新</div>'; return; }
+  const max = Math.max(...ok.map(r=>Math.abs(r.value||0)), 1);
+  const rows = ok.map(r=>{
+    const v = r.value||0;
+    const pct = max ? Math.abs(v)/max*100 : 0;
+    const cls = v>=0 ? 'up' : 'down';
+    const sign = v>0 ? '+' : '';
+    return '<div class="ff-row"><div class="ff-label" style="color:'+esc(r.color||'#374151')+'">'+esc(r.name)+'</div><div class="ff-bar-wrap"><div class="ff-bar '+cls+'" style="width:'+Math.max(pct,2).toFixed(1)+'%"></div></div><div class="ff-value '+cls+'">'+sign+esc(v.toFixed(2))+'亿</div></div>';
+  }).join('');
+  const time = ok[0] && ok[0].time ? '数据时间：'+esc(ok[0].time)+'（东方财富）' : '';
+  box.innerHTML = rows + '<div class="ff-legend"><span><i style="background:linear-gradient(90deg,#EF4444,#F87171)"></i>净流入</span><span><i style="background:linear-gradient(90deg,#16A34A,#4ADE80)"></i>净流出</span></div>' + (time?'<div class="ff-time">'+time+'</div>':'');
+}
 function fundTable(arr){
   if(!arr.length) return '<div class="empty">暂无持仓，去「持仓台账」添加。</div>';
   let h='<table class="ov-table"><tr><th>名称</th><th>代码</th><th>市值</th><th>今日</th></tr>';
@@ -1117,9 +1192,11 @@ function renderOverview(body){
   html += kpiCard('持有标的', holdings.length+' 只', '', '', '#8B5CF6');
   html += kpiCard('连续打卡', streak+' 天', '', '本月已打卡 '+monthDays+' 天', '#F59E0B');
   html += '</div>';
+  html += '<div class="panel"><div class="panel-hd"><div class="panel-title">资金流向（亿元）</div><button class="pill secondary" data-act="ff-refresh">刷新</button></div><div class="panel-bd"><div id="fundFlowChart" class="ff-chart"><div class="ff-loading">正在加载资金流向…</div></div></div></div>';
   html += '<div class="panel"><div class="panel-hd"><div class="panel-title">基金净值</div><button class="pill secondary" data-act="goto" data-page="asset-account">查看全部</button></div><div class="panel-bd">'+fundTable(holdings)+'</div></div>';
   html += '<div class="panel"><div class="panel-hd"><div class="panel-title">市场指数</div><button class="pill secondary" data-act="goto" data-page="index-track">查看全部</button></div><div class="panel-bd">'+indexTable(remoteData.indexTrack||[])+'</div></div>';
   body.innerHTML = html;
+  loadFundFlowChart();
 }
 
 /* ============== 通用列表模块 ============== */
@@ -2346,6 +2423,7 @@ function bindEvents(){
       if(act==='del'){ if(confirm('确定删除这条记录？')){ const arr=loadData(MODULES[page].key,[]); arr.splice(idx,1); saveData(MODULES[page].key, arr); renderCurrent(); toast('已删除'); } return; }
       if(act==='airefresh'){ loadRemoteData(); return; }
       if(act==='ovrefresh'){ loadRemoteData(); return; }
+      if(act==='ff-refresh'){ loadFundFlowChart(); return; }
       if(act==='goto'){ navigate(page); return; }
       if(act==='cmNew'){ const m={id:genCid(), title:'新模块', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增模块'); return; }
       if(act==='catAddMod'){ const n=Number(f.dataset.n); const m={id:genCid(), title:'新小类', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; if(n!==99) m.group=n; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增小类'); return; }
