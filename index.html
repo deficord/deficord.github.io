@@ -468,6 +468,22 @@
     </div>
   </div>
 
+  <!-- 理财每日新知：Tab 名称设置弹窗 -->
+  <div class="modal-mask" id="finMask">
+    <div class="modal">
+      <h3>⚙ 理财每日新知 · 设置</h3>
+      <p class="hint" style="margin-bottom:10px">下方可自定义各 Tab 分类的显示名称（不改变归类与内容）。</p>
+      <div class="idx-tabedit">
+        <div class="idx-add-hd">✎ Tab 分类名称（自定义显示名，不改变归类）</div>
+        <div id="finTabLabels"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="pill secondary" data-act="finClose">取消</button>
+        <button class="pill" data-act="finClose">完成</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
 
   <!-- 删除/隐藏模块 确认弹窗（自定义 是/否） -->
@@ -1052,18 +1068,18 @@ function renderIdxEditor(){
   });
   box.innerHTML=h;
 }
-function renderIdxTabLabels(){
-  const box=$('idxTabLabels'); if(!box) return;
-  const m=MODULES['index-track'];
+function renderTabLabels(page, boxId){
+  const box=$(boxId); if(!box) return;
+  const m=MODULES[page];
   const cats=(m&&m.tabs&&m.tabs.cats)||[];
-  const labels=loadIdxTabLabels();
+  const labels=loadTabLabels(page);
   let h='';
   cats.forEach(c=>{
-    h += '<div class="idx-tab-label-row"><span class="stk-name">'+esc(c)+'</span><input class="stk-label" data-tab-key="'+esc(c)+'" value="'+esc(labels[c]||c)+'" placeholder="'+esc(c)+'"></div>';
+    h += '<div class="idx-tab-label-row"><span class="stk-name">'+esc(c)+'</span><input class="stk-label" data-tab-key="'+esc(c)+'" data-page="'+esc(page)+'" value="'+esc(labels[c]||c)+'" placeholder="'+esc(c)+'"></div>';
   });
   box.innerHTML=h;
 }
-function openIdxEditor(){ renderIdxEditor(); renderIdxTabLabels(); $('idxMask').classList.add('show'); }
+function openIdxEditor(){ renderIdxEditor(); renderTabLabels('index-track','idxTabLabels'); $('idxMask').classList.add('show'); }
 function closeIdxEditor(){ $('idxMask').classList.remove('show'); }
 function renderCmItemsEditor(){
   const cfg=getModuleConfig(adminSel); const box=$('cmItems'); if(!box||!cfg) return;
@@ -1351,7 +1367,7 @@ function renderFinance(body){
   const view = modView(m, arr0, active);
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button><button class="pill secondary" data-act="fin-settings">⚙ 设置</button></div>';
   html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何买卖建议。</p>';
   if(m.tabs) html += modTabBarHtml('finance-news', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
@@ -1518,13 +1534,14 @@ function idxRegion(name){
   if(/黄金|红利低波/.test(name)) return '防御';
   return 'A股';
 }
-// Tab 分类显示名（可在「指数跟踪数据·设置」里自定义改名，不影响数据归类）
-const IDX_TAB_LABEL_KEY='wb_idx_tab_labels';
-let _idxTabLabels=null;
-function loadIdxTabLabels(){ if(_idxTabLabels) return _idxTabLabels; try{ const raw=localStorage.getItem(IDX_TAB_LABEL_KEY); _idxTabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _idxTabLabels={}; } if(!_idxTabLabels||typeof _idxTabLabels!=='object') _idxTabLabels={}; return _idxTabLabels; }
-function saveIdxTabLabels(o){ _idxTabLabels=o; saveData(IDX_TAB_LABEL_KEY, o); }
-function idxTabLabel(key){ const l=loadIdxTabLabels(); return (l&&l[key])?l[key]:key; }
-function tabDisplayName(page, k){ if(k==='__all__') return '全部'; if(page==='index-track') return idxTabLabel(k); return k; }
+// Tab 分类显示名（在各模块「设置」里自定义改名，不影响数据归类）
+// 统一存到 wb_tab_labels = { page: { 原分类key: 显示名 } }
+const TAB_LABELS_KEY='wb_tab_labels';
+let _tabLabels=null;
+function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getItem(TAB_LABELS_KEY); _tabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _tabLabels={}; } if(!_tabLabels||typeof _tabLabels!=='object') _tabLabels={}; try{ const old=localStorage.getItem('wb_idx_tab_labels'); if(old){ const o=JSON.parse(old); if(o&&typeof o==='object' && !_tabLabels['index-track']){ _tabLabels['index-track']=o; } } }catch(e){} } return _tabLabels; }
+function loadTabLabels(page){ const all=_ensureTabLabels(); return all[page]||{}; }
+function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
+function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
 // 计算 Tab 分类列表（全部 + 具体分类）
 function modTabCats(m, arr0){
   const cfg = m.tabs;
@@ -2519,12 +2536,23 @@ function bindEvents(){
       return;
     }
   });
-  const idxTabLabelsBox=$('idxTabLabels');
-  if(idxTabLabelsBox) idxTabLabelsBox.addEventListener('input', e=>{
-    const inp=e.target.closest('input[data-tab-key]'); if(!inp) return;
-    const labels=loadIdxTabLabels(); const key=inp.dataset.tabKey; const v=inp.value.trim();
-    if(v) labels[key]=v; else delete labels[key];
-    saveIdxTabLabels(labels);
+  function attachTabLabelInputs(boxId){
+    const box=$(boxId); if(!box) return;
+    box.addEventListener('input', e=>{
+      const inp=e.target.closest('input[data-tab-key]'); if(!inp) return;
+      const page=inp.dataset.page; const labels=loadTabLabels(page); const key=inp.dataset.tabKey; const v=inp.value.trim();
+      if(v) labels[key]=v; else delete labels[key];
+      saveTabLabels(page, labels);
+    });
+  }
+  attachTabLabelInputs('idxTabLabels');
+  attachTabLabelInputs('finTabLabels');
+
+  const finm = $('finMask');
+  function closeFinEditor(){ if(finm) finm.classList.remove('show'); }
+  if(finm) finm.addEventListener('click', e=>{
+    const f=e.target.closest('[data-act]'); if(!f) return;
+    if(f.dataset.act==='finClose'){ closeFinEditor(); if(currentPage==='finance-news') renderCurrent(); return; }
   });
 
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
@@ -2584,6 +2612,7 @@ function bindEvents(){
       if(act==='stockTabClose'){ closeStockTabEditor(); return; }
       if(act==='idx-settings'){ openIdxEditor(); return; }
       if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
+      if(act==='fin-settings'){ renderTabLabels('finance-news','finTabLabels'); $('finMask').classList.add('show'); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
