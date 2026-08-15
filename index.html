@@ -382,6 +382,7 @@
   .risk-card .rc-row span:last-child{font-weight:700;color:#1F2937;}
   .stock-note{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.7;}
   .loading{color:var(--muted);font-size:13px;padding:10px 0;}
+  .cmp-loading{color:var(--muted);}
 
 </style>
 </head>
@@ -1724,10 +1725,12 @@ async function fetchQuotesBatch(codes){
         const eq=line.indexOf('='); const val=line.slice(eq+1).trim().replace(/^"|"$/g,'');
         const f=val.split('~'); if(f.length<40||!f[2]) return;
         const price=parseFloat(f[3]), preClose=parseFloat(f[4]), high=parseFloat(f[33]), low=parseFloat(f[34]);
-        const pe=parseFloat(f[52]), pbRaw=parseFloat(f[46]), turnover=parseFloat(f[38]), capYi=parseFloat(f[44]);
+        const pe=parseFloat(f[52]), pbRaw=parseFloat(f[46]), turnover=parseFloat(f[38]), capYi=parseFloat(f[45]), circYi=parseFloat(f[44]), volR=parseFloat(f[49]);
         out[f[2]]={ name:f[1], price:isNaN(price)?null:price, preClose:isNaN(preClose)?null:preClose,
           peTtm:(isNaN(pe)||pe<=0)?null:pe, pb:(isNaN(pbRaw)||pbRaw<=0)?null:pbRaw,
-          turnover:isNaN(turnover)?null:turnover, totalCap:(isNaN(capYi)?null:capYi*1e8),
+          turnover:isNaN(turnover)?null:turnover,
+          totalCap:(isNaN(capYi)?null:capYi*1e8), circCap:(isNaN(circYi)?null:circYi*1e8),
+          volRatio:(isNaN(volR)||volR<=0)?null:volR,
           amp:(isNaN(high)||isNaN(low)||!preClose)?null:((high-low)/preClose*100) };
       });
       if(Object.keys(out).length) return out;
@@ -1804,8 +1807,9 @@ function renderStockAnalysis(body){
   else if(stockTab==='calc') html+=stockCalcTabHtml();
   else if(stockTab==='risk') html+=stockRiskTabHtml();
   body.innerHTML=html;
-  if(stockTab==='quote'||stockTab==='metric'||stockTab==='risk'){ if(!Object.keys(stockQuotes).length) refreshStockQuotes().catch(()=>{}); }
+  if(stockTab==='quote'||stockTab==='metric'||stockTab==='risk'||stockTab==='compare'){ if(!Object.keys(stockQuotes).length) refreshStockQuotes().catch(()=>{}); }
   if(stockTab==='metric'||stockTab==='risk'){ loadDerivedForVisible().catch(()=>{}); }
+  if(stockTab==='compare'){ loadCompareDerived().catch(()=>{}); }
 }
 function stockQuoteTabHtml(){
   const list=loadWatch();
@@ -1832,9 +1836,18 @@ function stockImportTabHtml(){
   else { list.forEach(it=>{ h+='<div class="watch-row"><span><span class="wr-name">'+esc(it.name||normCodeStr(it.code))+'</span> <span class="wr-code">'+esc(normCodeStr(it.code))+'</span></span><button class="pill secondary" data-act="stock-del" data-code="'+esc(it.code)+'">删除</button></div>'; }); }
   return h;
 }
+function fmtCmpRt(key,v){
+  if(v==null||isNaN(v)) return '--';
+  if(key==='price') return Number(v).toFixed(2);
+  if(key==='chg') return (v>0?'+':'')+Number(v).toFixed(2)+'%';
+  if(key==='turnover'||key==='amp') return Number(v).toFixed(2)+'%';
+  if(key==='peTtm'||key==='pb'||key==='volRatio') return Number(v).toFixed(2);
+  if(key==='totalCap'||key==='circCap') return fmtYi(v);
+  return String(v);
+}
 function stockCompareTabHtml(){
   const list=loadWatch();
-  let h='<p class="hint">勾选要对比的标的（默认对比全部）。对比数据取自实时报价缓存，先到「行情」点刷新。</p>';
+  let h='<p class="hint">勾选要对比的标的（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「现价/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选可供对比。</div>'; return h; }
   h+='<div style="margin-bottom:10px">';
   list.forEach(it=>{ const code=normCodeStr(it.code); const on=stockCompareSel.indexOf(code)>=0||stockCompareSel.length===0;
@@ -1842,11 +1855,40 @@ function stockCompareTabHtml(){
   });
   h+='</div>';
   const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
-  const rows=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap']];
-  h+='<table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
-  rows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code]; let v=null,chgCls=''; if(q){ if(r[1]==='price'){ v=q.price; } else if(r[1]==='chg'){ v=(q.price&&q.preClose)?((q.price-q.preClose)/q.preClose*100):null; chgCls=v>0?'up':(v<0?'down':''); } else { v=q[r[1]]; } } if(r[1]==='chg'){ h+='<td class="'+chgCls+'">'+(v!=null?(v>0?'+':'')+v.toFixed(2)+'%':'--')+'</td>'; } else if(r[1]==='price'){ h+='<td>'+(v!=null?Number(v).toFixed(2):'--')+'</td>'; } else if(r[1]==='turnover'||r[1]==='amp'){ h+='<td>'+(v!=null?Number(v).toFixed(2)+'%':'--')+'</td>'; } else if(r[1]==='peTtm'||r[1]==='pb'){ h+='<td>'+(v!=null?Number(v).toFixed(2):'--')+'</td>'; } else if(r[1]==='totalCap'){ h+='<td>'+(v!=null?fmtYi(v):'--')+'</td>'; } else { h+='<td>--</td>'; } }); h+='</tr>'; });
-  h+='</tbody></table>';
+  // 实时列（同步渲染）
+  const rtRows=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap'],['流通市值','circCap'],['量比','volRatio']];
+  // 派生列（异步填充，单元格带 id 便于回填）
+  const derRows=[['现价/MA60','devMA60'],['近一年涨跌','yRet'],['最大回撤','mdd'],['相对强弱(沪深300)','rs']];
+  h+='<div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
+  rtRows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code]; let v=null,chgCls='';
+      if(q){ if(r[1]==='price'){ v=q.price; } else if(r[1]==='chg'){ v=(q.price&&q.preClose)?((q.price-q.preClose)/q.preClose*100):null; chgCls=v>0?'up':(v<0?'down':''); } else { v=q[r[1]]; } }
+      h+='<td class="'+(chgCls||'')+'">'+fmtCmpRt(r[1],v)+'</td>';
+    }); h+='</tr>'; });
+  derRows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); h+='<td id="cmp-'+r[1]+'-'+esc(code)+'" class="cmp-loading">--</td>'; }); h+='</tr>'; });
+  h+='</tbody></table></div>';
   return h;
+}
+async function loadCompareDerived(){
+  const list=loadWatch();
+  const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
+  if(!sel.length) return;
+  if(!Object.keys(stockQuotes).length){ try{ await refreshStockQuotes(); }catch(_){ } }
+  let csiYRet=null;
+  try{ const csi=await loadKline('sh000300'); if(csi){ const r=calcRisk(csi.closes); if(r) csiYRet=r.yRet; } }catch(_){}
+  for(const it of sel){
+    const code=normCodeStr(it.code);
+    const setCell=(metric, html)=>{ const el=document.getElementById('cmp-'+metric+'-'+code); if(el){ el.className=''; el.innerHTML=html; } };
+    let kl=null; try{ kl=await loadKline(it.code); }catch(_){}
+    if(!kl){ ['devMA60','yRet','mdd','rs'].forEach(m=>setCell(m,'--')); continue; }
+    const r=calcRisk(kl.closes); if(!r){ ['devMA60','yRet','mdd','rs'].forEach(m=>setCell(m,'--')); continue; }
+    const q=stockQuotes[code]; const price=(q&&q.price!=null)?q.price:null;
+    const dev=(price!=null&&r.ma60)?(price/r.ma60-1):null;
+    const rs=(csiYRet!=null)?(r.yRet-csiYRet):null;
+    setCell('devMA60', dev!=null?'<span class="'+(dev>0?'up':'down')+'">'+fmtPct(dev*100)+'</span>':'--');
+    setCell('yRet', r.yRet!=null?'<span class="'+(r.yRet>0?'up':'down')+'">'+fmtPct(r.yRet*100)+'</span>':'--');
+    setCell('mdd', r.mdd!=null?'<span class="down">-'+ (r.mdd*100).toFixed(2) +'%</span>':'--');
+    setCell('rs', rs!=null?'<span class="'+(rs>0?'up':'down')+'">'+fmtPct(rs*100)+'</span>':'--');
+  }
 }
 function stockMetricTabHtml(){
   const list=loadWatch();
