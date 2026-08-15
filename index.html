@@ -390,6 +390,17 @@
   .star-on{color:#F5B301;}
   .star-off{color:#E5E7EB;}
   .reco-num{font-size:12px;color:#92400E;margin-left:5px;font-weight:700;}
+  .reco-tip{font-size:11px;color:#9CA3AF;margin-left:4px;}
+  .reco-reasons{margin-top:8px;border-top:1px dashed #EEF2F7;padding-top:7px;}
+  .reco-reasons .rr-hd{font-weight:600;color:#92400E;margin-bottom:5px;font-size:12px;}
+  .reco-reasons .rr-row{display:flex;gap:6px;align-items:flex-start;padding:2px 0;line-height:1.45;font-size:12px;}
+  .reco-reasons .rr-ico{flex:0 0 auto;width:14px;text-align:center;font-weight:700;line-height:1.45;}
+  .reco-reasons .rr-row.good .rr-ico{color:#16A34A;}
+  .reco-reasons .rr-row.mid .rr-ico{color:#D97706;}
+  .reco-reasons .rr-row.bad .rr-ico{color:#DC2626;}
+  .reco-reasons .rr-row.na .rr-ico{color:#9CA3AF;}
+  .reco-reasons .rr-lab{flex:0 0 96px;color:#475569;font-weight:600;}
+  .reco-reasons .rr-txt{flex:1;color:#64748B;}
 
 </style>
 </head>
@@ -1855,6 +1866,7 @@ function fmtCmpRt(key,v){
   return String(v);
 }
 /* ============== 推荐指数（黄色五角星 1-5 星） ============== */
+function clamp(x,a,b){ return Math.max(a,Math.min(b,x)); }
 function starHtml(n){ n=Math.max(1,Math.min(5, n|0)); return '<span class="star-on">'+'★'.repeat(n)+'</span><span class="star-off">'+'☆'.repeat(5-n)+'</span>'; }
 function computeReco(d, csi, set){
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -1873,6 +1885,101 @@ function computeReco(d, csi, set){
   const raw=clamp(tech+marketAdj+manualSum, 8, 100);
   const stars=clamp(Math.round(raw/20),1,5);
   return {stars, tech:Math.round(tech), marketAdj:Math.round(marketAdj), manualSum:Math.round(manualSum), raw:Math.round(raw)};
+}
+/* 基本面数据（data.json 快照，由 fetch_fundamentals.py 注入） */
+function getFund(code){ return (remoteData && remoteData.fundamentals && remoteData.fundamentals[code]) || null; }
+function fmtYi(v){ if(v==null) return '--'; const yi=v/1e8; if(Math.abs(yi)>=10000) return (yi/10000).toFixed(2)+'万亿'; return yi.toFixed(2)+'亿'; }
+function icoOf(v){ return v==='good'?'✓':v==='mid'?'△':v==='bad'?'✗':'–'; }
+/* ============== 基本面 6 维评分（对应推荐要求） ============== */
+function computeFundamentalReco(fund, closes){
+  const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const c=[];
+  // 1) 近3年扣非净利润持续为正、增长
+  const kf=fund.kfNetProfit;
+  if(kf && kf.length>=2){
+    const allPos=kf.every(v=>v>0);
+    const growing=(kf.length>=3)?(kf[2]>kf[1]&&kf[1]>=kf[0]):(kf[kf.length-1]>kf[0]);
+    let score,verdict;
+    if(allPos&&growing){score=1;verdict='good';}
+    else if(allPos){score=0.6;verdict='mid';}
+    else {score=0.15;verdict='bad';}
+    const vals=kf.map(v=>fmtYi(v));
+    c.push({key:'kf',label:'扣非净利润',verdict,score,
+      text:(allPos?'近3年扣非均盈利':'近3年扣非有亏损')+(growing?'且持续增长':(allPos?'但近3年未持续增长':'且波动/下滑'))+'（'+vals.join('→')+'）'});
+  } else c.push({key:'kf',label:'扣非净利润',verdict:'na',score:0.5,text:'数据不足'});
+  // 2) 长期 ROE 尽量>15%
+  const roe=fund.roeAvg;
+  if(roe!=null){
+    let score,verdict,text;
+    if(roe>=15){score=1;verdict='good';text='长期ROE均值 '+roe.toFixed(1)+'%，优于15%';}
+    else if(roe>=10){score=0.65;verdict='mid';text='长期ROE均值 '+roe.toFixed(1)+'%，略低于15%';}
+    else {score=0.25;verdict='bad';text='长期ROE均值仅 '+roe.toFixed(1)+'%，偏弱';}
+    c.push({key:'roe',label:'长期ROE',verdict,score,text});
+  } else c.push({key:'roe',label:'长期ROE',verdict:'na',score:0.5,text:'数据不足'});
+  // 3) 经营现金流基本能跟上扣非利润
+  const ocfr=fund.ocfRatio;
+  if(ocfr!=null){
+    let score,verdict,text;
+    if(ocfr>=0.7){score=1;verdict='good';text='经营现金流/扣非EPS='+ocfr.toFixed(2)+'，收现质量好';}
+    else if(ocfr>=0.4){score=0.6;verdict='mid';text='经营现金流/扣非EPS='+ocfr.toFixed(2)+'，基本匹配';}
+    else {score=0.2;verdict='bad';text='经营现金流/扣非EPS='+ocfr.toFixed(2)+'，利润含金量不足';}
+    c.push({key:'ocf',label:'经营现金流',verdict,score,text});
+  } else c.push({key:'ocf',label:'经营现金流',verdict:'na',score:0.5,text:'数据不足'});
+  // 4) 资产负债合理，无大额商誉/高质押雷（金融业高杠杆为常态，放宽）
+  const dr=fund.debtRatio, gw=fund.goodwillToAssets, pl=fund.pledgeRatio;
+  const ind=fund.industry||''; const isFin=/银行|保险|证券|金融|信托/.test(ind);
+  { let score=1,verdict='good'; const parts=[];
+    if(dr!=null){ const hi=isFin?95:70, mid=isFin?92:60;
+      if(dr<mid){parts.push('资产负债率'+dr.toFixed(1)+'%合理');}
+      else if(dr<hi){score=Math.min(score,0.6);verdict=(score<0.5?'bad':'mid');parts.push('资产负债率'+dr.toFixed(1)+'%偏高'+(isFin?'(金融业常态)':''));}
+      else {score=0.15;verdict='bad';parts.push('资产负债率'+dr.toFixed(1)+'%过高');}
+    }
+    if(gw!=null){ if(gw<5){parts.push('商誉占比'+gw.toFixed(2)+'%低');}
+      else if(gw<15){score=Math.min(score,0.7);verdict=(score<0.5?'bad':'mid');parts.push('商誉占比'+gw.toFixed(2)+'%偏高');}
+      else {score=0.15;verdict='bad';parts.push('商誉占比'+gw.toFixed(2)+'%高(减值雷)');} }
+    if(pl!=null){ if(pl<25){parts.push('质押'+pl.toFixed(1)+'%低');}
+      else if(pl<50){score=Math.min(score,0.6);verdict='mid';parts.push('质押'+pl.toFixed(1)+'%偏高');}
+      else {score=0.15;verdict='bad';parts.push('质押'+pl.toFixed(1)+'%高(质押雷)');} }
+    else parts.push('质押未披露');
+    c.push({key:'bal',label:'资产负债/商誉',verdict,score,text:parts.join('；')});
+  }
+  // 5) 行业有壁垒、龙头地位（moat 1-3，可在 data.json 调整）
+  const moat=fund.moat;
+  if(moat!=null){
+    let score,verdict,text;
+    if(moat>=3){score=1;verdict='good';text='行业壁垒高/龙头地位（已标注）';}
+    else if(moat>=2){score=0.6;verdict='mid';text='行业地位中性（可在 data.json 调 moat）';}
+    else {score=0.25;verdict='bad';text='行业壁垒/龙头偏弱';}
+    c.push({key:'moat',label:'行业壁垒/龙头',verdict,score,text});
+  } else c.push({key:'moat',label:'行业壁垒/龙头',verdict:'na',score:0.5,text:'未标注'});
+  // 6) 当前估值不处在历史极高位置（以近一年价格分位作代理）
+  let pct=null;
+  if(closes && closes.length){ const last=closes[closes.length-1]; const win=closes.slice(-Math.min(closes.length,252));
+    const below=win.filter(x=>x<=last).length; pct=below/win.length*100; }
+  if(pct!=null){
+    let score,verdict,text;
+    if(pct<60){score=1;verdict='good';text='现价处近一年'+pct.toFixed(0)+'%分位，非历史极高';}
+    else if(pct<80){score=0.6;verdict='mid';text='现价处近一年'+pct.toFixed(0)+'%分位，偏高';}
+    else {score=0.25;verdict='bad';text='现价处近一年'+pct.toFixed(0)+'%分位，接近历史极高';}
+    if(fund.peTtm!=null && fund.peTtm>0 && fund.peTtm>80){ score=Math.min(score,0.3); verdict=(score<0.5?'bad':'mid'); text+='；PE(TTM)'+fund.peTtm.toFixed(0)+'倍偏高'; }
+    c.push({key:'val',label:'估值位置',verdict,score,text});
+  } else c.push({key:'val',label:'估值位置',verdict:'na',score:0.5,text:'数据不足'});
+  // 加权汇总（扣非/ROE 权重更高），并对盈利质量差的个股设星级上限
+  const w={kf:1.5,roe:1.5,ocf:1.0,bal:1.0,moat:1.0,val:1.0};
+  let sw=0, ssum=0; c.forEach(x=>{ sw+=w[x.key]||1; ssum+=(w[x.key]||1)*x.score; });
+  const fscore=clamp(ssum/sw,0,1)*100;
+  let stars=clamp(Math.round(fscore/20),1,5);
+  const kfBad=c.find(x=>x.key==='kf').verdict==='bad';
+  const roeBad=c.find(x=>x.key==='roe').verdict==='bad';
+  const ocfBad=c.find(x=>x.key==='ocf').verdict==='bad';
+  if(kfBad&&roeBad) stars=Math.min(stars,2);
+  else if(kfBad||roeBad||ocfBad) stars=Math.min(stars,3);
+  return {stars, score:Math.round(fscore), criteria:c};
+}
+function recoReasonsHtml(fundRec, techStars, asOf){
+  const rows=fundRec.criteria.map(c=>'<div class="rr-row '+c.verdict+'"><span class="rr-ico">'+icoOf(c.verdict)+'</span><span class="rr-lab">'+esc(c.label)+'</span><span class="rr-txt">'+esc(c.text)+'</span></div>').join('');
+  const techNote='<div class="rr-row na"><span class="rr-ico">–</span><span class="rr-lab">技术面</span><span class="rr-txt">趋势/相对强弱已按 '+techStars+'.0 星计入综合评分</span></div>';
+  return '<div class="reco-reasons"><div class="rr-hd">推荐理由（基本面 6 维 · 数据截至 '+(asOf||'快照')+'）</div>'+techNote+rows+'</div>';
 }
 function stockCompareTabHtml(){
   const list=loadWatch();
@@ -1983,8 +2090,17 @@ async function loadDerivedForVisible(){
         const devRatio=(price!=null&&r.ma60)?(price/r.ma60-1):null;
         const d={dev:devRatio, yRet:r.yRet, mdd:r.mdd, vol:r.vol, rs:(compareCsi.yRet!=null)?(r.yRet-compareCsi.yRet):null, peTtm:(q&&q.peTtm!=null)?q.peTtm:null, volRatio:(q&&q.volRatio!=null)?q.volRatio:null};
         const rec=computeReco(d, compareCsi, {});
-        recoEl.className='reco-badge';
-        recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(rec.stars)+'<span class="reco-num">'+rec.stars+'.0</span>';
+        const techStars=rec.stars;
+        const fund=getFund(code);
+        if(fund){
+          const fundRec=computeFundamentalReco(fund, kl?kl.closes:null);
+          const combined=clamp(Math.round(techStars*0.4 + fundRec.stars*0.6),1,5);
+          recoEl.className='reco-badge';
+          recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(combined)+'<span class="reco-num">'+combined+'.0</span>'+recoReasonsHtml(fundRec, techStars, fund.asOf);
+        } else {
+          recoEl.className='reco-badge';
+          recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(techStars)+'<span class="reco-num">'+techStars+'.0</span><span class="reco-tip">基本面待补充</span>';
+        }
       } else {
         recoEl.className='reco-badge loading'; recoEl.textContent='--';
       }
