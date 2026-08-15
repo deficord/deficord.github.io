@@ -1241,7 +1241,7 @@ function syncIndexTrackFromRemote(){
 }
 // 当 data.json 的 indexTrack 规范列表有变动（重排/改名/新增指数）时，按版本号把本地 wb_index_track 重播种一次，
 // 让老用户也拿到新顺序与新指数（仅执行一次，不覆盖用户之后的手动编辑）
-const IDX_SEED_VER = 3;
+const IDX_SEED_VER = 4;
 function migrateIndexTrack(){
   let v = 0;
   try{ v = Number(localStorage.getItem('wb_index_track_ver')||'0'); }catch(e){}
@@ -1254,7 +1254,7 @@ function migrateIndexTrack(){
 function renderIndexTrack(body){
   const arr = loadIndexTrack();
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="idx-settings">⚙ 设置</button><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
-  html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」与「溢价率」，纳斯达克100 / 标普500 各自独立判断、不互相引用。</p>';
+  html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」「市净率(PB)」与「场内溢价率」，纳斯达克100 / 标普500 各自独立判断、不互相引用。</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
   arr.forEach((it,i)=>{
     html += '<div class="card" id="card_index-track_'+i+'">';
