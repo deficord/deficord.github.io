@@ -189,6 +189,8 @@
   .pill:hover{filter:brightness(1.03);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.25);}
   .pill:disabled{opacity:.5;cursor:not-allowed;}
   .pill.secondary{background:var(--bg-light);color:var(--title);border:1px solid var(--border);}
+  .pill.ai{background:linear-gradient(135deg,#8B5CF6,#6366F1);box-shadow:0 4px 12px rgba(99,102,241,.3);}
+  .pill.ai:hover{filter:brightness(1.06);box-shadow:0 6px 16px rgba(99,102,241,.42);}
   .pill.secondary:hover{background:var(--hover);transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.07);}
   .hint{color:var(--muted);font-size:12px;margin:0 0 12px;}
   .empty{color:var(--muted);padding:24px;text-align:center;border:1px dashed var(--border);border-radius:12px;}
@@ -284,9 +286,9 @@
   }
   /* ===== 股票基金分析模块 ===== */
   .stock-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-  .stock-tab{padding:9px 16px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border:1px solid transparent;background:#F1F5F9;border-radius:20px;margin-bottom:0;transition:.18s ease;}
-  .stock-tab:hover{color:#fff;background:linear-gradient(135deg,#1f2937,#0b1220);border-color:transparent;transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.18);}
-  .stock-tab.on{color:#fff;background:linear-gradient(135deg,#2563EB,#1E3A8A);border-color:transparent;box-shadow:0 4px 12px rgba(37,99,235,.28);}
+  .stock-tab{padding:8px 16px;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;border:1px solid var(--border);background:#fff;border-radius:20px;margin-bottom:0;transition:.18s ease;box-shadow:0 1px 2px rgba(15,23,42,.04);}
+  .stock-tab:hover{color:#2563EB;background:linear-gradient(135deg,#EFF6FF,#DBEAFE);border-color:#BFD7FE;text-decoration:none;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.15);}
+  .stock-tab.on{color:#fff;background:linear-gradient(135deg,#3B82F6,#2563EB);border-color:transparent;box-shadow:0 4px 14px rgba(37,99,235,.32);}
   .import-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
   .import-area{width:100%;min-height:130px;font-family:UI-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;border:1px solid #D8DEE9;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box;line-height:1.6;}
   .import-area:focus{outline:none;border-color:var(--accent);}
@@ -819,7 +821,7 @@ function renderCustomModule(page, body){
   const remote = (remoteData.customData && remoteData.customData[dataId]) || null;
   const data = (Array.isArray(remote) && remote.length) ? remote : (cfg.items||[]);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(cfg.title)+'</h2>';
-  if(cfg.aiOn) html += '<button class="pill" data-act="cmAirefresh" data-id="'+page+'">AI 刷新抓取</button>';
+  if(cfg.aiOn) html += '<button class="pill ai" data-act="cmAirefresh" data-id="'+page+'">AI 刷新抓取</button>';
   if(cfg.type==='list'||cfg.type==='cards'||cfg.type==='notes') html += '<button class="pill secondary" data-act="cmAdd" data-id="'+page+'">＋ 新增</button>';
   html += '</div>';
   if(!data.length){
@@ -1115,7 +1117,7 @@ function renderKnowledge(body){
 function renderAiText(page, body){
   const m = MODULES[page];
   const arr = remoteData[m.key] || [];
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   if(arr.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
   else {
@@ -1142,7 +1144,7 @@ function renderFinance(body){
   const view = modView(m, arr0, active);
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何买卖建议。</p>';
   if(m.tabs) html += modTabBarHtml('finance-news', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
@@ -1281,7 +1283,7 @@ function renderIndexTrack(body){
   const arr0 = loadIndexTrack();
   const active = modTab['index-track'] || '__all__';
   const view = modView(m, arr0, active);
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="idx-settings">⚙ 设置</button><button class="pill" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill secondary" data-act="idx-settings">⚙ 设置</button><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」「市净率(PB)」「场内溢价率」「股息率」「风险溢价(股债利差)」「估值区间(PE近1年)」；纳指100/沪深300/中证A500/恒科另含「前十大权重」；纳指100/标普500/黄金含「美元指数/美债」联动。纳斯达克100 / 标普500 各自独立判断、不互相引用。卡片顶部彩色徽标为综合评级与判断置信度（绿=低估/看多，黄=中性，红=偏高估/谨慎）。</p>';
   if(m.tabs) html += modTabBarHtml('index-track', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
