@@ -134,9 +134,12 @@
   }
   /* 拖拽时占位的虚线空隙 */
   .card-drag-placeholder{border:2px dashed var(--border);border-radius:12px;background:rgba(37,99,235,.05);box-sizing:border-box;margin-bottom:12px;}
-  body.dragging-active{user-select:none;-webkit-user-select:none;}
-  /* 拖拽进行中锁定主内容区滚动（防止手机端页面跟着滚） */
-  body.dragging-active #content{overflow:hidden;touch-action:none;}
+  body.dragging-active{cursor:grabbing;}
+  /* 拖拽中只给“浮起的卡片”禁用 touch-action，阻止这跟手指的卡误触发页面滚动；
+     绝不再锁定整个内容区——否则 dragging-active 一旦没及时移除，整页就滑不动了（已修复） */
+  .draggable-cards .card.dragging,.draggable-cards .quote-card.dragging,.draggable-cards .risk-card.dragging{
+    touch-action:none;user-select:none;-webkit-user-select:none;
+  }
   /* 字段 / 分段控件（后台） */
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:12px;color:#6B7280;margin-bottom:5px;}
@@ -2841,24 +2844,28 @@ function bindEvents(){
       if(!st) return;
       cancelTimer();
       const {card, container, page, pointerId, dragging, placeholder}=st;
-      if(dragging){
-        // 把卡片放回占位符位置，再移除占位符
-        if(placeholder && placeholder.parentNode){
-          container.insertBefore(card, placeholder);
-          placeholder.parentNode.removeChild(placeholder);
+      try{
+        if(dragging){
+          // 把卡片放回占位符位置，再移除占位符
+          if(placeholder && placeholder.parentNode){
+            container.insertBefore(card, placeholder);
+            placeholder.parentNode.removeChild(placeholder);
+          }
+          resetCardStyle(card);
+          if(container.contains(card)){
+            const order=[...container.querySelectorAll('.card[data-card-idx], .quote-card[data-card-idx], .risk-card[data-card-idx]')].map(c=>Number(c.dataset.cardIdx));
+            if(order.length) saveCardOrder(page, order);
+          }
+          if(currentPage===page) renderCurrent();
+        } else if(card){
+          card.classList.remove('arming');
         }
-        resetCardStyle(card);
+      } finally {
+        // 无论是否抛错，都必须释放拖拽锁，否则整页滚动会被永久锁死
         document.body.classList.remove('dragging-active');
-        if(container.contains(card)){
-          const order=[...container.querySelectorAll('.card[data-card-idx], .quote-card[data-card-idx], .risk-card[data-card-idx]')].map(c=>Number(c.dataset.cardIdx));
-          if(order.length) saveCardOrder(page, order);
-        }
-        if(currentPage===page) renderCurrent();
-      } else if(card){
-        card.classList.remove('arming');
+        try{ if(card) card.releasePointerCapture(pointerId); }catch(_){}
+        st=null;
       }
-      try{ card.releasePointerCapture(pointerId); }catch(_){}
-      st=null;
     }
     document.addEventListener('pointerup', endDrag);
     document.addEventListener('pointercancel', endDrag);
