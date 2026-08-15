@@ -1,33 +1,6 @@
 {
-  "siteVersion": "2026-08-15.1127",
-  "holdings": [
-    {
-      "name": "华安黄金ETF联接A",
-      "code": "000216",
-      "amount": 0,
-      "type": "gold",
-      "cost": 0,
-      "dca": {
-        "enabled": false,
-        "daily": 0,
-        "lastDate": "",
-        "acc": 0
-      }
-    },
-    {
-      "name": "摩根标普500指数(QDII)人民币A",
-      "code": "017641",
-      "amount": 0,
-      "type": "标普500",
-      "cost": 0,
-      "dca": {
-        "enabled": false,
-        "daily": 0,
-        "lastDate": "",
-        "acc": 0
-      }
-    }
-  ],
+  "siteVersion": "2026-08-15.1128",
+  "holdings": [],
   "sideHustle": [
     {
       "title": "公众号职场漫画号：小众赛道单日流量主收益1100+",
