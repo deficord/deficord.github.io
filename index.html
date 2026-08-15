@@ -268,6 +268,10 @@
   .ff-legend{display:flex;justify-content:flex-end;gap:12px;font-size:11px;color:var(--muted);margin-top:6px;}
   .ff-legend span{display:inline-flex;align-items:center;gap:4px;}
   .ff-legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .ff-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  .ff-tab{font-size:12px;padding:4px 12px;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:20px;cursor:pointer;transition:all .15s ease;}
+  .ff-tab:hover{border-color:var(--accent);color:var(--accent);}
+  .ff-tab.on{background:linear-gradient(135deg,#3B82F6,#2563EB);border-color:transparent;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(37,99,235,.25);}
   /* 弹窗 */
   .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:50;}
   .modal-mask.show{display:flex;}
@@ -1089,6 +1093,14 @@ const FUND_FLOW_ASSETS = [
   {name:'原油', secid:'1.501018', color:'#F97316'},
   {name:'日经', secid:'1.513520', color:'#6366F1'}
 ];
+const FLOW_TYPES = [
+  {key:'main', label:'主力',   idx:1},
+  {key:'huge', label:'超大单', idx:5},
+  {key:'big',  label:'大单',   idx:4},
+  {key:'mid',  label:'中单',   idx:3},
+  {key:'small',label:'小单',   idx:2}
+];
+let ffState = {results:null, fromCache:false, flow:'main'};
 function fetchFundFlow(secid, attempt){
   attempt = attempt||0;
   const hosts = ['push2.eastmoney.com','push2delay.eastmoney.com'];
@@ -1110,11 +1122,10 @@ function fetchFundFlow(secid, attempt){
 function parseFundFlow(json){
   const klines = json && json.data && json.data.klines;
   if(!klines || !klines.length) return null;
-  const parts = klines[0].split(',');
-  if(parts.length < 2) return null;
-  const val = Number(parts[1]);
-  if(!isFinite(val)) return null;
-  return {time: parts[0], value: val/1e8};
+  const p = klines[0].split(',');
+  if(p.length < 6) return null;
+  const num = i => { const v = Number(p[i]); return isFinite(v) ? v/1e8 : 0; };
+  return {time: p[0], main:num(1), small:num(2), mid:num(3), big:num(4), huge:num(5)};
 }
 async function loadFundFlowChart(){
   const box = $('fundFlowChart');
@@ -1132,15 +1143,16 @@ async function loadFundFlowChart(){
     const ok = results.filter(r=>r.ok);
     if(ok.length){
       try{ localStorage.setItem('wb_ff_cache', JSON.stringify({t:Date.now(), data:results})); }catch(e){}
-      renderFundFlowChart(box, results, false);
+      ffState = {results:results, fromCache:false, flow: ffState.flow||'main'};
+      renderFundFlowChart(box);
     } else {
       const cache = loadFundFlowCache();
-      if(cache) renderFundFlowChart(box, cache, true);
+      if(cache){ ffState = {results:cache, fromCache:true, flow: ffState.flow||'main'}; renderFundFlowChart(box); }
       else box.innerHTML = '<div class="ff-error">资金流向接口暂不可用。<br>可能是东方财富临时限流或当前网络无法连接。<br>请点击右上角「刷新」重试；若预览面板看不到，请用浏览器打开 https://deficord.github.io</div>';
     }
   } catch(e) {
     const cache = loadFundFlowCache();
-    if(cache) renderFundFlowChart(box, cache, true);
+    if(cache){ ffState = {results:cache, fromCache:true, flow: ffState.flow||'main'}; renderFundFlowChart(box); }
     else box.innerHTML = '<div class="ff-error">加载失败，请稍后刷新重试</div>';
   }
 }
@@ -1155,20 +1167,26 @@ function loadFundFlowCache(){
     return obj.data;
   }catch(e){ return null; }
 }
-function renderFundFlowChart(box, results, fromCache){
+function renderFundFlowChart(box){
+  box = box || $('fundFlowChart');
+  if(!box) return;
+  const results = ffState.results;
+  if(!results) return;
   const ok = results.filter(r=>r.ok);
   if(!ok.length){ box.innerHTML = '<div class="ff-error">资金流向数据暂不可用，请稍后刷新</div>'; return; }
-  const max = Math.max(...ok.map(r=>Math.abs(r.value||0)), 1);
+  const flow = FLOW_TYPES.find(f=>f.key===ffState.flow) || FLOW_TYPES[0];
+  const max = Math.max(...ok.map(r=>Math.abs(r[flow.key]||0)), 1);
   const rows = ok.map(r=>{
-    const v = r.value||0;
+    const v = r[flow.key]||0;
     const pct = max ? Math.abs(v)/max*100 : 0;
     const cls = v>=0 ? 'up' : 'down';
     const sign = v>0 ? '+' : '';
     return '<div class="ff-row"><div class="ff-label" style="color:'+esc(r.color||'#374151')+'">'+esc(r.name)+'</div><div class="ff-bar-wrap"><div class="ff-bar '+cls+'" style="width:'+Math.max(pct,2).toFixed(1)+'%"></div></div><div class="ff-value '+cls+'">'+sign+esc(v.toFixed(2))+'亿</div></div>';
   }).join('');
   const time = ok[0] && ok[0].time ? '数据时间：'+esc(ok[0].time)+'（东方财富）' : '';
-  const note = fromCache ? '<div class="ff-time" style="color:#F59E0B">⚠ 实时接口暂不可用，显示最近一次缓存数据（非实时）</div>' : '';
-  box.innerHTML = rows + '<div class="ff-legend"><span><i style="background:linear-gradient(90deg,#EF4444,#F87171)"></i>净流入</span><span><i style="background:linear-gradient(90deg,#16A34A,#4ADE80)"></i>净流出</span></div>' + (time?'<div class="ff-time">'+time+'</div>':'') + note;
+  const tabs = '<div class="ff-tabs">'+FLOW_TYPES.map(f=>'<button class="ff-tab'+(f.key===flow.key?' on':'')+'" data-act="ff-flow" data-fk="'+f.key+'">'+f.label+'</button>').join('')+'</div>';
+  const note = ffState.fromCache ? '<div class="ff-time" style="color:#F59E0B">⚠ 实时接口暂不可用，显示最近一次缓存数据（非实时）</div>' : '';
+  box.innerHTML = tabs + rows + '<div class="ff-legend"><span><i style="background:linear-gradient(90deg,#EF4444,#F87171)"></i>净流入</span><span><i style="background:linear-gradient(90deg,#16A34A,#4ADE80)"></i>净流出</span></div>' + (time?'<div class="ff-time">'+time+'</div>':'') + note;
 }
 function fundTable(arr){
   if(!arr.length) return '<div class="empty">暂无持仓，去「持仓台账」添加。</div>';
@@ -2455,6 +2473,7 @@ function bindEvents(){
       if(act==='airefresh'){ loadRemoteData(); return; }
       if(act==='ovrefresh'){ loadRemoteData(); return; }
       if(act==='ff-refresh'){ loadFundFlowChart(); return; }
+      if(act==='ff-flow'){ const fk=f.dataset.fk; if(fk && ffState.results){ ffState.flow=fk; renderFundFlowChart($('fundFlowChart')); } return; }
       if(act==='goto'){ navigate(page); return; }
       if(act==='cmNew'){ const m={id:genCid(), title:'新模块', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增模块'); return; }
       if(act==='catAddMod'){ const n=Number(f.dataset.n); const m={id:genCid(), title:'新小类', type:'list', span:1, theme:'default', aiTopic:'', aiOn:false, items:[]}; if(n!==99) m.group=n; const cms=loadCustomModules(); cms.push(m); saveCustomModules(cms); const ord=loadOrder(); const pid='custom_'+m.id; if(ord.indexOf(pid)<0) ord.push(pid); saveOrder(ord); adminSel=pid; buildSidebar(); renderAdmin($('body-admin')); pushModuleConfig().catch(()=>{}); toast('已新增小类'); return; }
