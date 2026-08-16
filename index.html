@@ -743,7 +743,7 @@ function genCid(){ return 'c'+Date.now().toString(36)+Math.floor(Math.random()*1
 const OVERRIDE_STORE = 'wb_module_overrides';
 const ORDER_STORE    = 'wb_module_order';
 const ORDER_VER_STORE= 'wb_module_order_ver';
-const ORDER_VER      = 2; // 当 GROUPS 内小类顺序调整时 +1，触发一次性重新播种默认顺序
+const ORDER_VER      = 3; // 当 GROUPS 内小类顺序调整时 +1，触发一次性重新播种默认顺序（拆分股票/基金数据分析后升级，修正旧序）
 function loadOverrides(){ return loadData(OVERRIDE_STORE, {}); }
 function saveOverrides(o){ saveData(OVERRIDE_STORE, o); }
 function loadOrder(){
