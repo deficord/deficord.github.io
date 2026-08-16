@@ -1856,13 +1856,16 @@ function quoteInner(code, q, item){
   else {
     const pe=(man.pe!=null)?man.pe:(q?q.peTtm:null);
     const pb=(man.pb!=null)?man.pb:(q?q.pb:null);
+    const isFund=currentStockFilter()==='fund';
     h+='<div class="qc-metrics">';
-    if(pe!=null&&!isNaN(pe)) h+='<span>PE '+(Number(pe)).toFixed(2)+'</span>';
-    if(pb!=null&&!isNaN(pb)) h+='<span>PB '+(Number(pb)).toFixed(2)+'</span>';
+    if(!isFund){
+      if(pe!=null&&!isNaN(pe)) h+='<span>PE '+(Number(pe)).toFixed(2)+'</span>';
+      if(pb!=null&&!isNaN(pb)) h+='<span>PB '+(Number(pb)).toFixed(2)+'</span>';
+    }
     if(man.price!=null) h+='<span>手动价</span>';
     if(q&&q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>';
     if(q&&q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>';
-    if(q&&q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>';
+    if(q&&q.totalCap!=null) h+='<span>'+(isFund?'规模':'市值')+' '+fmtYi(q.totalCap)+'</span>';
     h+='</div>';
   }
   return h;
@@ -1891,7 +1894,7 @@ function renderStockAnalysis(body){
 function stockQuoteTabHtml(){
   const list=filteredWatch(currentStockFilter());
   let h='<p class="hint">实时行情来自腾讯财经公开接口（无需后端，浏览器直连），关键字段可手动覆盖。仅供研究，不构成任何投资建议。</p>';
-  if(!list.length){ h+='<div class="watch-empty">暂无自选，去「自选」粘贴代码（如 600519、sh600519、000001）。</div>'; return h; }
+  if(!list.length){ h+='<div class="watch-empty">'+(currentStockFilter()==='fund'?'暂无基金/ETF，去「自选」粘贴代码（如 510300、513180、161725）。':'暂无自选，去「自选」粘贴代码（如 600519、sh600519、000001）。')+'</div>'; return h; }
   h+='<div class="watch-grid draggable-cards" data-drag-page="'+currentPage+'">';
   const items=list.map((it,i)=>({it,i}));
   displayOrdered(currentPage, list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code); const q=stockQuotes[code];
