@@ -2076,7 +2076,9 @@ function stockCompareTabHtml(){
   h+='</div>';
   const sel=list.filter(it=>{ const code=normCodeStr(it.code); return stockCompareSel.length===0||stockCompareSel.indexOf(code)>=0; });
   // 实时列（同步渲染）
-  const rtRows=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap'],['流通市值','circCap'],['量比','volRatio']];
+  const rtRowsAll=[['现价','price'],['涨跌幅','chg'],['换手率','turnover'],['振幅','amp'],['PE(TTM)','peTtm'],['PB','pb'],['总市值','totalCap'],['流通市值','circCap'],['量比','volRatio']];
+  // 基金类标的无 PE/PB 概念（ETF 是净值型、主动基金看净值与持仓）；仅「基金数据分析」模块隐藏这两列，股票模块保留个股估值
+  const rtRows = (currentStockFilter()==='fund') ? rtRowsAll.filter(r=>r[1]!=='peTtm'&&r[1]!=='pb') : rtRowsAll;
   // 派生列（异步填充，单元格带 id 便于回填）
   const derRows=[['现价/MA60','devMA60'],['近一年涨跌','yRet'],['最大回撤','mdd'],['相对强弱(沪深300)','rs']];
   h+='<div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
