@@ -407,6 +407,13 @@
   .reco-reason .rr-row.na .rr-ico{color:#9CA3AF;}
   .reco-reason .rr-lab{flex:0 0 auto;color:#475569;font-weight:600;margin-right:2px;}
   .reco-reason .rr-txt{flex:1;color:#64748B;}
+  /* 个人判断（对齐指数跟踪「判断」） */
+  .myjudge{margin-top:9px;padding:9px 10px;background:#FFFDF5;border:1px solid #F4E9C9;border-radius:10px;}
+  .myjudge-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .myjudge-label{font-size:12px;font-weight:700;color:#92400E;letter-spacing:.5px;}
+  .myjudge-text{font-size:12.5px;line-height:1.65;color:#5B4636;white-space:pre-wrap;word-break:break-word;}
+  .myjudge-empty{color:#B8A47E;font-style:italic;}
+  .pill.mini{padding:2px 9px;font-size:11px;border-radius:9px;}
 
 </style>
 </head>
@@ -2093,7 +2100,9 @@ function stockRiskTabHtml(){
   h+='<div class="risk-grid draggable-cards" data-drag-page="stock-analysis">';
   const items=list.map((it,i)=>({it,i}));
   displayOrdered('stock-analysis', list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code);
-    h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div><div id="reco-'+esc(code)+'" class="reco-badge loading">--</div><div id="reco-reason-'+esc(code)+'" class="reco-reason"></div></div>';
+    const note=(it.manual&&it.manual.note)||'';
+    const jHtml = note ? esc(note).replace(/\n/g,'<br>') : '<span class="myjudge-empty">点「✏ 编辑」写下你的判断…</span>';
+    h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div><div id="reco-'+esc(code)+'" class="reco-badge loading">--</div><div id="reco-reason-'+esc(code)+'" class="reco-reason"></div><div class="myjudge"><div class="myjudge-top"><span class="myjudge-label">个人判断</span><button class="pill mini secondary" data-act="stock-judge" data-code="'+esc(it.code)+'">✏ 编辑</button></div><div class="myjudge-text" id="myjudge-text-'+esc(code)+'">'+jHtml+'</div></div></div>';
   });
   h+='</div>';
   return h;
@@ -2964,6 +2973,7 @@ function bindEvents(){
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', '删除', '取消').then(ok=>{ if(ok){ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); } }); return; }
       if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
+      if(act==='stock-judge'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=(cur.manual&&cur.manual.note)||''; const input=prompt('个人判断（你的主观看法，留空=清除）：', base); if(input===null) return; const val=input.trim(); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ if(!it.manual) it.manual={}; it.manual.note=val; saveWatch(list); renderCurrent(); toast(val?'已保存个人判断':'已清除个人判断'); } return; }
       if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); if(stockCompareSel.length===0){ loadWatch().forEach(it=>{ const c=normCodeStr(it.code); if(c!==code) stockCompareSel.push(c); }); } else { const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } } renderCurrent(); return; }
       if(act==='stkUp'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
       if(act==='stkDown'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>=0&&i<a.length-1){ const t=a[i]; a[i]=a[i+1]; a[i+1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
