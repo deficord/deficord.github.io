@@ -391,6 +391,22 @@
   .star-off{color:#E5E7EB;}
   .reco-num{font-size:12px;color:#92400E;margin-left:5px;font-weight:700;}
   .reco-tip{font-size:11px;color:#9CA3AF;margin-left:4px;}
+  /* 推荐理由块（写在星级下方） */
+  .reco-reason{margin-top:9px;padding:9px 10px;background:#F8FAFC;border:1px solid #EEF2F7;border-radius:10px;}
+  .reco-reason .rr-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;}
+  .reco-reason .rr-title{font-weight:700;color:#334155;font-size:12px;}
+  .reco-reason .rr-tag{font-size:10.5px;color:#94A3B8;flex:0 0 auto;}
+  .reco-reason .rr-summary{font-size:11px;color:#64748B;line-height:1.5;margin-bottom:6px;}
+  .reco-reason .rr-summary b.g{color:#16A34A;} .reco-reason .rr-summary b.m{color:#D97706;} .reco-reason .rr-summary b.b{color:#DC2626;}
+  .reco-reason .rr-list{display:flex;flex-direction:column;gap:3px;}
+  .reco-reason .rr-row{display:flex;gap:6px;align-items:flex-start;line-height:1.45;font-size:11.5px;}
+  .reco-reason .rr-ico{flex:0 0 auto;width:13px;text-align:center;font-weight:700;line-height:1.45;}
+  .reco-reason .rr-row.good .rr-ico{color:#16A34A;}
+  .reco-reason .rr-row.mid .rr-ico{color:#D97706;}
+  .reco-reason .rr-row.bad .rr-ico{color:#DC2626;}
+  .reco-reason .rr-row.na .rr-ico{color:#9CA3AF;}
+  .reco-reason .rr-lab{flex:0 0 auto;color:#475569;font-weight:600;margin-right:2px;}
+  .reco-reason .rr-txt{flex:1;color:#64748B;}
 
 </style>
 </head>
@@ -1965,6 +1981,38 @@ function computeFundamentalReco(fund, closes){
   else if(kfBad||roeBad||ocfBad) stars=Math.min(stars,3);
   return {stars, score:Math.round(fscore), criteria:c};
 }
+/* 技术面推荐理由（依据 computeReco 的 7 个技术维度，解释「为什么 X 星」；用于无基本面数据的自选股） */
+function icoOf(v){ return v==='good'?'✓':v==='mid'?'△':v==='bad'?'✗':'–'; }
+function techReasonList(d, r, csi){
+  const c=[];
+  const rs=(d.yRet!=null&&csi.yRet!=null)?(d.yRet-csi.yRet):null;
+  if(rs!=null){ let v,t; if(rs>0.10){v='good';t='相对沪深300 跑赢 '+fmtPct(rs*100);} else if(rs>=-0.10){v='mid';t='相对沪深300 基本持平（'+fmtPct(rs*100)+'）';} else {v='bad';t='相对沪深300 跑输 '+fmtPct(rs*100);} c.push({key:'rs',label:'相对强弱',verdict:v,text:t}); }
+  else c.push({key:'rs',label:'相对强弱',verdict:'na',text:'数据不足'});
+  const dev=d.dev;
+  if(dev!=null){ let v,t; if(dev>0.10){v='good';t='现价站上MA60且偏离 +'+(dev*100).toFixed(1)+'%';} else if(dev>-0.10){v='mid';t='现价围绕MA60（'+(dev>0?'+':'')+(dev*100).toFixed(1)+'%）';} else {v='bad';t='现价跌破MA60（'+(dev*100).toFixed(1)+'%）';} c.push({key:'dev',label:'趋势位置',verdict:v,text:t}); }
+  else c.push({key:'dev',label:'趋势位置',verdict:'na',text:'数据不足'});
+  if(r&&r.yRet!=null){ let v,t,y=r.yRet; if(y>0.10){v='good';t='近一年上涨 +'+(y*100).toFixed(1)+'%';} else if(y>=-0.10){v='mid';t='近一年基本持平（'+(y>0?'+':'')+(y*100).toFixed(1)+'%）';} else {v='bad';t='近一年下跌 '+(y*100).toFixed(1)+'%，趋势弱';} c.push({key:'yr',label:'近一年涨跌',verdict:v,text:t}); }
+  else c.push({key:'yr',label:'近一年涨跌',verdict:'na',text:'数据不足'});
+  if(r&&r.mdd!=null){ let v,t,m=r.mdd; if(m<0.20){v='good';t='最大回撤 -'+(m*100).toFixed(1)+'%，抗跌';} else if(m<0.35){v='mid';t='最大回撤 -'+(m*100).toFixed(1)+'%，中性';} else {v='bad';t='最大回撤 -'+(m*100).toFixed(1)+'%，波动大';} c.push({key:'mdd',label:'最大回撤',verdict:v,text:t}); }
+  else c.push({key:'mdd',label:'最大回撤',verdict:'na',text:'数据不足'});
+  const pe=d.peTtm;
+  if(pe!=null){ let v,t; if(pe<=0){v='bad';t='PE(TTM)为负（盈利承压）';} else if(pe<=40){v='good';t='PE(TTM) '+pe.toFixed(0)+'倍，估值合理';} else if(pe<=80){v='mid';t='PE(TTM) '+pe.toFixed(0)+'倍，估值偏高';} else {v='bad';t='PE(TTM) '+pe.toFixed(0)+'倍，估值偏高';} c.push({key:'pe',label:'估值PE',verdict:v,text:t}); }
+  else c.push({key:'pe',label:'估值PE',verdict:'na',text:'数据不足'});
+  if(r&&r.vol!=null){ let v,t,vo=r.vol; if(vo<0.25){v='good';t='年化波动率 '+(vo*100).toFixed(1)+'%，平稳';} else if(vo<0.40){v='mid';t='年化波动率 '+(vo*100).toFixed(1)+'%，中性';} else {v='bad';t='年化波动率 '+(vo*100).toFixed(1)+'%，高波动';} c.push({key:'vol',label:'波动率',verdict:v,text:t}); }
+  else c.push({key:'vol',label:'波动率',verdict:'na',text:'数据不足'});
+  return c;
+}
+function recoSummaryHtml(c, extra){
+  let g=0,m=0,b=0,n=0;
+  c.forEach(x=>{ if(x.verdict==='good')g++; else if(x.verdict==='mid')m++; else if(x.verdict==='bad')b++; else n++; });
+  let s='<b class="g">'+g+'项优</b> / <b class="m">'+m+'项中性</b> / <b class="b">'+b+'项偏弱</b>';
+  if(extra) s+=' ｜ '+extra;
+  return s;
+}
+function recoReasonsHtml(c, tag, asOf, extra){
+  const rows=c.map(x=>'<div class="rr-row '+x.verdict+'"><span class="rr-ico">'+icoOf(x.verdict)+'</span><span class="rr-lab">'+esc(x.label)+'</span><span class="rr-txt">'+esc(x.text)+'</span></div>').join('');
+  return '<div class="reco-reason"><div class="rr-top"><span class="rr-title">推荐理由</span><span class="rr-tag">'+esc(tag)+(asOf?(' · 截至'+esc(asOf)):'')+'</span></div><div class="rr-summary">'+recoSummaryHtml(c, extra)+'</div><div class="rr-list">'+rows+'</div></div>';
+}
 
 function stockCompareTabHtml(){
   const list=loadWatch();
@@ -2045,7 +2093,7 @@ function stockRiskTabHtml(){
   h+='<div class="risk-grid draggable-cards" data-drag-page="stock-analysis">';
   const items=list.map((it,i)=>({it,i}));
   displayOrdered('stock-analysis', list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code);
-    h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div><div id="reco-'+esc(code)+'" class="reco-badge loading">--</div></div>';
+    h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div><div id="reco-'+esc(code)+'" class="reco-badge loading">--</div><div id="reco-reason-'+esc(code)+'" class="reco-reason"></div></div>';
   });
   h+='</div>';
   return h;
@@ -2077,14 +2125,25 @@ async function loadDerivedForVisible(){
         const rec=computeReco(d, compareCsi, {});
         const techStars=rec.stars;
         const fund=getFund(code);
+        const reasonEl=document.getElementById('reco-reason-'+code);
         if(fund){
           const fundRec=computeFundamentalReco(fund, kl?kl.closes:null);
           const combined=clamp(Math.round(techStars*0.4 + fundRec.stars*0.6),1,5);
           recoEl.className='reco-badge';
           recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(combined)+'<span class="reco-num">'+combined+'.0</span>';
+          if(reasonEl){
+            const rsTxt=(d.rs!=null?fmtPct(d.rs*100):'--');
+            const devTxt=(devRatio!=null?((devRatio>0?'+':'')+(devRatio*100).toFixed(1)+'%'):'--');
+            const extra='技术面 '+techStars+'.0星（相对沪深300 '+rsTxt+'、现价/MA60 '+devTxt+'）';
+            reasonEl.innerHTML=recoReasonsHtml(fundRec.criteria, '综合（基本面60%+技术面40%）', fund.asOf, extra);
+          }
         } else {
           recoEl.className='reco-badge';
           recoEl.innerHTML='<span class="reco-label">推荐</span>'+starHtml(techStars)+'<span class="reco-num">'+techStars+'.0</span><span class="reco-tip">技术面</span>';
+          if(reasonEl){
+            const techCrit=techReasonList(d, r, compareCsi);
+            reasonEl.innerHTML=recoReasonsHtml(techCrit, '技术面', null, null);
+          }
         }
       } else {
         recoEl.className='reco-badge loading'; recoEl.textContent='--';
