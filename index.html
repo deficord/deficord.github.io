@@ -1566,7 +1566,7 @@ function renderHoldings(body){
       if(px!=null){
         const mv = shares*px;
         marketValueTxt = mv.toFixed(2) + ' <span class="tag">实时</span>';
-        if(costPx!=null){ const profit=(px-costPx)*shares; profitTxt = (profit>0?'+':'')+profit.toFixed(2)+'（'+((profit/(costPx*shares))*100).toFixed(2)+'%）'; }
+        if(costPx!=null){ const feeRate=((h.commission||0)+(h.transfer||0))/100; const costEff=costPx*(1+feeRate); const profit=(px-costEff)*shares; profitTxt = (profit>0?'+':'')+profit.toFixed(2)+'（'+((profit/(costEff*shares))*100).toFixed(2)+'%）'+(feeRate>0?' 含费':''); }
       } else { marketValueTxt = '待刷新'; }
     } else {
       legacy=true;
@@ -1578,6 +1578,7 @@ function renderHoldings(body){
     if(isStock && h.sector){ html += '<div class="row"><span class="k">所属板块</span>'+esc(h.sector)+'</div>'; }
     html += '<div class="row"><span class="k">'+(isStock?'持股数量':'持有份额')+'</span>'+sharesTxt+'</div>';
     html += '<div class="row"><span class="k">成本价</span>'+costTxt+'</div>';
+    if(isStock && ((h.commission||0)>0 || (h.transfer||0)>0)){ html += '<div class="row"><span class="k">买入费率</span>佣'+(Number(h.commission||0)).toString()+'% / 过'+(Number(h.transfer||0)).toString()+'%（成本已含费）</div>'; }
     if(priceTxt){ html += '<div class="row"><span class="k">'+priceLabel+'</span>'+priceTxt+'</div>'; }
     html += '<div class="row"><span class="k">市值</span>'+marketValueTxt+'</div>';
     if(profitTxt){ const pp=(profitTxt.indexOf('+')===0); html += '<div class="row"><span class="k">持仓盈亏</span><span class="'+(pp?'up':'down')+'">'+profitTxt+'</span></div>'; }
@@ -2179,12 +2180,15 @@ function stockCalcTabHtml(){
     h+='<div class="calc-field"><label>赎回费率（%）</label><input id="calcRedeemFee" type="number" min="0" step="0.01" value="0" placeholder="如 0.5"></div>';
     h+='</div><button class="pill" data-act="stock-calc">测算收益</button><div class="calc-result" id="calcResult">填写后点「测算收益」。</div></div>';
   } else {
-    h='<p class="hint">输入买入价与数量，当前价默认取实时行情（可手填覆盖），自动测算投入、市值、盈亏与收益率。</p>';
+    h='<p class="hint">输入买入价与数量，当前价默认取实时行情（可手填覆盖）；佣金/印花税/过户费按填写费率计入，自动测算含费投入、卖出到账与净收益（A股：佣金默认万2.5且单笔最低5元、印花税仅卖出万5、过户费双向万0.1）。</p>';
     h+='<div class="calc-form"><div class="calc-grid">';
     h+='<div class="calc-field"><label>标的</label><select id="calcCode">'+(list.length?list.map(it=>'<option value="'+esc(it.code)+'">'+esc(it.name||normCodeStr(it.code))+'</option>').join(''):'<option>请先导入自选</option>')+'</select></div>';
-    h+='<div class="calc-field"><label>持仓数量（股/份）</label><input id="calcShares" type="number" min="0" step="1" placeholder="如 1000"></div>';
+    h+='<div class="calc-field"><label>持仓数量（股）</label><input id="calcShares" type="number" min="0" step="1" placeholder="如 1000"></div>';
     h+='<div class="calc-field"><label>买入均价</label><input id="calcBuy" type="number" min="0" step="0.01" placeholder="如 10.50"></div>';
     h+='<div class="calc-field"><label>当前价（留空用实时价）</label><input id="calcCur" type="number" min="0" step="0.01" placeholder="留空=实时"></div>';
+    h+='<div class="calc-field"><label>佣金费率(%)</label><input id="calcComm" type="number" min="0" step="0.001" value="0.025" placeholder="如 0.025 万2.5"></div>';
+    h+='<div class="calc-field"><label>印花税率(%)</label><input id="calcStamp" type="number" min="0" step="0.001" value="0.05" placeholder="如 0.05 卖出万5"></div>';
+    h+='<div class="calc-field"><label>过户费率(%)</label><input id="calcTransfer" type="number" min="0" step="0.001" value="0.001" placeholder="如 0.001 万0.1"></div>';
     h+='</div><button class="pill" data-act="stock-calc">测算收益</button><div class="calc-result" id="calcResult">填写后点「测算收益」。</div></div>';
   }
   return h;
@@ -2402,6 +2406,8 @@ function openHoldingForm(idx){
     const costPx = (h.costPx!=null)? h.costPx : (h.cost!=null? h.cost : '');
     fields += '<div class="form-field"><label>持股数量(股)</label><input id="fi_shares" type="number" value="'+esc(shares)+'" placeholder="如 1000"></div>';
     fields += '<div class="form-field"><label>成本价(元/股)</label><input id="fi_cost" type="number" value="'+esc(costPx)+'" placeholder="如 12.50"></div>';
+    fields += '<div class="form-field"><label>佣金费率(%)，留空=0</label><input id="fi_comm" type="number" step="0.001" value="'+esc(h.commission!=null?h.commission:'')+'" placeholder="如 0.025 万2.5"></div>';
+    fields += '<div class="form-field"><label>过户费率(%)，留空=0</label><input id="fi_transfer" type="number" step="0.001" value="'+esc(h.transfer!=null?h.transfer:'')+'" placeholder="如 0.001 万0.1"></div>';
     fields += '<div class="form-field"><label>加仓数量(股，减仓填负数)</label><input id="fi_add_shares" type="number" value="" placeholder="如 300，留空=不调整"></div>';
     fields += '<div class="form-field"><label>加仓价格(元/股)</label><input id="fi_add_price" type="number" value="" placeholder="如 16.00"></div>';
     fields += '<p class="hint" style="margin:2px 0 0">市值按「持股数量 × 实时现价」自动算。加仓：填正数=加仓(按加权均价更新成本)，填负数=减仓(成本不变、股数减少)；两项都留空则仅保存上方股数/成本价。</p>';
@@ -2436,6 +2442,8 @@ function saveHoldingForm(){
     const addPrice = parseFloat($('fi_add_price').value);
     let shares = Number($('fi_shares').value)||0;
     let costPx = Number($('fi_cost').value)||0;
+    const commission = ($('fi_comm') && $('fi_comm').value!=='')? parseFloat($('fi_comm').value):0;
+    const transfer = ($('fi_transfer') && $('fi_transfer').value!=='')? parseFloat($('fi_transfer').value):0;
     if(!isNaN(addShares) && addShares!==0){
       const baseS = (prev&&prev.shares!=null)? Number(prev.shares) : shares;
       const baseC = (prev&&prev.costPx!=null)? Number(prev.costPx) : costPx;
@@ -2448,7 +2456,7 @@ function saveHoldingForm(){
         shares = baseS + addShares; costPx = baseC;
       }
     }
-    obj = {name,code,type:'stock',shares,costPx,sector};
+    obj = {name,code,type:'stock',shares,costPx,sector,commission,transfer};
   } else {
     const shares = Number($('fi_shares').value)||0;
     const costPx = Number($('fi_cost').value)||0;
@@ -3182,7 +3190,7 @@ function bindEvents(){
           const invest=buy*shares*(1+subFee/100); const mv=(cur!=null)?cur*shares:null; const proceed=(mv!=null)?mv*(1-redFee/100):null; const pnl=(proceed!=null)?proceed-invest:null; const pct=(pnl!=null&&invest>0)?(pnl/invest*100):null;
           if(box){ let h='<div class="cr-row"><span>买入净值</span><b>'+Number(buy).toFixed(4)+'</b></div>'; h+='<div class="cr-row"><span>持有份额</span><b>'+shares.toFixed(2)+' 份</b></div>'; h+='<div class="cr-row"><span>申购费率</span><b>'+(subFee>0?subFee.toFixed(2)+'%':'0')+'</b></div>'; h+='<div class="cr-row"><span>投入本金(含申购费)</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前净值</span><b>'+(cur!=null?Number(cur).toFixed(4):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>赎回费率</span><b>'+(redFee>0?redFee.toFixed(2)+'%':'0')+'</b></div>'; if(proceed!=null) h+='<div class="cr-row"><span>赎回到账(扣赎回费)</span><b>¥ '+proceed.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>净收益</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+cls+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return;
         }
-        const invest=buy*shares; const mv=(cur!=null)?cur*shares:null; const pnl=(mv!=null)?mv-invest:null; const pct=(pnl!=null&&invest>0)?(pnl/invest*100):null; if(box){ let h='<div class="cr-row"><span>投入金额</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>浮动盈亏</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+cls+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
+        const commRate=parseFloat(($('calcComm')?$('calcComm').value:''))||0; const stampRate=parseFloat(($('calcStamp')?$('calcStamp').value:''))||0; const transferRate=parseFloat(($('calcTransfer')?$('calcTransfer').value:''))||0; const buyAmount=buy*shares; const buyComm=Math.max(buyAmount*commRate/100,5); const buyTransfer=buyAmount*transferRate/100; const invest=buyAmount+buyComm+buyTransfer; const mv=(cur!=null)?cur*shares:null; let proceed=null, sellFee=null, pnl=null, pct=null; if(mv!=null){ const sellComm=Math.max(mv*commRate/100,5); const sellTransfer=mv*transferRate/100; const stamp=mv*stampRate/100; sellFee=sellComm+sellTransfer+stamp; proceed=mv-sellFee; pnl=proceed-invest; pct=(invest>0)?(pnl/invest*100):null; } if(box){ let h='<div class="cr-row"><span>买入金额</span><b>¥ '+buyAmount.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>买入费用(佣+过户)</span><b>¥ '+(buyComm+buyTransfer).toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>投入本金(含买入费)</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(sellFee!=null) h+='<div class="cr-row"><span>卖出费用(佣+过户+印花税)</span><b>¥ '+sellFee.toFixed(2)+'</b></div>'; if(proceed!=null) h+='<div class="cr-row"><span>卖出到账(扣卖出费)</span><b>¥ '+proceed.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>净收益(含费)</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+cls+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
       /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
       if(act==='summarize'){ summarizeCheckin(); toast('已汇总本月'); return; }
