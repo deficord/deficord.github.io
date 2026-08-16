@@ -365,6 +365,8 @@
   .compare-table th{background:#F8FAFC;color:#475569;font-weight:600;}
   .compare-table td:first-child,.compare-table th:first-child{text-align:left;color:#1F2937;font-weight:600;}
   .compare-table tr:last-child td{border-bottom:none;}
+  /* 对比表数值列：涨=红 跌=绿（高优先级，防止父级深灰覆盖，后期新增指标套用 up/down 即可） */
+  .compare-table td.up{color:#D32F2F;} .compare-table td.down{color:#2E7D32;}
   .calc-form{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;max-width:600px;}
   .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
   .calc-field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;}
@@ -374,6 +376,8 @@
   .calc-result .cr-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#475569;}
   .calc-result .cr-row b{color:#1F2937;font-size:15px;}
   .calc-result .cr-big{font-size:22px;font-weight:800;margin-top:8px;text-align:right;}
+  /* 收益测算净收益数字：涨=红 跌=绿（优先级须高于 .cr-row b 的深灰，后期新增指标套用 up/down 即可） */
+  .calc-result .cr-row b.up{color:#D32F2F;} .calc-result .cr-row b.down{color:#2E7D32;}
   .risk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:14px;}
   .risk-card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);overflow:hidden;--card-accent:#2563EB;transition:box-shadow .18s ease,transform .18s ease;}
   .risk-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-2px);}
