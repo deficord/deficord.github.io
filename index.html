@@ -646,7 +646,7 @@ const MODULES = {
     {k:'score',l:'评分',t:'number'},{k:'conclusion',l:'结论',t:'textarea'},
   ]},
   'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle'},
-  'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF']}},
+  'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF','加密货币']}},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
   'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','防御']}},
@@ -693,7 +693,7 @@ function cardVars(str){ const c=palColor(str); return '--card-accent:'+c.a+';--c
 // 预定义分类映射（命中即用，未命中回退 hash）
 const CAT_COLOR = {
   // 理财每日新知 cat
-  '市场综述':'#3B82F6','黄金大宗':'#F97316','AI科技':'#8B5CF6','政策宏观':'#06B6D4','个股公司':'#10B981','基金ETF':'#6366F1',
+  '市场综述':'#3B82F6','黄金大宗':'#F97316','AI科技':'#8B5CF6','政策宏观':'#06B6D4','个股公司':'#10B981','基金ETF':'#6366F1','加密货币':'#F43F5E',
   // 调仓 action
   '加仓':'#10B981','减仓':'#EF4444','调仓':'#3B82F6','再平衡':'#8B5CF6','平衡':'#F59E0B','建仓':'#10B981','清仓':'#EF4444',
   // 知识库分类
