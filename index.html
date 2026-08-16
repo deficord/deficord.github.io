@@ -1901,10 +1901,16 @@ function stockQuoteTabHtml(){
   return h;
 }
 function stockImportTabHtml(){
+  const isFund=currentStockFilter()==='fund';
   const list=filteredWatch(currentStockFilter());
-  let h='<div class="import-box"><div class="page-title" style="font-size:14px;margin-bottom:6px;">批量添加自选</div>';
-  h+='<textarea class="import-area" id="stockImportText" placeholder="每行一个，支持：\n600519\n600519 贵州茅台\nsh600519,贵州茅台\n000001 平安银行\n300750 宁德时代"></textarea>';
-  h+='<div class="import-hint">识别规则：前 2 位字母 sh/sz/bj 指定市场，纯数字自动判断（6→沪 / 0·3→深 / 8·4→北交所）。可带名称，用英文逗号或空格分隔。</div>';
+  let h='<div class="import-box"><div class="page-title" style="font-size:14px;margin-bottom:6px;">'+(isFund?'批量添加基金':'批量添加自选')+'</div>';
+  if(isFund){
+    h+='<textarea class="import-area" id="stockImportText" placeholder="每行一个，支持：\n510300 沪深300ETF\n513180 恒生科技ETF\n510500 中证500ETF\n161725 招商中证白酒\n110011 易方达中小盘"></textarea>';
+    h+='<div class="import-hint">基金添加规则：输入基金/ETF 代码即可，可带名称，用英文逗号或空格分隔。支持场内 ETF（如 510300 沪深300ETF、513180 恒生科技ETF）与场外开放式基金（如 161725 招商中证白酒、110011 易方达中小盘）；也可加 sh/sz 前缀，如 sh510300。</div>';
+  } else {
+    h+='<textarea class="import-area" id="stockImportText" placeholder="每行一个，支持：\n600519\n600519 贵州茅台\nsh600519,贵州茅台\n000001 平安银行\n300750 宁德时代"></textarea>';
+    h+='<div class="import-hint">识别规则：前 2 位字母 sh/sz/bj 指定市场，纯数字自动判断（6→沪 / 0·3→深 / 8·4→北交所）。可带名称，用英文逗号或空格分隔。</div>';
+  }
   h+='<div style="display:flex;gap:8px"><button class="pill" data-act="stock-import">解析并导入</button><button class="pill secondary" data-act="stock-clear">清空全部</button></div>';
   h+='<div class="import-preview" id="stockImportPreview">输入后点「解析并导入」预览结果。</div>';
   h+='</div>';
