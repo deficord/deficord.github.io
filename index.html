@@ -2073,7 +2073,8 @@ function recoReasonsHtml(c, tag, asOf, extra){
 
 function stockCompareTabHtml(){
   const list=filteredWatch(currentStockFilter());
-  let h='<p class="hint">勾选要对比的标的（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「现价/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。</p>';
+  const isFund=currentStockFilter()==='fund';
+  let h='<p class="hint">'+(isFund?'勾选要对比的基金/ETF（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「净值/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。':'勾选要对比的标的（默认对比全部）。实时字段取自报价缓存（切换本页会自动补取）；「现价/MA60、近一年涨跌、最大回撤、相对强弱」由近 180 日日线计算，自动加载。')+'</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选可供对比。</div>'; return h; }
   h+='<div style="margin-bottom:10px">';
   list.forEach(it=>{ const code=normCodeStr(it.code); const on=stockCompareSel.indexOf(code)>=0||stockCompareSel.length===0;
@@ -2086,7 +2087,7 @@ function stockCompareTabHtml(){
   // 基金类标的无 PE/PB 概念（ETF 是净值型、主动基金看净值与持仓）；仅「基金数据分析」模块隐藏这两列，股票模块保留个股估值
   const rtRows = (currentStockFilter()==='fund') ? rtRowsAll.filter(r=>r[1]!=='peTtm'&&r[1]!=='pb') : rtRowsAll;
   // 派生列（异步填充，单元格带 id 便于回填）
-  const derRows=[['现价/MA60','devMA60'],['近一年涨跌','yRet'],['最大回撤','mdd'],['相对强弱(沪深300)','rs']];
+  const derRows=[[(isFund?'净值/MA60':'现价/MA60'),'devMA60'],['近一年涨跌','yRet'],['最大回撤','mdd'],['相对强弱(沪深300)','rs']];
   h+='<div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>标的</th>'+sel.map(it=>'<th>'+esc(it.name||normCodeStr(it.code))+'</th>').join('')+'</tr></thead><tbody>';
   rtRows.forEach(r=>{ h+='<tr><td>'+r[0]+'</td>'; sel.forEach(it=>{ const code=normCodeStr(it.code); const q=stockQuotes[code]; let v=null,chgCls='';
       if(q){ if(r[1]==='price'){ v=q.price; } else if(r[1]==='chg'){ v=(q.price&&q.preClose)?((q.price-q.preClose)/q.preClose*100):null; chgCls=v>0?'up':(v<0?'down':''); } else { v=q[r[1]]; } }
@@ -2122,13 +2123,14 @@ async function loadCompareDerived(){
 }
 function stockMetricTabHtml(){
   const list=filteredWatch(currentStockFilter());
-  let h='<p class="hint">指标含实时估值（PE/PB/市值/换手/振幅）与近 180 日 K 线计算的均线（MA20/MA60），自动加载。</p>';
+  const isFund=currentStockFilter()==='fund';
+  let h='<p class="hint">'+(isFund?'指标含实时净值、规模与近 180 日 K 线计算的均线（MA20/MA60），自动加载。基金为净值型产品，不适用 PE/PB 等股票估值指标。':'指标含实时估值（PE/PB/市值/换手/振幅）与近 180 日 K 线计算的均线（MA20/MA60），自动加载。')+'</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
   h+='<div class="watch-grid draggable-cards" data-drag-page="'+currentPage+'">';
   const items=list.map((it,i)=>({it,i}));
   displayOrdered(currentPage, list, items).forEach(o=>{ const it=o.it, i=o.i; const code=normCodeStr(it.code); const q=stockQuotes[code];
     h+='<div class="quote-card" data-card-idx="'+i+'" data-card-page="'+currentPage+'" style="'+stockMarketVars(it.code)+'"><div class="qc-name">'+esc(it.name||code)+'</div><div class="qc-code">'+esc(code)+'</div><div class="qc-metrics">';
-    if(q){ if(q.peTtm!=null) h+='<span>PE '+(Number(q.peTtm)).toFixed(2)+'</span>'; if(q.pb!=null) h+='<span>PB '+(Number(q.pb)).toFixed(2)+'</span>'; if(q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>'; if(q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>'; if(q.totalCap!=null) h+='<span>市值 '+fmtYi(q.totalCap)+'</span>'; }
+    if(q){ if(!isFund){ if(q.peTtm!=null) h+='<span>PE '+(Number(q.peTtm)).toFixed(2)+'</span>'; if(q.pb!=null) h+='<span>PB '+(Number(q.pb)).toFixed(2)+'</span>'; } if(q.turnover!=null) h+='<span>换手 '+(Number(q.turnover)).toFixed(2)+'%</span>'; if(q.amp!=null) h+='<span>振幅 '+(Number(q.amp)).toFixed(2)+'%</span>'; if(q.totalCap!=null) h+='<span>'+(isFund?'规模 ':'市值 ')+fmtYi(q.totalCap)+'</span>'; }
     h+='</div><div id="m-'+esc(code)+'" class="loading">均线计算中…</div></div>';
   });
   h+='</div>';
@@ -2161,7 +2163,8 @@ function stockCalcTabHtml(){
 }
 function stockRiskTabHtml(){
   const list=filteredWatch(currentStockFilter());
-  let h='<p class="hint">风险指标基于近 180 日日线：年化波动率、最大回撤、近一年涨幅、现价偏离 MA60。自动加载。</p>';
+  const isFund=currentStockFilter()==='fund';
+  let h='<p class="hint">'+(isFund?'风险指标基于近 180 日日线：年化波动率、最大回撤、近一年涨幅、净值偏离 MA60。自动加载。':'风险指标基于近 180 日日线：年化波动率、最大回撤、近一年涨幅、现价偏离 MA60。自动加载。')+'</p>';
   if(!list.length){ h+='<div class="watch-empty">暂无自选。</div>'; return h; }
   h+='<div class="risk-grid draggable-cards" data-drag-page="'+currentPage+'">';
   const items=list.map((it,i)=>({it,i}));
@@ -2192,12 +2195,13 @@ async function refreshStockQuotes(){
 }
 async function loadDerivedForVisible(){
   const list=filteredWatch(currentStockFilter());
+  const isFund=currentStockFilter()==='fund';
   if(!compareCsi._loaded){ compareCsi._loaded=true; try{ const csi=await loadKline('sh000300'); if(csi){ const rr=calcRisk(csi.closes); compareCsi={yRet:rr.yRet, dev:(csi.closes.length>=60)?(csi.closes[csi.closes.length-1]/rr.ma60-1):null, _loaded:true}; } }catch(_){} }
   for(const it of list){ const code=normCodeStr(it.code);
     let kl=stockKlines[code]; if(!kl){ kl=await loadKline(it.code); if(kl) stockKlines[code]=kl; }
     const r=kl?calcRisk(kl.closes):null;
     const mEl=document.getElementById('m-'+code); if(mEl){ if(r&&r.ma20!=null&&r.ma60!=null){ mEl.className='qc-metrics'; mEl.innerHTML='<span>MA20 '+(Number(r.ma20)).toFixed(2)+'</span><span>MA60 '+(Number(r.ma60)).toFixed(2)+'</span>'; } else { mEl.textContent='均线暂不可用'; } }
-    const rEl=document.getElementById('r-'+code); if(rEl){ if(r){ const price=stockQuotes[code]&&stockQuotes[code].price!=null?stockQuotes[code].price:null; const dev=(price!=null&&r.ma60)?((price/r.ma60-1)*100):null; rEl.className=''; rEl.innerHTML='<div class="rc-row"><span>年化波动率</span><span>'+(r.vol*100).toFixed(1)+'%</span></div><div class="rc-row"><span>最大回撤</span><span class="down">-'+(r.mdd*100).toFixed(1)+'%</span></div><div class="rc-row"><span>近一年涨跌</span><span class="'+(r.yRet>0?'up':'down')+'">'+(r.yRet>0?'+':'')+(r.yRet*100).toFixed(1)+'%</span></div><div class="rc-row"><span>现价/MA60</span><span>'+(dev!=null?((dev>0?'+':'')+dev.toFixed(1)+'%'):'--')+'</span></div>'; } else { rEl.textContent='风险数据暂不可用'; } }
+    const rEl=document.getElementById('r-'+code); if(rEl){ if(r){ const price=stockQuotes[code]&&stockQuotes[code].price!=null?stockQuotes[code].price:null; const dev=(price!=null&&r.ma60)?((price/r.ma60-1)*100):null; rEl.className=''; rEl.innerHTML='<div class="rc-row"><span>年化波动率</span><span>'+(r.vol*100).toFixed(1)+'%</span></div><div class="rc-row"><span>最大回撤</span><span class="down">-'+(r.mdd*100).toFixed(1)+'%</span></div><div class="rc-row"><span>近一年涨跌</span><span class="'+(r.yRet>0?'up':'down')+'">'+(r.yRet>0?'+':'')+(r.yRet*100).toFixed(1)+'%</span></div><div class="rc-row"><span>'+(isFund?'净值/MA60':'现价/MA60')+'</span><span>'+(dev!=null?((dev>0?'+':'')+dev.toFixed(1)+'%'):'--')+'</span></div>'; } else { rEl.textContent='风险数据暂不可用'; } }
     const recoEl=document.getElementById('reco-'+code);
     if(recoEl){
       if(r && compareCsi){
