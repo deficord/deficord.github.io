@@ -417,6 +417,19 @@
   .sj-src{margin-top:5px;font-size:11px;color:#9CA3AF;}
   .stock-judge .sj-empty{color:#B8A47E;font-style:italic;}
 
+  /* 基金定投弹窗 */
+  .modal-wide{width:min(720px,94vw);}
+  .dca-rates{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 12px;}
+  .dca-rates .form-field{margin-bottom:8px;}
+  .dca-lots-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 6px;font-weight:600;font-size:13px;color:#111827;flex-wrap:wrap;}
+  .dca-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:8px;}
+  .dca-table th,.dca-table td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--border,#EEE);}
+  .dca-table th{color:#6B7280;font-weight:600;}
+  .dca-table .dca-in{width:100%;box-sizing:border-box;padding:5px 6px;border:1px solid #D1D5DB;border-radius:6px;font-size:12.5px;}
+  .dca-table .dca-sh{font-weight:600;color:#059669;}
+  .dca-summary{background:#ECFEFF;border:1px solid #A5F3FC;border-radius:8px;padding:8px 10px;font-size:13px;color:#0E7490;margin-top:6px;}
+  .dca-summary b{color:#0E7490;}
+
 </style>
 </head>
 <body>
@@ -436,6 +449,18 @@
       <div class="modal-actions">
         <button class="pill secondary" id="formCancel">取消</button>
         <button class="pill" id="formSave">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 基金定投弹窗 -->
+  <div class="modal-mask" id="dcaMask">
+    <div class="modal modal-wide">
+      <h3 id="dcaTitle">定投设置</h3>
+      <div id="dcaFields"></div>
+      <div class="modal-actions">
+        <button class="pill secondary" id="dcaCancel">取消</button>
+        <button class="pill" id="dcaSave">保存</button>
       </div>
     </div>
   </div>
@@ -1560,7 +1585,7 @@ function renderHoldings(body){
     if(up||down){
       html += '<div class="row"><span class="k">今日涨跌</span><span class="'+(up?'up':(down?'down':''))+'">'+(pct>0?'+':'')+(pct!=null?pct.toFixed(2):'')+'%</span></div>';
     } else if(!isStock){ html += '<div class="row"><span class="k">涨跌</span>待刷新</div>'; }
-    if(!isStock && h.dca && h.dca.enabled){ html += '<div class="row"><span class="k">定投</span>每日 '+esc(h.dca.daily)+' · 累计 '+esc(h.dca.acc||0)+'</div>'; }
+    if(!isStock && h.dca && h.dca.enabled){ const d=h.dca; const fl={daily:'每日',weekly:'每周',monthly:'每月'}[d.freq]||''; const acc=(d.lots||[]).reduce((s,l)=>s+(Number(l.amount)||0),0); html += '<div class="row"><span class="k">定投</span>'+fl+(d.amount?(' '+d.amount):'')+(acc?(' · 累计投入 '+acc.toFixed(0)):'')+'</div>'; if(d.subscribeRate||d.redeemRate) html += '<div class="row"><span class="k">费率</span>申'+(d.subscribeRate||0)+'% / 赎'+(d.redeemRate||0)+'%</div>'; }
     html += '<div class="card-foot"><span class="upd">更新：'+updTime+'</span><span class="actions">';
     if(!isStock) html += '<button class="pill secondary" data-act="dca" data-idx="'+i+'">定投</button>';
     html += '<button class="pill secondary" data-act="edit" data-page="'+currentPage+'" data-idx="'+i+'">编辑</button>';
@@ -2362,7 +2387,7 @@ function openHoldingForm(idx){
   const key = m.key || 'wb_holdings';
   formCtx = {page: page, kind:'holding', idx: idx==null?null:Number(idx)};
   const arr = loadData(key, []);
-  const h = idx==null ? {name:'',code:'',amount:0,type:'',cost:0,dca:{enabled:false,daily:0,lastDate:'',acc:0}} : arr[idx];
+  const h = idx==null ? {name:'',code:'',amount:0,type:'',cost:0,dca:{enabled:false,freq:'',amount:0,startDate:'',subscribeRate:0,redeemRate:0,manageRate:0,salesRate:0,lots:[]}} : arr[idx];
   // 基金类型下拉实时跟随「指数跟踪数据」列表（顺序一致、自动增加类型），末尾保留"其它基金"
   const idxList = loadIndexTrack();
   let typeOpts = idxList.map(it=>'<option value="'+esc(it.name)+'"'+(h.type===it.name?' selected':'')+'>'+esc(it.name)+'</option>').join('');
@@ -2377,7 +2402,9 @@ function openHoldingForm(idx){
     const costPx = (h.costPx!=null)? h.costPx : (h.cost!=null? h.cost : '');
     fields += '<div class="form-field"><label>持股数量(股)</label><input id="fi_shares" type="number" value="'+esc(shares)+'" placeholder="如 1000"></div>';
     fields += '<div class="form-field"><label>成本价(元/股)</label><input id="fi_cost" type="number" value="'+esc(costPx)+'" placeholder="如 12.50"></div>';
-    fields += '<p class="hint" style="margin:2px 0 0">市值将按「持股数量 × 实时现价」自动计算，无需手动填。</p>';
+    fields += '<div class="form-field"><label>加仓数量(股，减仓填负数)</label><input id="fi_add_shares" type="number" value="" placeholder="如 300，留空=不调整"></div>';
+    fields += '<div class="form-field"><label>加仓价格(元/股)</label><input id="fi_add_price" type="number" value="" placeholder="如 16.00"></div>';
+    fields += '<p class="hint" style="margin:2px 0 0">市值按「持股数量 × 实时现价」自动算。加仓：填正数=加仓(按加权均价更新成本)，填负数=减仓(成本不变、股数减少)；两项都留空则仅保存上方股数/成本价。</p>';
   }
   if(!isStock){
     fields += '<div class="form-field"><label>类型</label><select id="fi_type">'+typeOpts+'</select></div>';
@@ -2385,10 +2412,8 @@ function openHoldingForm(idx){
     const fcostPx = (h.costPx!=null)? h.costPx : (h.cost!=null? h.cost : '');
     fields += '<div class="form-field"><label>持有份额(份)</label><input id="fi_shares" type="number" value="'+esc(fshares)+'" placeholder="如 1000"></div>'+
       '<div class="form-field"><label>成本价(元/份)</label><input id="fi_cost" type="number" value="'+esc(fcostPx)+'" placeholder="如 1.250"></div>'+
-      '<p class="hint" style="margin:2px 0 0">市值将按「持有份额 × 单位净值」自动计算，无需手动填。</p>';
-  }
-  if(!isStock){
-    fields += '<div class="form-field"><label>定投每日金额(0=不开启)</label><input id="fi_dca" type="number" value="'+esc((h.dca&&h.dca.daily)||0)+'"></div>';
+      '<p class="hint" style="margin:2px 0 0">市值按「持有份额 × 单位净值」自动算。若已用卡片「定投」按钮设置批次，份额与成本价以便次为准，此处可留空。</p>';
+    fields += '<p class="hint">定投（频率 / 每期金额 / 费率 / 批次）请在卡片「定投」按钮中设置。联系方式示例（仅参考、不保存）：手机 138xxxx / QQ 12345 / 邮箱 a@b.com</p>';
   }
   $('formFields').innerHTML = fields;
   $('formMask').classList.add('show');
@@ -2406,16 +2431,28 @@ function saveHoldingForm(){
   const prev = (formCtx.idx!=null)?arr[formCtx.idx]:null;
   let obj;
   if(isStock){
-    const shares = Number($('fi_shares').value)||0;
-    const costPx = Number($('fi_cost').value)||0;
     const sector = (($('fi_sector')?$('fi_sector').value:'').trim());
+    const addShares = parseFloat($('fi_add_shares').value);
+    const addPrice = parseFloat($('fi_add_price').value);
+    let shares = Number($('fi_shares').value)||0;
+    let costPx = Number($('fi_cost').value)||0;
+    if(!isNaN(addShares) && addShares!==0){
+      const baseS = (prev&&prev.shares!=null)? Number(prev.shares) : shares;
+      const baseC = (prev&&prev.costPx!=null)? Number(prev.costPx) : costPx;
+      if(addShares>0){
+        if(isNaN(addPrice)){ toast('加仓需填写加仓价格'); return; }
+        const newS = baseS + addShares;
+        const newC = (baseS*baseC + addShares*addPrice)/newS;
+        shares = newS; costPx = newC;
+      } else {
+        shares = baseS + addShares; costPx = baseC;
+      }
+    }
     obj = {name,code,type:'stock',shares,costPx,sector};
   } else {
     const shares = Number($('fi_shares').value)||0;
     const costPx = Number($('fi_cost').value)||0;
-    let dca = {enabled:false, daily:0, lastDate:'', acc:0};
-    const dcaDaily = Number($('fi_dca').value)||0;
-    dca = {enabled:dcaDaily>0, daily:dcaDaily, lastDate:(prev&&prev.dca&&prev.dca.lastDate)||'', acc:(prev&&prev.dca&&prev.dca.acc)||0};
+    const dca = (prev && prev.dca) ? prev.dca : {enabled:false, freq:'', amount:0, startDate:'', subscribeRate:0, redeemRate:0, manageRate:0, salesRate:0, lots:[]};
     obj = {name,code,type,shares,costPx,dca};
   }
   if(formCtx.idx==null) arr.push(obj); else arr[formCtx.idx]=obj;
@@ -2729,23 +2766,102 @@ function disarmStockAutoRefresh(){
   if(stockAutoTimer){ clearInterval(stockAutoTimer); stockAutoTimer=null; }
 }
 
-/* ============== 定投 ============== */
+/* ============== 定投（按笔核算 + 费用模型） ============== */
+let dcaCtx = { idx: null };
+let dcaLots = [];
 function updateDca(){
   const arr = loadData('wb_holdings', []);
   const today = todayStr();
   let changed=false;
-  arr.forEach(h=>{ if(h.dca && h.dca.enabled){ if(h.dca.lastDate!==today){ const days=Math.max(0, dateDiff(h.dca.lastDate, today)); h.dca.acc=(Number(h.dca.acc)||0)+days*(Number(h.dca.daily)||0); h.dca.lastDate=today; changed=true; } } });
+  arr.forEach(h=>{
+    const d = h.dca; if(!d) return;
+    // 旧「每日金额」模型兼容（无 freq / 无 lots）：维持累计显示，不强行改写
+    if(d.daily!=null && d.freq==null && (!d.lots||!d.lots.length)){
+      if(d.lastDate!==today){ const days=Math.max(0, dateDiff(d.lastDate, today)); d.acc=(Number(d.acc)||0)+days*(Number(d.daily)||0); d.lastDate=today; changed=true; }
+    }
+    // 新模型：acc 由 lots 计算，无需累加
+  });
   if(changed) saveData('wb_holdings', arr);
 }
-function setDca(idx){
-  const arr = loadData('wb_holdings', []);
-  const h = arr[idx]; if(!h) return;
-  const daily = prompt('设置每日定投金额（从今天起累计，不回溯）：', (h.dca&&h.dca.daily)||'');
-  if(daily==null) return;
-  const d = Number(daily);
-  if(isNaN(d)||d<0){ toast('金额无效'); return; }
-  h.dca = {enabled:true, daily:d, lastDate:todayStr(), acc:(h.dca&&h.dca.acc)||0};
-  arr[idx]=h; saveData('wb_holdings', arr); renderCurrent(); toast('定投已设置');
+function curNav(code){ const fq = (typeof fundQuote!=='undefined' && fundQuote[code]) || {}; const v = (fq.dwjz!=null)? fq.dwjz : (fq.nav!=null? fq.nav : null); return (v!=null)? Number(v) : null; }
+function genDcaLots(freq, start, end, amount, nav){
+  const s = new Date(start+'T00:00:00'); const e = new Date(end+'T00:00:00');
+  if(isNaN(s)||isNaN(e)||s>=e) return [];
+  const lots=[]; let d=new Date(s); let guard=0;
+  while(d<=e && guard<3000){ lots.push({date:d.toISOString().slice(0,10), amount, nav}); if(freq==='daily') d.setDate(d.getDate()+1); else if(freq==='weekly') d.setDate(d.getDate()+7); else if(freq==='monthly') d.setMonth(d.getMonth()+1); else break; guard++; }
+  return lots;
+}
+function dcaTotals(){
+  const sub = Number($('dca_sub').value)||0;
+  let totalAmt=0, totalShares=0, totalCost=0;
+  dcaLots.forEach(l=>{ const amt=Number(l.amount)||0; const nav=Number(l.nav)||0; totalAmt+=amt; if(nav>0){ const sh=amt*(1+sub/100)/nav; totalShares+=sh; totalCost+=amt*(1+sub/100); } });
+  return { totalAmt, totalShares, wcost: totalShares>0? totalCost/totalShares : 0 };
+}
+function renderDcaLots(){
+  const sub = Number($('dca_sub').value)||0;
+  const box = $('dcaLots'); if(!box) return;
+  if(!dcaLots.length){ box.innerHTML = '<p class="hint">暂无批次，点「＋ 添加批次」手动添加，或点「用当前净值估算」按起始日期自动生成（用当前净值估算，仅供参考）。</p>'; return; }
+  let html = '<table class="dca-table"><thead><tr><th>日期</th><th>投入金额</th><th>净值</th><th>获得份额</th><th></th></tr></thead><tbody>';
+  dcaLots.forEach((l,i)=>{
+    const nav=Number(l.nav)||0; const shares=(nav>0)? (Number(l.amount)*(1+sub/100)/nav) : 0;
+    html += '<tr><td><input class="dca-in" data-i="'+i+'" data-k="date" value="'+esc(l.date||'')+'"></td>'
+      +'<td><input class="dca-in" data-i="'+i+'" data-k="amount" value="'+esc(l.amount||0)+'"></td>'
+      +'<td><input class="dca-in" data-i="'+i+'" data-k="nav" value="'+esc(l.nav||0)+'"></td>'
+      +'<td class="dca-sh">'+(shares? shares.toFixed(2):'--')+'</td>'
+      +'<td><button class="pill secondary dca-del" data-i="'+i+'">删</button></td></tr>';
+  });
+  html += '</tbody></table>';
+  box.innerHTML = html;
+  Array.from(box.querySelectorAll('.dca-in')).forEach(inp=>{ inp.oninput = ()=>{ const i=+inp.dataset.i, k=inp.dataset.k; dcaLots[i][k]=(k==='date')?inp.value:Number(inp.value); if(k==='amount'||k==='nav'){ renderDcaLots(); updateDcaSummary(); } }; });
+  Array.from(box.querySelectorAll('.dca-del')).forEach(b=>{ b.onclick = ()=>{ dcaLots.splice(+b.dataset.i,1); renderDcaLots(); updateDcaSummary(); }; });
+}
+function updateDcaSummary(){
+  const t = dcaTotals(); const box=$('dcaSummary'); if(!box) return;
+  box.innerHTML = '累计投入 <b>¥ '+t.totalAmt.toFixed(2)+'</b> · 总份额 <b>'+t.totalShares.toFixed(2)+'</b> · 加权成本 <b>'+(t.totalShares?t.wcost.toFixed(4):'--')+'</b>'+(dcaLots.length?' · 批次 '+dcaLots.length:'');
+}
+function openDca(idx){
+  const arr = loadData('wb_holdings', []); const h = arr[idx]; if(!h) return;
+  dcaCtx = { idx };
+  const d = h.dca || {enabled:false, freq:'', amount:0, startDate:'', subscribeRate:0, redeemRate:0, manageRate:0, salesRate:0, lots:[]};
+  const freqOpts = [['','不开启'],['daily','每日'],['weekly','每周'],['monthly','每月']].map(o=>'<option value="'+o[0]+'"'+(d.freq===o[0]?' selected':'')+'>'+o[1]+'</option>').join('');
+  let html = '';
+  html += '<div class="dca-rates"><div class="form-field"><label>定投频率</label><select id="dca_freq">'+freqOpts+'</select></div>';
+  html += '<div class="form-field"><label>每期金额(元)</label><input id="dca_amount" type="number" value="'+esc(d.amount||0)+'" placeholder="如 50"></div>';
+  html += '<div class="form-field"><label>起始日期</label><input id="dca_start" type="date" value="'+esc(d.startDate||'')+'"></div></div>';
+  html += '<p class="hint">申购费 / 赎回费计入成本核算；管理费 / 销售服务费由基金每日从净值中扣除（已体现在净值里），此处仅作展示参考，不重复计入成本。定投金额示例：如 50；联系方式示例（仅参考、不保存）：手机 138xxxx / QQ 12345 / 邮箱 a@b.com</p>';
+  html += '<div class="dca-rates"><div class="form-field"><label>申购费率(%)</label><input id="dca_sub" type="number" step="0.01" value="'+esc(d.subscribeRate!=null?d.subscribeRate:0)+'" placeholder="如 0.15"></div>';
+  html += '<div class="form-field"><label>赎回费率(%)</label><input id="dca_redeem" type="number" step="0.01" value="'+esc(d.redeemRate!=null?d.redeemRate:0)+'" placeholder="如 0.5"></div>';
+  html += '<div class="form-field"><label>管理费率(年%)</label><input id="dca_manage" type="number" step="0.01" value="'+esc(d.manageRate!=null?d.manageRate:0)+'" placeholder="如 0.5"></div>';
+  html += '<div class="form-field"><label>销售服务费率(年%)</label><input id="dca_sales" type="number" step="0.01" value="'+esc(d.salesRate!=null?d.salesRate:0)+'" placeholder="如 0.25"></div></div>';
+  html += '<div class="dca-lots-head"><span>定投批次（每笔买入：日期 + 金额 + 净值）</span><button class="pill secondary" id="dcaAddLot" type="button">＋ 添加批次</button><button class="pill secondary" id="dcaEstimate" type="button">用当前净值估算</button></div>';
+  html += '<div id="dcaLots"></div><div class="dca-summary" id="dcaSummary"></div>';
+  $('dcaFields').innerHTML = html;
+  dcaLots = (d.lots && d.lots.length) ? d.lots.map(l=>({date:l.date, amount:Number(l.amount)||0, nav:Number(l.nav)||0})) : [];
+  renderDcaLots(); updateDcaSummary();
+  $('dca_sub').oninput = ()=>{ renderDcaLots(); updateDcaSummary(); };
+  $('dcaAddLot').onclick = ()=>{ dcaLots.push({date: todayStr(), amount: Number($('dca_amount').value)||0, nav: curNav(h.code)||0}); renderDcaLots(); updateDcaSummary(); };
+  $('dcaEstimate').onclick = ()=>{
+    const freq=$('dca_freq').value, amount=Number($('dca_amount').value)||0, start=$('dca_start').value;
+    if(!freq){ toast('请先选定投频率'); return; }
+    if(!amount){ toast('请填每期金额'); return; }
+    if(!start){ toast('请填起始日期'); return; }
+    const nav=curNav(h.code);
+    if(nav==null){ toast('当前净值未知，请在基金页先刷新行情，或手动添加批次'); return; }
+    const lots=genDcaLots(freq, start, todayStr(), amount, nav);
+    if(!lots.length){ toast('起始日期需早于今天'); return; }
+    dcaLots=lots; renderDcaLots(); updateDcaSummary(); toast('已按当前净值估算生成 '+lots.length+' 个批次（净值均为当前值，仅供参考）');
+  };
+  $('dcaMask').classList.add('show');
+}
+function closeDca(){ $('dcaMask').classList.remove('show'); dcaCtx={idx:null}; }
+function saveDca(){
+  const arr = loadData('wb_holdings', []); const idx=dcaCtx.idx; const h=arr[idx]; if(!h) return;
+  const freq=$('dca_freq').value, amount=Number($('dca_amount').value)||0, startDate=$('dca_start').value;
+  const subscribeRate=Number($('dca_sub').value)||0, redeemRate=Number($('dca_redeem').value)||0, manageRate=Number($('dca_manage').value)||0, salesRate=Number($('dca_sales').value)||0;
+  const t=dcaTotals();
+  h.dca={ enabled:!!freq, freq, amount, startDate, subscribeRate, redeemRate, manageRate, salesRate, lots:dcaLots.map(l=>({date:l.date, amount:Number(l.amount)||0, nav:Number(l.nav)||0})) };
+  if(t.totalShares>0){ h.shares=t.totalShares; h.costPx=t.wcost; }
+  arr[idx]=h; saveData('wb_holdings', arr); closeDca(); renderCurrent(); toast('定投已保存');
 }
 
 /* ============== 云端同步（GitHub / Gitee 双平台） ============== */
@@ -2931,6 +3047,8 @@ function bindEvents(){
 
   $('formCancel').onclick = closeForm;
   $('formSave').onclick = saveForm;
+  $('dcaCancel').onclick = closeDca;
+  $('dcaSave').onclick = saveDca;
   $('textClose').onclick = ()=> $('textMask').classList.remove('show');
   $('searchClose').onclick = ()=> $('searchMask').classList.remove('show');
 
@@ -3068,7 +3186,7 @@ function bindEvents(){
       /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
       if(act==='summarize'){ summarizeCheckin(); toast('已汇总本月'); return; }
-      if(act==='dca'){ setDca(idx); return; }
+      if(act==='dca'){ openDca(idx); return; }
       if(act==='kbGen'){ kbGenerate(); return; }
       if(act==='kbCopy'){ kbCopy(idx); return; }
       if(act==='kbCopyNotes'){ kbCopyNotes(); return; }
