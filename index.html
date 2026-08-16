@@ -218,6 +218,8 @@
   .pill.ai{background:linear-gradient(135deg,#8B5CF6,#6366F1);box-shadow:0 4px 12px rgba(99,102,241,.3);}
   .pill.ai:hover{filter:brightness(1.06);box-shadow:0 6px 16px rgba(99,102,241,.42);}
   .pill.secondary:hover{background:var(--hover);transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.07);}
+  .pill.mini{background:var(--btn);color:#fff;padding:3px 10px;font-size:11px;border-radius:12px;cursor:pointer;border:none;}
+  .pill.mini:hover{filter:brightness(1.05);}
   .hint{color:var(--muted);font-size:12px;margin:0 0 12px;}
   .empty{color:var(--muted);padding:24px;text-align:center;border:1px dashed var(--border);border-radius:12px;}
   .card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);padding:14px 14px 14px 18px;margin-bottom:12px;transition:box-shadow .18s ease,transform .18s ease;overflow:hidden;}
@@ -413,7 +415,7 @@
   .sj-label{font-size:12px;font-weight:700;color:#1E40AF;letter-spacing:.5px;}
   .sj-note{font-size:12.5px;line-height:1.7;color:#374151;white-space:pre-wrap;word-break:break-word;}
   .sj-src{margin-top:5px;font-size:11px;color:#9CA3AF;}
-  .stock-judge.empty{color:#B8A47E;font-style:italic;background:#FBFCFE;border-style:dashed;}
+  .stock-judge .sj-empty{color:#B8A47E;font-style:italic;}
 
 </style>
 </head>
@@ -2107,7 +2109,7 @@ function stockRiskTabHtml(){
       const _badge='<span style="font-size:11px;font-weight:600;color:#fff;background:'+_tc+';padding:2px 8px;border-radius:10px">'+esc(sj.rating||'评级待定')+' · 置信'+esc(sj.confidence||'-')+'</span>';
       judgeHtml='<div class="stock-judge"><div class="sj-head"><span class="sj-label">判断</span>'+_badge+'</div><div class="sj-note">'+esc(sj.note).replace(/\n/g,'<br>')+'</div><div class="sj-src">AI 策展 · data.json · '+(sj.asOf||'')+'</div></div>';
     } else {
-      judgeHtml='<div class="stock-judge empty">暂无 AI 研判（待刷新）</div>';
+      judgeHtml='<div class="stock-judge"><div class="sj-head"><span class="sj-label">判断</span><button class="pill mini" data-act="judge-request" data-code="'+esc(it.code)+'">🔄 申请研判</button></div><div class="sj-note sj-empty">暂无 AI 研判 · 点上方按钮把代码发我，即可秒出（或等次日 17:00 自动刷新）</div></div>';
     }
     h+='<div class="risk-card" data-card-idx="'+i+'" data-card-page="stock-analysis" style="'+stockMarketVars(it.code)+'"><div class="rc-name">'+esc(it.name||code)+' <span style="font-weight:400;color:#9CA3AF;font-size:11px">'+esc(code)+'</span></div><div id="r-'+esc(code)+'" class="loading">计算中…</div><div id="reco-'+esc(code)+'" class="reco-badge loading">--</div><div id="reco-reason-'+esc(code)+'" class="reco-reason"></div>'+judgeHtml+'</div>';
   });
@@ -2979,6 +2981,7 @@ function bindEvents(){
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', '删除', '取消').then(ok=>{ if(ok){ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); } }); return; }
+      if(act==='judge-request'){ const code=f.dataset.code; try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(code); } }catch(e){} toast('已复制「'+code+'」· 把代码发给我，我立即生成 AI 研判并部署（或等次日 17:00 自动刷新）'); return; }
       if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
       if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); if(stockCompareSel.length===0){ loadWatch().forEach(it=>{ const c=normCodeStr(it.code); if(c!==code) stockCompareSel.push(c); }); } else { const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } } renderCurrent(); return; }
       if(act==='stkUp'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
