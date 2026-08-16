@@ -1595,7 +1595,7 @@ function syncIndexTrackFromRemote(){
 }
 // 当 data.json 的 indexTrack 规范列表有变动（重排/改名/新增指数）时，按版本号把本地 wb_index_track 重播种一次，
 // 让老用户也拿到新顺序与新指数（仅执行一次，不覆盖用户之后的手动编辑）
-const IDX_SEED_VER = 9;
+const IDX_SEED_VER = 10;
 function migrateIndexTrack(){
   let v = 0;
   try{ v = Number(localStorage.getItem('wb_index_track_ver')||'0'); }catch(e){}
