@@ -1297,6 +1297,24 @@ function fundTable(arr){
   h+='</table>';
   return h;
 }
+function stockTable(arr){
+  if(!arr.length) return '<div class="empty">暂无持仓，去「股票持仓台账」添加。</div>';
+  let h='<table class="ov-table"><tr><th>名称</th><th>代码</th><th>市值</th><th>今日</th></tr>';
+  arr.slice(0,6).forEach(hd=>{
+    const code=normCodeStr(hd.code);
+    const q=stockQuotes[code]||{};
+    const price=q.price!=null?Number(q.price):null;
+    const preClose=q.preClose!=null?Number(q.preClose):null;
+    const chg=(price!=null&&preClose&&preClose>0)?((price-preClose)/preClose*100):null;
+    const today = chg!=null ? ('<span class="'+(chg>0?'up':(chg<0?'down':''))+'">'+(chg>0?'+':'')+chg.toFixed(2)+'%</span>') : '待刷新';
+    let mv='--';
+    if(hd.shares!=null && price!=null) mv=(hd.shares*price).toFixed(2);
+    else if(hd.amount!=null) mv=esc(hd.amount)+'(旧)';
+    h+='<tr><td>'+esc(hd.name||'')+'</td><td>'+esc(hd.code||'')+'</td><td>'+mv+'</td><td>'+today+'</td></tr>';
+  });
+  h+='</table>';
+  return h;
+}
 function indexTable(arr){
   const list = arr && arr.length ? arr : loadIndexTrack();
   if(!list.length) return '<div class="empty">暂无指数数据，发「刷新」让 AI 推送。</div>';
@@ -1310,36 +1328,54 @@ function indexTable(arr){
   return h;
 }
 function renderOverview(body){
-  const holdings = loadData('wb_holdings', []);
-  const total = holdings.reduce((s,h)=>{
+  const fundHoldings = loadData('wb_holdings', []);
+  const stockHoldings = loadData('wb_stock_holdings', []);
+  const fundTotal = fundHoldings.reduce((s,h)=>{
     const q=fundQuote[h.code]||{}; const dwjz=q.dwjz!=null?Number(q.dwjz):null;
     let mv=0;
     if(h.shares!=null && dwjz!=null) mv=h.shares*dwjz;
     else if(h.amount!=null) mv=Number(h.amount)||0;
     return s+mv;
   }, 0);
-  const profit = holdings.reduce((s,h)=>{
+  const fundProfit = fundHoldings.reduce((s,h)=>{
     const q=fundQuote[h.code]||{}; const dwjz=q.dwjz!=null?Number(q.dwjz):null;
     let p=0;
     if(h.shares!=null && dwjz!=null && h.costPx!=null) p=(dwjz-h.costPx)*h.shares;
     else if(h.amount!=null && h.cost!=null) p=(Number(h.amount)-Number(h.cost));
     return s+p;
   }, 0);
+  const stockTotal = stockHoldings.reduce((s,h)=>{
+    const q=stockQuotes[normCodeStr(h.code)]||{}; const price=q.price!=null?Number(q.price):null;
+    if(h.shares!=null && price!=null) return s + h.shares*price;
+    else if(h.amount!=null) return s + (Number(h.amount)||0);
+    return s;
+  }, 0);
+  const stockProfit = stockHoldings.reduce((s,h)=>{
+    const q=stockQuotes[normCodeStr(h.code)]||{}; const price=q.price!=null?Number(q.price):null;
+    if(h.shares!=null && price!=null && h.costPx!=null) return s + (price-h.costPx)*h.shares;
+    return s;
+  }, 0);
+  const total = fundTotal + stockTotal;
+  const profit = fundProfit + stockProfit;
+  const totalCount = fundHoldings.length + stockHoldings.length;
   const rec = loadData('wb_checkinRecords', {});
   const streak = computeStreak(rec);
   const monthDays = Object.keys(rec).filter(k=>k.indexOf(new Date().toISOString().slice(0,7))===0).length;
   let html = '<div class="page-head"><h2 class="page-title">数据概览</h2><button class="pill" data-act="ovrefresh">刷新数据</button></div>';
   html += '<div class="kpi-grid">';
-  html += kpiCard('总资产', total?('¥ '+fmtNum(total)):'--', '', total?('持仓 '+holdings.length+' 只'):'', '#2563EB');
+  html += kpiCard('总资产', total?('¥ '+fmtNum(total)):'--', '', total?('持仓 '+totalCount+' 只'):'', '#2563EB');
   html += kpiCard('持仓盈亏', (profit!==0)?((profit>0?'+':'')+'¥ '+fmtNum(profit)):'¥ 0.00', profit>0?'up':(profit<0?'down':''), '累计', profit>=0?'#16A34A':'#EF4444');
-  html += kpiCard('持有标的', holdings.length+' 只', '', '', '#8B5CF6');
+  html += kpiCard('持有标的', totalCount+' 只', '', '基金 '+fundHoldings.length+' · 股票 '+stockHoldings.length, '#8B5CF6');
   html += kpiCard('连续打卡', streak+' 天', '', '本月已打卡 '+monthDays+' 天', '#F59E0B');
   html += '</div>';
   html += '<div class="panel"><div class="panel-hd"><div class="panel-title">资金流向（亿元）</div><button class="pill secondary" data-act="ff-refresh">刷新</button></div><div class="panel-bd"><div id="fundFlowChart" class="ff-chart"><div class="ff-loading">正在加载资金流向…</div></div></div></div>';
-  html += '<div class="panel"><div class="panel-hd"><div class="panel-title">基金净值</div><button class="pill secondary" data-act="goto" data-page="asset-account">查看全部</button></div><div class="panel-bd">'+fundTable(holdings)+'</div></div>';
+  html += '<div class="panel"><div class="panel-hd"><div class="panel-title">基金净值</div><button class="pill secondary" data-act="goto" data-page="asset-account">查看全部</button></div><div class="panel-bd">'+fundTable(fundHoldings)+'</div></div>';
+  html += '<div class="panel"><div class="panel-hd"><div class="panel-title">股票持仓</div><button class="pill secondary" data-act="goto" data-page="stock-account">查看全部</button></div><div class="panel-bd">'+stockTable(stockHoldings)+'</div></div>';
   html += '<div class="panel"><div class="panel-hd"><div class="panel-title">市场指数</div><button class="pill secondary" data-act="goto" data-page="index-track">查看全部</button></div><div class="panel-bd">'+indexTable(remoteData.indexTrack||[])+'</div></div>';
   body.innerHTML = html;
   loadFundFlowChart();
+  const needFetch = stockHoldings.filter(h=>h.code && !stockQuotes[normCodeStr(h.code)]).map(h=>String(h.code));
+  if(needFetch.length) refreshStockQuotesFor(needFetch);
 }
 
 /* ============== 通用列表模块 ============== */
@@ -2931,7 +2967,7 @@ function bindEvents(){
       if(act==='edit'){ if(MODULES[page].type==='holdings') openHoldingForm(idx); else if(page==='__kb') openKbEdit(idx); else openForm(page, idx); return; }
       if(act==='del'){ if(confirm('确定删除这条记录？')){ const arr=loadData(MODULES[page].key,[]); arr.splice(idx,1); saveData(MODULES[page].key, arr); renderCurrent(); toast('已删除'); } return; }
       if(act==='airefresh'){ loadRemoteData(); return; }
-      if(act==='ovrefresh'){ loadRemoteData(); return; }
+      if(act==='ovrefresh'){ loadRemoteData(); const sc=loadData('wb_stock_holdings',[]).filter(h=>h.code).map(h=>String(h.code)); if(sc.length) refreshStockQuotesFor(sc); return; }
       if(act==='ff-refresh'){ loadFundFlowChart(); return; }
       if(act==='ff-flow'){ const fk=f.dataset.fk; if(fk && ffState.results){ ffState.flow=fk; renderFundFlowChart($('fundFlowChart')); } return; }
       if(act==='goto'){ navigate(page); return; }
