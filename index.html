@@ -2520,7 +2520,7 @@ function renderCheckin(body){
   const today = todayStr();
   const rec = loadData('wb_checkinRecords', {})[today] || {};
   const items = getCheckinItems();
-  let html = '<div class="page-head"><h2 class="page-title">今日打卡面板</h2><button class="pill secondary" data-act="checkin-settings">⚙ 设置</button><button class="pill" data-act="saveCheckin">保存今日打卡</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">今日打卡面板</h2><button class="pill secondary" data-act="checkin-settings">⚙ 设置</button><button class="pill" data-act="saveCheckin">保存打卡</button></div>';
   html += '<p class="hint">日期：'+today+'（本工作台唯一使用表格的模块）。点右上角「⚙ 设置」可修改打卡项名称、调整顺序、新增或删除打卡项。</p>';
   html += '<table class="checkin-table"><thead><tr><th>打卡项</th><th>今日打卡</th><th>备注</th></tr></thead><tbody>';
   items.forEach((it,idx)=>{
@@ -2599,7 +2599,7 @@ function saveCheckin(){
   });
   all[today] = rec;
   saveData('wb_checkinRecords', all);
-  toast('已保存今日打卡');
+  toast('已保存打卡');
 }
 
 /* ============== 打卡历史汇总 ============== */
@@ -3534,6 +3534,18 @@ function bindEvents(){
   if(ckm) ckm.addEventListener('change', e=>{
     const ck = e.target.closest('.ck-edit-name');
     if(ck){ checkinRenameItem(Number(ck.dataset.idx), ck.value); }
+  });
+  // 打卡项设置弹窗内：按钮（增加/关闭/↑/↓/✕）与顺序调整。
+  // 注意：弹窗在 #content 之外，#content 的点击委托捕获不到，必须在此独立监听。
+  if(ckm) ckm.addEventListener('click', e=>{
+    if(e.target===ckm){ closeCheckinSettings(); return; } // 点遮罩空白处关闭
+    const f = e.target.closest('[data-act]'); if(!f) return;
+    const act = f.dataset.act;
+    if(act==='checkinClose'){ closeCheckinSettings(); if(currentPage==='health-checkin') renderCurrent(); return; }
+    if(act==='checkinAdd'){ checkinAdd(); return; }
+    if(act==='ckUp'){ checkinMove(Number(f.dataset.idx), -1); return; }
+    if(act==='ckDown'){ checkinMove(Number(f.dataset.idx), 1); return; }
+    if(act==='ckDel'){ checkinDel(Number(f.dataset.idx)); return; }
   });
   // ===== 卡片拖拽排序（Pointer 事件；触摸=长按拿起后自由拖动松手落位，鼠标=按住拖动）=====
   (function initCardDrag(){
