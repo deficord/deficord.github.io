@@ -639,24 +639,24 @@ const GROUPS = [
     {id:'work-review', label:'作品复盘记录'},
   ]},
   {n:3, title:'🛍️ 好物带货', items:[
-    {id:'product-lib', label:'选品库管理'},
-    {id:'idea-lib', label:'选题灵感库'},
+    {id:'product-lib', label:'商品选品管理'},
+    {id:'idea-lib', label:'热选题灵感库'},
     {id:'script-lib', label:'短视频脚本库'},
-    {id:'prompt-lib', label:'AI 素材提示词仓库'},
-    {id:'record-review', label:'发布记录&复盘'},
+    {id:'prompt-lib', label:'AI素材提示词库'},
+    {id:'record-review', label:'发布复盘记录'},
   ]},
   {n:4, title:'💸 副业思路', items:[
-    {id:'side-hustle', label:'副业·创业精选'},
-    {id:'side-idea', label:'灵感脑洞库'},
-    {id:'project-eval', label:'项目评估池'},
+    {id:'side-hustle', label:'副业创业精选'},
+    {id:'side-idea', label:'灵感脑洞集合'},
+    {id:'project-eval', label:'项目评估汇总'},
     {id:'project-test', label:'项目测试记录'},
     {id:'project-archive', label:'项目归档复盘'},
   ]},
   {n:5, title:'🧘 健康养生', items:[
-    {id:'health-news', label:'科普知识'},
+    {id:'health-news', label:'健康科普知识'},
     {id:'health-checkin', label:'今日打卡面板'},
-    {id:'checkin-history', label:'查看历史打卡汇总'},
-    {id:'body-note', label:'身体观察备忘录'},
+    {id:'checkin-history', label:'历史打卡汇总'},
+    {id:'body-note', label:'身体观察记录'},
   ]},
   {n:6, title:'📑 通用工具', items:[
     {id:'knowledge-base', label:'知识库笔记'},
@@ -678,32 +678,32 @@ const MODULES = {
     {k:'play',l:'播放',t:'number'},{k:'like',l:'点赞',t:'number'},
     {k:'conv',l:'转化',t:'text'},{k:'conclusion',l:'复盘结论',t:'textarea'},
   ]},
-  'product-lib':{type:'list', title:'选品库管理', key:'wb_product_lib', fields:[
+  'product-lib':{type:'list', title:'商品选品管理', key:'wb_product_lib', fields:[
     {k:'name',l:'商品名',t:'text',title:true},{k:'cat',l:'类目',t:'text'},
     {k:'inPrice',l:'进货价',t:'number'},{k:'salePrice',l:'售价',t:'number'},
     {k:'selling',l:'卖点',t:'textarea'},{k:'status',l:'状态',t:'select',options:['pending','hold','done']},
   ]},
-  'idea-lib':{type:'aiText', title:'选题灵感库', key:'ideaLib', hasStatus:true},
+  'idea-lib':{type:'aiText', title:'热选题灵感库', key:'ideaLib', hasStatus:true},
   'script-lib':{type:'list', title:'短视频脚本库', key:'wb_script_lib', fields:[
     {k:'name',l:'脚本名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'hook',l:'钩子',t:'textarea'},{k:'body',l:'正文',t:'textarea'},
     {k:'shot',l:'分镜',t:'textarea'},{k:'music',l:'配乐',t:'text'},
   ]},
-  'prompt-lib':{type:'list', title:'AI 素材提示词仓库', key:'wb_prompt_lib', fields:[
+  'prompt-lib':{type:'list', title:'AI素材提示词库', key:'wb_prompt_lib', fields:[
     {k:'name',l:'提示词名',t:'text',title:true},{k:'pos',l:'正向词',t:'textarea'},
     {k:'neg',l:'负向词',t:'textarea'},{k:'scene',l:'适用场景',t:'text'},
     {k:'tag',l:'标签',t:'text'},
   ]},
-  'record-review':{type:'list', title:'发布记录&复盘', key:'wb_record_review', fields:[
+  'record-review':{type:'list', title:'发布复盘记录', key:'wb_record_review', fields:[
     {k:'date',l:'发布时间',t:'date',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'content',l:'内容',t:'textarea'},{k:'data',l:'数据',t:'text'},
     {k:'review',l:'复盘',t:'textarea'},
   ]},
-  'side-idea':{type:'list', title:'灵感脑洞库', key:'wb_side_idea', fields:[
+  'side-idea':{type:'list', title:'灵感脑洞集合', key:'wb_side_idea', fields:[
     {k:'idea',l:'想法',t:'textarea',title:true},{k:'src',l:'来源',t:'select',options:['手记','搬运']},
     {k:'time',l:'时间',t:'date'},
   ]},
-  'project-eval':{type:'list', title:'项目评估池', key:'wb_project_eval', fields:[
+  'project-eval':{type:'list', title:'项目评估汇总', key:'wb_project_eval', fields:[
     {k:'name',l:'项目名称',t:'text',title:true},{k:'invest',l:'投入',t:'text'},
     {k:'expect',l:'预期收益',t:'text'},{k:'risk',l:'风险',t:'textarea'},
     {k:'score',l:'评分',t:'number'},{k:'conclusion',l:'结论',t:'textarea'},
@@ -718,9 +718,9 @@ const MODULES = {
     {k:'expect',l:'预期收益',t:'text'},{k:'risk',l:'风险',t:'textarea'},
     {k:'score',l:'评分',t:'number'},{k:'conclusion',l:'结论',t:'textarea'},
   ]},
-  'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle', tabs:{cats:['AI副业','内容创作','轻资产创业','实操案例'], field:'cat'}},
+  'side-hustle':{type:'aiText', title:'副业创业精选', key:'sideHustle', tabs:{cats:['AI副业','内容创作','轻资产创业','实操案例'], field:'cat'}},
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF','加密货币']}},
-  'health-news':{type:'finance', title:'健康养生科普', key:'healthNews', tabs:{field:'cat', cats:['饮食营养','运动健身','睡眠健康','心理健康','慢病防控','中医养生','误区辟谣']}},
+  'health-news':{type:'finance', title:'健康科普知识', key:'healthNews', tabs:{field:'cat', cats:['饮食营养','运动健身','睡眠健康','心理健康','慢病防控','中医养生','误区辟谣']}},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
   'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','防御']}},
@@ -732,8 +732,8 @@ const MODULES = {
   'stock-data-analysis':{type:'stockAnalysis', title:'股票数据分析', key:'wb_watchlist', assetFilter:'stock'},
   'fund-data-analysis':{type:'stockAnalysis', title:'基金数据分析', key:'wb_watchlist', assetFilter:'fund'},
   'health-checkin':{type:'checkin', title:'今日打卡面板', key:'wb_checkinRecords'},
-  'checkin-history':{type:'checkinHistory', title:'查看历史打卡汇总'},
-  'body-note':{type:'list', title:'身体观察备忘录', key:'wb_body_note', fields:[
+  'checkin-history':{type:'checkinHistory', title:'历史打卡汇总'},
+  'body-note':{type:'list', title:'身体观察记录', key:'wb_body_note', fields:[
     {k:'date',l:'日期',t:'date',title:true},{k:'obs',l:'症状/观察',t:'textarea'},
     {k:'note',l:'备注',t:'textarea'},
   ]},
@@ -775,9 +775,9 @@ const CAT_COLOR = {
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
   // 运营思路题库 cat
   '运营方法论':'#F59E0B','财经选题':'#3B82F6','AI科技选题':'#6366F1','对标账号':'#14B8A6',
-  // 副业·创业精选 cat
+  // 副业创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
-  // 健康养生科普 cat
+  // 健康科普知识 cat
   '饮食营养':'#10B981','运动健身':'#F59E0B','睡眠健康':'#6366F1','心理健康':'#EC4899','慢病防控':'#EF4444','中医养生':'#14B8A6','误区辟谣':'#8B5CF6',
 };
 function namedCardVars(str){ if(CAT_COLOR[str]){ const a=CAT_COLOR[str]; return '--card-accent:'+a+';--card-soft:'+softOf(a)+';'; } return cardVars(str); }
@@ -2604,7 +2604,7 @@ function saveCheckin(){
 
 /* ============== 打卡历史汇总 ============== */
 function renderCheckinHistory(body){
-  let html = '<div class="page-head"><h2 class="page-title">查看历史打卡汇总</h2><button class="pill" data-act="summarize">AI汇总本月</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">历史打卡汇总</h2><button class="pill" data-act="summarize">AI汇总本月</button></div>';
   html += '<p class="hint">纯本地计算，读取 localStorage 当月打卡记录，不联网、不拉 data.json。</p>';
   html += '<div id="chkSummary"></div>';
   body.innerHTML = html;
