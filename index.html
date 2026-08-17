@@ -1278,6 +1278,16 @@ function getFundFlowCacheRaw(){
     return obj;
   }catch(e){ return null; }
 }
+// 纯函数：根据实时拉取结果与本地缓存，决定面板展示模式
+// live=实时成功 / empty=接口可达但当日无数据(未开盘) / cache=实时失败回退缓存 / error=彻底失败
+function fundFlowDecision(results, cache){
+  const ok = results.filter(r=>r.ok);
+  const empties = results.filter(r=>r.empty);
+  if(ok.length) return {mode:'live'};
+  if(empties.length) return {mode:'empty'};
+  if(cache) return {mode:'cache', results:cache.data};
+  return {mode:'error'};
+}
 async function loadFundFlowChart(force){
   const box = $('fundFlowChart');
   if(!box) return;
@@ -1299,14 +1309,20 @@ async function loadFundFlowChart(force){
         return {name:a.name, secid:a.secid, color:a.color, ...p, ok:true};
       } catch(e) { return {name:a.name, secid:a.secid, color:a.color, ok:false, error:e.message}; }
     }));
-    const ok = results.filter(r=>r.ok);
-    if(ok.length){
+    const decision = fundFlowDecision(results, cache);
+    if(decision.mode === 'live'){
       try{ localStorage.setItem('wb_ff_cache', JSON.stringify({t:Date.now(), data:results})); }catch(e){}
       ffState = {results:results, fromCache:false, flow: ffState.flow||'main', cachedLive:false};
       renderFundFlowChart(box);
+    } else if(decision.mode === 'empty'){
+      // 接口可达但当日无成交数据（未开盘/停牌等）：明确提示，不拿旧缓存冒充实时
+      box.innerHTML = '<div class="ff-error" style="color:var(--muted)">今日暂无资金流向数据（尚未开盘或无成交），开盘后自动更新。</div>';
+    } else if(decision.mode === 'cache'){
+      // 实时接口确实拉取失败，才退回最近缓存并标注「非实时」
+      ffState = {results:decision.results, fromCache:true, flow: ffState.flow||'main'};
+      renderFundFlowChart(box);
     } else {
-      if(cache){ ffState = {results:cache.data, fromCache:true, flow: ffState.flow||'main'}; renderFundFlowChart(box); }
-      else box.innerHTML = '<div class="ff-error">资金流向接口暂不可用。<br>东方财富可能临时限流或网络异常。<br>请点击「刷新」重试；若预览面板看不到，请用浏览器打开 https://deficord.github.io</div>';
+      box.innerHTML = '<div class="ff-error">资金流向接口暂不可用。<br>东方财富可能临时限流或网络异常。<br>请点击「刷新」重试；若预览面板看不到，请用浏览器打开 https://deficord.github.io</div>';
     }
   } catch(e) {
     if(cache){ ffState = {results:cache.data, fromCache:true, flow: ffState.flow||'main'}; renderFundFlowChart(box); }
