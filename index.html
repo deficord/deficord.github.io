@@ -614,6 +614,7 @@ const GROUPS = [
   ]},
   {n:2, title:'🚀 AI新账号运营', items:[
     {id:'operation-ideas', label:'运营思路&选题素材库'},
+    {id:'book-video', label:'短视频自动生成·书单'},
     {id:'account-observe', label:'对标账号观测记录'},
     {id:'work-review', label:'作品复盘记录表'},
   ]},
@@ -646,6 +647,7 @@ const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
   'operation-ideas':{type:'aiText', title:'运营思路&选题素材库', key:'operationIdeas', tabs:{cats:['运营方法论','财经选题','AI科技选题','对标账号'], field:'cat'}},
+  'book-video':{type:'bookVideo', title:'短视频自动生成 · 书单'},
   'account-observe':{type:'list', title:'对标账号观测记录', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -988,6 +990,7 @@ function renderPage(page){
   else if(m.type==='overview') renderOverview(body);
   else if(m.type==='list') renderList(page, body);
   else if(m.type==='aiText') renderAiText(page, body);
+  else if(m.type==='bookVideo') renderBookVideo(body);
   else if(m.type==='finance') renderFinance(body);
   else if(m.type==='holdings') renderHoldings(body);
   else if(m.type==='indexTrack') renderIndexTrack(body);
@@ -1636,6 +1639,135 @@ function renderAiText(page, body){
     html += '</div>';
   }
   body.innerHTML = html;
+}
+
+/* ============== 短视频自动生成 · 书单（预览版，零积分） ============== */
+var bvState = { scenes:[], idx:0, playing:false, coverUrl:'', inputs:{}, _t:null };
+if(typeof window!=='undefined') window.bvState = bvState;
+function genBookScript(title, author, style, note){
+  title=(title||'').trim(); author=(author||'').trim(); note=(note||'').trim(); style=style||'hook';
+  const T=title||'这本书', A=author||'作者', scenes=[];
+  if(style==='hook'){
+    scenes.push({tag:'开场钩子', text:'如果《'+T+'》你还没读，可能会错过一个完全不同的视角。'});
+    scenes.push({tag:'作者背书', text:'它的作者 '+A+'，把这件事讲得特别透。'});
+    scenes.push({tag:'悬念', text:'书里有一个判断，我看完很久都没缓过来。'});
+  } else if(style==='pain'){
+    scenes.push({tag:'痛点共鸣', text:'你是不是也常在深夜里，觉得生活好像少了点什么？'});
+    scenes.push({tag:'引入', text:'《'+T+'》里，'+A+' 写出了我不敢说出口的那种感受。'});
+    scenes.push({tag:'转折', text:'原来不是我矫情，是很多人都在经历同样的时刻。'});
+  } else {
+    scenes.push({tag:'干货开场', text:'今天拆解一本被严重低估的好书：《'+T+'》。'});
+    scenes.push({tag:'作者背书', text:'作者 '+A+'，用很朴素的话讲透了这件事。'});
+    scenes.push({tag:'清单预告', text:'下面 3 个收获，听完你可能就想把它读完了。'});
+  }
+  if(note){
+    scenes.push({tag:'金句 / 理由', text:'我特别想分享的是：「'+note+'」'});
+  } else {
+    scenes.push({tag:'共鸣点', text:'它最打动我的，是那种「原来有人懂我」的感觉。'});
+  }
+  scenes.push({tag:'阅读收获', text:'读完你会发现，很多纠结的事，其实都有另一种解法。'});
+  scenes.push({tag:'行动号召', text:'如果你也想读，主页搜书名就能找到。觉得有用，点个赞支持一下～'});
+  return {title:T, author:A, style:style, scenes:scenes};
+}
+function bvTTS(){ return (typeof window!=='undefined' && window.speechSynthesis) ? true : false; }
+function bvPickVoice(){
+  try{ const vs=speechSynthesis.getVoices(); if(!vs||!vs.length) return null;
+    return vs.find(v=>/zh|Chinese|中文|普通话/i.test(v.lang+v.name)) || vs.find(v=>/zh/i.test(v.lang)) || null;
+  }catch(e){ return null; }
+}
+function bvClearTimer(){ if(bvState._t){ clearTimeout(bvState._t); bvState._t=null; } }
+function bvStop(){
+  bvClearTimer();
+  if(bvTTS()){ try{ speechSynthesis.cancel(); }catch(e){} }
+  bvState.playing=false;
+  const b=$('bvPlayBtn'); if(b) b.textContent='▶ 播放';
+}
+function bvSpeak(text, done){
+  if(bvTTS() && text){
+    try{
+      const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN';
+      const v=bvPickVoice(); if(v) u.voice=v; u.rate=1; u.pitch=1;
+      u.onend=()=>{ done&&done(); }; u.onerror=()=>{ done&&done(); };
+      speechSynthesis.cancel(); speechSynthesis.speak(u); return;
+    }catch(e){}
+  }
+  const ms=Math.max(1300, (text||'').length*170);
+  bvState._t=setTimeout(()=>{ bvState._t=null; done&&done(); }, ms);
+}
+function bvRenderScene(){
+  const sc=bvState.scenes, i=bvState.idx;
+  const tag=$('bvTag'), txt=$('bvText'), sub=$('bvSub'), dots=$('bvDots'), st=$('bvStatus');
+  if(!sc.length){ if(tag)tag.textContent='待生成'; if(txt)txt.textContent='填写书名与作者，点「生成预览」即可看到效果。'; if(sub)sub.textContent=''; if(st)st.textContent='尚未生成'; return; }
+  const s=sc[Math.min(i,sc.length-1)];
+  if(tag)tag.textContent=s.tag;
+  if(txt)txt.textContent=s.text;
+  if(sub)sub.textContent=s.text;
+  if(dots) dots.innerHTML=sc.map((x,k)=>'<span class="dot'+(k===i?' on':'')+'"></span>').join('');
+  if(st) st.textContent='共 '+sc.length+' 幕 · 当前第 '+(i+1)+' 幕';
+}
+function bvStep(){
+  if(!bvState.playing) return;
+  const sc=bvState.scenes;
+  if(bvState.idx>=sc.length){ bvStop(); const st=$('bvStatus'); if(st)st.textContent='播放完毕 ✅'; return; }
+  bvRenderScene();
+  const text=sc[bvState.idx].text;
+  bvSpeak(text, ()=>{ if(bvState.playing){ bvState.idx++; bvStep(); } });
+}
+function bvToggle(){
+  if(!bvState.scenes.length){ if(typeof toast==='function') toast('请先点「生成预览」'); return; }
+  if(bvState.playing){ bvStop(); return; }
+  bvState.playing=true;
+  const b=$('bvPlayBtn'); if(b) b.textContent='⏸ 暂停';
+  bvStep();
+}
+function fetchBookCover(title, author){
+  if(typeof fetch==='undefined') return Promise.resolve(null);
+  const q=encodeURIComponent(((title||'')+' '+(author||'')).trim());
+  const url='https://openlibrary.org/search.json?q='+q+'&limit=1&fields=cover_i';
+  const ctrl=new AbortController(); const to=setTimeout(()=>{try{ctrl.abort();}catch(e){}},5000);
+  return fetch(url,{signal:ctrl.signal}).then(r=>r&&r.ok?r.json():null).then(j=>{
+    clearTimeout(to);
+    const id=j&&j.docs&&j.docs[0]&&j.docs[0].cover_i;
+    return id?('https://covers.openlibrary.org/b/id/'+id+'-L.jpg'):null;
+  }).catch(()=>{ clearTimeout(to); return null; });
+}
+function bvGen(){
+  const t=$('bvTitle'), a=$('bvAuthor'), s=$('bvStyle'), n=$('bvNote');
+  const title=t?t.value.trim():''; const author=a?a.value.trim():'';
+  const style=s?s.value:'hook'; const note=n?n.value.trim():'';
+  if(!title||!author){ if(typeof toast==='function') toast('书名和作者都要填哦'); return; }
+  bvState.inputs={title,author,style,note};
+  const res=genBookScript(title,author,style,note);
+  bvState.scenes=res.scenes; bvState.idx=0; bvState.coverUrl='';
+  fetchBookCover(title,author).then(url=>{
+    if(url){ bvState.coverUrl=url; const box=$('bvCoverBox'); if(box) box.innerHTML='<img id="bvCover" src="'+esc(url)+'">'; }
+  }).catch(()=>{});
+  bvRenderScene();
+  bvToggle();
+}
+function renderBookVideo(body){
+  if(bvTTS()){ try{ speechSynthesis.cancel(); }catch(e){} }
+  bvClearTimer();
+  const ip=bvState.inputs||{}, sc=bvState.scenes||[], coverUrl=bvState.coverUrl||'';
+  let html='<style>.bv-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;background:#fff;border:1px solid #E8EDF5;border-radius:14px;padding:16px;margin-bottom:16px;}.bv-form label{display:flex;flex-direction:column;font-size:13px;color:#475569;gap:6px;}.bv-form label.full{grid-column:1/-1;}.bv-form input,.bv-form select,.bv-form textarea{font:inherit;padding:9px 11px;border:1px solid #D6DEEA;border-radius:9px;background:#fff;color:#0F172A;}.bv-form textarea{min-height:60px;resize:vertical;}.bv-form .pill{grid-column:1/-1;justify-self:start;}.bv-stage{display:flex;justify-content:center;}.bv-phone{width:340px;max-width:100%;background:#0F172A;border-radius:22px;padding:16px;box-shadow:0 18px 40px rgba(15,23,42,.22);}.bv-cover{width:130px;height:180px;margin:0 auto 14px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#334155,#0F172A);display:flex;align-items:center;justify-content:center;}.bv-cover img{width:100%;height:100%;object-fit:cover;}.bv-cover-ph{color:#CBD5E1;font-size:14px;text-align:center;padding:10px;}.bv-card{min-height:120px;background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;}.bv-tag{display:inline-block;align-self:flex-start;font-size:12px;color:#2563EB;background:#EFF6FF;border:1px solid #DBEAFE;padding:3px 10px;border-radius:999px;}.bv-text{font-size:17px;line-height:1.6;color:#0F172A;font-weight:600;}.bv-sub{margin-top:10px;min-height:20px;color:#E2E8F0;font-size:13px;line-height:1.5;text-align:center;}.bv-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 6px;}.bv-dots .dot{width:7px;height:7px;border-radius:50%;background:#475569;}.bv-dots .dot.on{background:#38BDF8;width:18px;border-radius:4px;}.bv-ctrl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px;}.bv-status{text-align:center;color:#94A3B8;font-size:12px;margin-top:10px;}</style>';
+  html+='<div class="page-head"><h2 class="page-title">短视频自动生成 · 书单</h2><span class="pill ai" style="cursor:default">预览版 · 零积分 · 后续加 MP4 导出</span></div>';
+  html+='<p class="hint">输入书名 + 作者，自动生成书单向口播短片：文案模板 + 浏览器免费配音（中文 TTS）+ 同步字幕。不调用任何付费接口、不花积分。封面取自 Open Library 免费接口，拉不到时自动降级为书名艺术卡。</p>';
+  html+='<div class="bv-form">';
+  html+='<label>书名 *<input id="bvTitle" type="text" value="'+esc(ip.title||'')+'" placeholder="例：被讨厌的勇气"></label>';
+  html+='<label>作者 *<input id="bvAuthor" type="text" value="'+esc(ip.author||'')+'" placeholder="例：岸见一郎"></label>';
+  html+='<label>风格<select id="bvStyle"><option value="hook"'+(ip.style==='hook'?' selected':'')+'>悬念钩子型</option><option value="pain"'+(ip.style==='pain'?' selected':'')+'>痛点共鸣型</option><option value="list"'+(ip.style==='list'?' selected':'')+'>干货清单型</option></select></label>';
+  html+='<label class="full">一句话金句 / 推荐理由（选填）<textarea id="bvNote" placeholder="选填：书里最戳你的一句话，或你推荐它的理由">'+esc(ip.note||'')+'</textarea></label>';
+  html+='<button class="pill ai" data-act="bvGen">⚡ 生成预览</button>';
+  html+='</div>';
+  html+='<div class="bv-stage"><div class="bv-phone">';
+  html+='<div class="bv-cover" id="bvCoverBox">'+(coverUrl?'<img id="bvCover" src="'+esc(coverUrl)+'">':'<div class="bv-cover-ph">'+esc(ip.title||'书封')+'</div>')+'</div>';
+  html+='<div class="bv-card"><div class="bv-tag" id="bvTag">待生成</div><div class="bv-text" id="bvText">填写书名与作者，点「生成预览」即可看到效果。</div></div>';
+  html+='<div class="bv-sub" id="bvSub"></div>';
+  html+='<div class="bv-dots" id="bvDots">'+(sc.map((x,i)=>'<span class="dot'+(i===bvState.idx?' on':'')+'"></span>').join(''))+'</div>';
+  html+='<div class="bv-ctrl"><button class="pill secondary" data-act="bvPrev">⏮ 上一幕</button><button class="pill ai" data-act="bvPlay" id="bvPlayBtn">'+(bvState.playing?'⏸ 暂停':'▶ 播放')+'</button><button class="pill secondary" data-act="bvNext">下一幕 ⏭</button><button class="pill secondary" data-act="bvReset">↺ 重置</button></div>';
+  html+='<div class="bv-status" id="bvStatus">'+(sc.length?('共 '+sc.length+' 幕 · 当前第 '+(bvState.idx+1)+' 幕'):'尚未生成')+'</div>';
+  html+='</div></div>';
+  body.innerHTML=html;
 }
 
 /* ============== 理财新知 ============== */
@@ -3416,6 +3548,12 @@ function bindEvents(){
       if(act==='kbEdit'){ openKbEdit(idx); return; }
       if(act==='kbDel'){ if(confirm('确定删除这张卡片？')){ const all=loadData('wb_knowledge',[]); all.splice(idx,1); saveData('wb_knowledge', all); renderCurrent(); toast('已删除'); } return; }
       if(act==='kbPasteBtn2'){ const a=$('kbPasteArea'); a.style.display = a.style.display==='none'?'block':'none'; if(a.style.display==='block'){ $('kbPaste').focus(); if(navigator.clipboard&&navigator.clipboard.readText){ navigator.clipboard.readText().then(t=>{ if(t) $('kbPaste').value=t; }).catch(()=>{}); } } return; }
+      /* ===== 短视频自动生成·书单（预览版） ===== */
+      if(act==='bvGen'){ bvGen(); return; }
+      if(act==='bvPlay'){ bvToggle(); return; }
+      if(act==='bvPrev'){ bvStop(); bvState.idx=Math.max(0,bvState.idx-1); bvRenderScene(); return; }
+      if(act==='bvNext'){ bvStop(); bvState.idx=Math.min((bvState.scenes.length||1)-1,bvState.idx+1); bvRenderScene(); return; }
+      if(act==='bvReset'){ bvStop(); bvState.idx=0; bvRenderScene(); return; }
     }
     // 知识库筛选
     const kbf = e.target.closest('[data-kbf]');
