@@ -304,6 +304,8 @@
   .ff-sec-hd{font-size:13px;font-weight:700;color:var(--title);margin:10px 0 6px;}
   .ff-sec-list{display:flex;flex-direction:column;gap:2px;}
   .ff-sec-row{display:flex;align-items:center;font-size:12px;padding:5px 6px;border-radius:8px;}
+  .ff-sec-row .ff-bar-wrap{height:14px;border-radius:7px;flex:0 0 72px;margin:0 8px;background:#F1F5F9;overflow:hidden;position:relative;}
+  .ff-sec-row .ff-bar{height:100%;border-radius:7px;min-width:2px;}
   .ff-sec-row:nth-child(odd){background:#F8FAFC;}
   .ff-sec-rank{width:20px;color:var(--muted);text-align:center;flex-shrink:0;}
   .ff-sec-name{flex:1;color:#374151;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -1430,12 +1432,14 @@ function buildSectorPanel(sectors){
   return h ? '<div class="ff-sectors">'+h+'</div>' : '';
 }
 function sectorListHtml(arr){
+  const max = Math.max(...arr.map(s=>Math.abs(s.net||0)), 1);
   return '<div class="ff-sec-list">'+arr.slice(0,10).map((s,i)=>{
     const netCls = s.net>=0 ? 'up' : 'down';
     const netSign = s.net>0 ? '+' : '';
     const chgCls = s.chg>=0 ? 'up' : 'down';
     const chgSign = s.chg>0 ? '+' : '';
-    return '<div class="ff-sec-row"><span class="ff-sec-rank">'+(i+1)+'</span><span class="ff-sec-name" title="'+esc(s.name)+'">'+esc(s.name)+'</span><span class="ff-sec-net '+netCls+'">'+netSign+s.net.toFixed(2)+'亿</span><span class="ff-sec-chg '+chgCls+'">'+chgSign+s.chg.toFixed(2)+'%</span></div>';
+    const pct = max ? Math.abs(s.net)/max*100 : 0;
+    return '<div class="ff-sec-row"><span class="ff-sec-rank">'+(i+1)+'</span><span class="ff-sec-name" title="'+esc(s.name)+'">'+esc(s.name)+'</span><span class="ff-bar-wrap ff-sec-bar"><span class="ff-bar '+netCls+'" style="width:'+Math.max(pct,2).toFixed(1)+'%"></span></span><span class="ff-sec-net '+netCls+'">'+netSign+s.net.toFixed(2)+'亿</span><span class="ff-sec-chg '+chgCls+'">'+chgSign+s.chg.toFixed(2)+'%</span></div>';
   }).join('')+'</div>';
 }
 function fundTable(arr){
