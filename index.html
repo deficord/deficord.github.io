@@ -1604,14 +1604,28 @@ function renderList(page, body){
 
 /* ============== 知识库 ============== */
 function renderKnowledge(body){
-  let html = '<div class="page-head"><h2 class="page-title">知识库笔记</h2><button class="pill" id="kbPasteBtn2">粘贴</button><button class="pill secondary" data-act="kbCopyNotes">⧉ 复制笔记</button></div>';
+  let html = '<div class="page-head"><h2 class="page-title">知识库笔记</h2><button class="pill" data-act="kbAdd">＋ 新增笔记</button><button class="pill secondary" data-act="kbPasteBtn2" id="kbPasteBtn2">粘贴</button><button class="pill secondary" data-act="kbCopyNotes">⧉ 复制笔记</button></div>';
   html += '<div class="filter-bar">';
   ['全部'].concat(KB_CATS).forEach(c=>{ html += '<span class="f'+(kbFilter===c?' active':'')+'" data-kbf="'+c+'">'+c+'</span>'; });
   html += '</div>';
   html += '<div class="paste-area" id="kbPasteArea" style="display:none"><textarea id="kbPaste" placeholder="把对话里 AI 分析好的内容整段粘进来，首行将作为卡片标题…"></textarea><div class="paste-row"><span>分类：</span><select id="kbCat">'+KB_CATS.map(c=>'<option>'+c+'</option>').join('')+'</select><button class="pill" data-act="kbGen">生成卡片</button></div></div>';
   const all = loadData('wb_knowledge', []);
   const list = kbFilter==='全部' ? all : all.filter(c=>c.category===kbFilter);
-  if(list.length===0){ html += '<div class="empty">暂无笔记。粘贴 AI 分析结果 → 生成卡片，或切换筛选。</div>'; }
+  if(list.length===0){
+    if(all.length===0){
+      html += '<div class="empty">还没有任何笔记。点上方「＋ 新增笔记」手写，或点「粘贴」把 AI 给你的分析整段存进来（首行自动当标题）。</div>';
+      html += '<div class="card kb-guide" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
+      html += '<h4>👋 怎么用知识库笔记</h4>';
+      html += '<div class="content">';
+      html += '<p><b>① 新增笔记</b>：点「＋ 新增笔记」→ 选分类、填标题与内容 → 保存。数据存在本机浏览器，不上传。</p>';
+      html += '<p><b>② 从对话存</b>：点「粘贴」→ 把 AI 给你的内容整段粘进来（第一行＝标题，其余＝正文）→ 选分类 → 「生成卡片」。</p>';
+      html += '<p><b>③ 管理</b>：每张卡片可复制 / 编辑 / 删除，卡片可拖拽排序；顶部按「理财 / 养生 / AI / 运营」筛选；「⧉ 复制笔记」可一键导出整类贴去飞书。</p>';
+      html += '<p class="hint" style="margin-bottom:0">换个设备或清缓存会丢，重要内容记得用「复制笔记」备份。</p>';
+      html += '</div></div>';
+    } else {
+      html += '<div class="empty">「'+esc(kbFilter)+'」分类下暂无笔记，切换上方筛选或点「＋ 新增笔记」加一条。</div>';
+    }
+  }
   else {
     html += '<div class="watch-grid draggable-cards" data-drag-page="knowledge-base">';
     const items = list.map(c=>({it:c, i: all.indexOf(c)}));
@@ -3520,6 +3534,7 @@ function bindEvents(){
       if(act==='kbCopyNotes'){ kbCopyNotes(); return; }
       if(act==='kbEdit'){ openKbEdit(idx); return; }
       if(act==='kbDel'){ if(confirm('确定删除这张卡片？')){ const all=loadData('wb_knowledge',[]); all.splice(idx,1); saveData('wb_knowledge', all); renderCurrent(); toast('已删除'); } return; }
+      if(act==='kbAdd'){ openKbEdit(null); return; }
       if(act==='kbPasteBtn2'){ const a=$('kbPasteArea'); a.style.display = a.style.display==='none'?'block':'none'; if(a.style.display==='block'){ $('kbPaste').focus(); if(navigator.clipboard&&navigator.clipboard.readText){ navigator.clipboard.readText().then(t=>{ if(t) $('kbPaste').value=t; }).catch(()=>{}); } } return; }
     }
     // 知识库筛选
