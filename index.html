@@ -1682,17 +1682,15 @@ function bvStop(){
   bvState.playing=false;
   const b=$('bvPlayBtn'); if(b) b.textContent='▶ 播放';
 }
-function bvSpeak(text, done){
+function bvSpeak(text){
+  // 尽力朗读，但不依赖它的 onend 驱动翻幕（真机 Chrome/Edge 上 onend 常不触发，会卡死播放）
   if(bvTTS() && text){
     try{
       const u=new SpeechSynthesisUtterance(text); u.lang='zh-CN';
       const v=bvPickVoice(); if(v) u.voice=v; u.rate=1; u.pitch=1;
-      u.onend=()=>{ done&&done(); }; u.onerror=()=>{ done&&done(); };
-      speechSynthesis.cancel(); speechSynthesis.speak(u); return;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
     }catch(e){}
   }
-  const ms=Math.max(1300, (text||'').length*170);
-  bvState._t=setTimeout(()=>{ bvState._t=null; done&&done(); }, ms);
 }
 function bvRenderScene(){
   const sc=bvState.scenes, i=bvState.idx;
@@ -1700,7 +1698,7 @@ function bvRenderScene(){
   if(!sc.length){ if(tag)tag.textContent='待生成'; if(txt)txt.textContent='填写书名与作者，点「生成预览」即可看到效果。'; if(sub)sub.textContent=''; if(st)st.textContent='尚未生成'; return; }
   const s=sc[Math.min(i,sc.length-1)];
   if(tag)tag.textContent=s.tag;
-  if(txt)txt.textContent=s.text;
+  if(txt){ txt.textContent=s.text; txt.style.animation='none'; void txt.offsetWidth; txt.style.animation='bvIn .45s ease'; }
   if(sub)sub.textContent=s.text;
   if(dots) dots.innerHTML=sc.map((x,k)=>'<span class="dot'+(k===i?' on':'')+'"></span>').join('');
   if(st) st.textContent='共 '+sc.length+' 幕 · 当前第 '+(i+1)+' 幕';
@@ -1711,7 +1709,14 @@ function bvStep(){
   if(bvState.idx>=sc.length){ bvStop(); const st=$('bvStatus'); if(st)st.textContent='播放完毕 ✅'; return; }
   bvRenderScene();
   const text=sc[bvState.idx].text;
-  bvSpeak(text, ()=>{ if(bvState.playing){ bvState.idx++; bvStep(); } });
+  bvSpeak(text); // 尽力朗读（不阻塞翻幕）
+  // 翻幕由定时器驱动，时长按字数估算，与朗读节奏接近；TTS 即使不响，画面也会一幕幕动
+  const dur=Math.max(2600, (text||'').length*200);
+  bvClearTimer();
+  bvState._t=setTimeout(()=>{
+    bvState._t=null;
+    if(bvState.playing){ bvState.idx++; bvStep(); }
+  }, dur);
 }
 function bvToggle(){
   if(!bvState.scenes.length){ if(typeof toast==='function') toast('请先点「生成预览」'); return; }
@@ -1719,6 +1724,19 @@ function bvToggle(){
   bvState.playing=true;
   const b=$('bvPlayBtn'); if(b) b.textContent='⏸ 暂停';
   bvStep();
+}
+function setArtCover(title){
+  // 本地 SVG 艺术封面兜底：不依赖网络，保证一定有「图」
+  const t=esc((title||'书').slice(0,2));
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="130" height="180">'+
+    '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'+
+    '<stop offset="0" stop-color="#334155"/><stop offset="1" stop-color="#0F172A"/></linearGradient></defs>'+
+    '<rect width="130" height="180" rx="10" fill="url(#g)"/>'+
+    '<text x="65" y="104" font-size="46" fill="#E2E8F0" text-anchor="middle" font-family="sans-serif" font-weight="700">'+t+'</text>'+
+    '</svg>';
+  const uri='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+  bvState.coverUrl=uri;
+  const box=$('bvCoverBox'); if(box) box.innerHTML='<img id="bvCover" src="'+uri+'" alt="'+t+'">';
 }
 function fetchBookCover(title, author){
   if(typeof fetch==='undefined') return Promise.resolve(null);
@@ -1737,8 +1755,10 @@ function bvGen(){
   const style=s?s.value:'hook'; const note=n?n.value.trim():'';
   if(!title||!author){ if(typeof toast==='function') toast('书名和作者都要填哦'); return; }
   bvState.inputs={title,author,style,note};
+  bvStop();
   const res=genBookScript(title,author,style,note);
-  bvState.scenes=res.scenes; bvState.idx=0; bvState.coverUrl='';
+  bvState.scenes=res.scenes; bvState.idx=0;
+  setArtCover(title); // 先用本地艺术卡兜底（确保有图），联网封面稍后覆盖
   fetchBookCover(title,author).then(url=>{
     if(url){ bvState.coverUrl=url; const box=$('bvCoverBox'); if(box) box.innerHTML='<img id="bvCover" src="'+esc(url)+'">'; }
   }).catch(()=>{});
@@ -1749,7 +1769,7 @@ function renderBookVideo(body){
   if(bvTTS()){ try{ speechSynthesis.cancel(); }catch(e){} }
   bvClearTimer();
   const ip=bvState.inputs||{}, sc=bvState.scenes||[], coverUrl=bvState.coverUrl||'';
-  let html='<style>.bv-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;background:#fff;border:1px solid #E8EDF5;border-radius:14px;padding:16px;margin-bottom:16px;}.bv-form label{display:flex;flex-direction:column;font-size:13px;color:#475569;gap:6px;}.bv-form label.full{grid-column:1/-1;}.bv-form input,.bv-form select,.bv-form textarea{font:inherit;padding:9px 11px;border:1px solid #D6DEEA;border-radius:9px;background:#fff;color:#0F172A;}.bv-form textarea{min-height:60px;resize:vertical;}.bv-form .pill{grid-column:1/-1;justify-self:start;}.bv-stage{display:flex;justify-content:center;}.bv-phone{width:340px;max-width:100%;background:#0F172A;border-radius:22px;padding:16px;box-shadow:0 18px 40px rgba(15,23,42,.22);}.bv-cover{width:130px;height:180px;margin:0 auto 14px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#334155,#0F172A);display:flex;align-items:center;justify-content:center;}.bv-cover img{width:100%;height:100%;object-fit:cover;}.bv-cover-ph{color:#CBD5E1;font-size:14px;text-align:center;padding:10px;}.bv-card{min-height:120px;background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;}.bv-tag{display:inline-block;align-self:flex-start;font-size:12px;color:#2563EB;background:#EFF6FF;border:1px solid #DBEAFE;padding:3px 10px;border-radius:999px;}.bv-text{font-size:17px;line-height:1.6;color:#0F172A;font-weight:600;}.bv-sub{margin-top:10px;min-height:20px;color:#E2E8F0;font-size:13px;line-height:1.5;text-align:center;}.bv-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 6px;}.bv-dots .dot{width:7px;height:7px;border-radius:50%;background:#475569;}.bv-dots .dot.on{background:#38BDF8;width:18px;border-radius:4px;}.bv-ctrl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px;}.bv-status{text-align:center;color:#94A3B8;font-size:12px;margin-top:10px;}</style>';
+  let html='<style>.bv-form{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;background:#fff;border:1px solid #E8EDF5;border-radius:14px;padding:16px;margin-bottom:16px;}.bv-form label{display:flex;flex-direction:column;font-size:13px;color:#475569;gap:6px;}.bv-form label.full{grid-column:1/-1;}.bv-form input,.bv-form select,.bv-form textarea{font:inherit;padding:9px 11px;border:1px solid #D6DEEA;border-radius:9px;background:#fff;color:#0F172A;}.bv-form textarea{min-height:60px;resize:vertical;}.bv-form .pill{grid-column:1/-1;justify-self:start;}.bv-stage{display:flex;justify-content:center;}.bv-phone{width:340px;max-width:100%;background:#0F172A;border-radius:22px;padding:16px;box-shadow:0 18px 40px rgba(15,23,42,.22);}.bv-cover{width:130px;height:180px;margin:0 auto 14px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#334155,#0F172A);display:flex;align-items:center;justify-content:center;}.bv-cover img{width:100%;height:100%;object-fit:cover;}.bv-cover-ph{color:#CBD5E1;font-size:14px;text-align:center;padding:10px;}.bv-card{min-height:120px;background:#fff;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px;}.bv-tag{display:inline-block;align-self:flex-start;font-size:12px;color:#2563EB;background:#EFF6FF;border:1px solid #DBEAFE;padding:3px 10px;border-radius:999px;}.bv-text{font-size:17px;line-height:1.6;color:#0F172A;font-weight:600;}@keyframes bvIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}.bv-sub{margin-top:10px;min-height:20px;color:#E2E8F0;font-size:13px;line-height:1.5;text-align:center;}.bv-dots{display:flex;gap:6px;justify-content:center;margin:12px 0 6px;}.bv-dots .dot{width:7px;height:7px;border-radius:50%;background:#475569;}.bv-dots .dot.on{background:#38BDF8;width:18px;border-radius:4px;}.bv-ctrl{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:6px;}.bv-status{text-align:center;color:#94A3B8;font-size:12px;margin-top:10px;}</style>';
   html+='<div class="page-head"><h2 class="page-title">短视频自动生成 · 书单</h2><span class="pill ai" style="cursor:default">预览版 · 零积分 · 后续加 MP4 导出</span></div>';
   html+='<p class="hint">输入书名 + 作者，自动生成书单向口播短片：文案模板 + 浏览器免费配音（中文 TTS）+ 同步字幕。不调用任何付费接口、不花积分。封面取自 Open Library 免费接口，拉不到时自动降级为书名艺术卡。</p>';
   html+='<div class="bv-form">';
