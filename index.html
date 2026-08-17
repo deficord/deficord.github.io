@@ -350,9 +350,9 @@
     .admin-layout{grid-template-columns:1fr;}
     .cm-grid.cm-span2,.cm-grid.cm-span3{grid-template-columns:1fr;}
     .finance-grid{grid-template-columns:1fr;}
-    /* 板块资金流：手机端行业/概念板块名称完整显示，不再被压成半截 */
+    /* 板块资金流：手机端名称列留出空间(短名完整)，长名用省略号隐藏、单行对齐 */
     .ff-sec-row{flex-wrap:wrap;padding:6px 4px;}
-    .ff-sec-name{flex:1 1 auto;min-width:0;white-space:normal;overflow:visible;text-overflow:clip;line-height:1.35;word-break:break-word;}
+    .ff-sec-name{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35;}
     .ff-sec-row .ff-bar-wrap{flex:0 0 44px;margin:0 6px;}
     .ff-sec-net{width:auto;flex:0 0 auto;min-width:72px;}
     .ff-sec-chg{width:auto;flex:0 0 auto;min-width:48px;}
