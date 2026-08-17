@@ -1922,7 +1922,7 @@ let stockKlines={};
 let compareDerivedCache={};
 let compareCsi={yRet:null, dev:null};
 let stockCompareSel=[];
-const DEFAULT_WATCHLIST=[{code:'600433',name:'冠豪高新'},{code:'510300',name:'沪深300ETF'},{code:'513180',name:'恒生科技ETF'},{code:'510500',name:'中证500ETF'}];
+const DEFAULT_WATCHLIST=[{code:'000001',name:'平安银行'},{code:'510300',name:'沪深300ETF'}];
 // 六大功能 Tab：名称/顺序可在后台「股票基金分析」模块编辑卡片中修改（仅影响显示，功能不变）
 const DEFAULT_STOCK_TABS=[{k:'quote',label:'行情'},{k:'import',label:'自选'},{k:'compare',label:'对比'},{k:'metric',label:'指标'},{k:'risk',label:'风险'},{k:'calc',label:'收益测算'}];
 function loadStockTabs(){ const raw=localStorage.getItem('wb_stock_tabs'); if(raw==null) return DEFAULT_STOCK_TABS.slice(); try{ const a=JSON.parse(raw); if(Array.isArray(a)&&a.length) return a; }catch(e){} return DEFAULT_STOCK_TABS.slice(); }
@@ -2820,7 +2820,28 @@ function migrateRebalanceActions(){
     localStorage.setItem(STAMP, String(VER));
   }catch(e){}
 }
-function runMigrations(){ try{ migrateStockTabs(); migrateRebalanceActions(); }catch(e){} }
+/* 一次性迁移：按用户要求精简标的——
+   股票数据分析 + 股票持仓台账 仅保留 平安银行(000001)；
+   基金数据分析 + 基金持仓台账 仅保留 沪深300ETF(510300)。
+   按版本戳只跑一次，此后用户经界面自行增删不会被覆盖。 */
+function migrateSlimData(){
+  try{
+    const STAMP='wb_slim_data_ver', VER=1;
+    if(parseInt(localStorage.getItem(STAMP)||'0',10)>=VER) return;
+    saveData('wb_watchlist', [
+      {code:'000001', name:'平安银行'},
+      {code:'510300', name:'沪深300ETF'}
+    ]);
+    saveData('wb_stock_holdings', [
+      {code:'000001', name:'平安银行'}
+    ]);
+    saveData('wb_holdings', [
+      {code:'510300', name:'沪深300ETF'}
+    ]);
+    try{ localStorage.setItem(STAMP, String(VER)); }catch(e){}
+  }catch(e){}
+}
+function runMigrations(){ try{ migrateStockTabs(); migrateRebalanceActions(); migrateSlimData(); }catch(e){} }
 async function loadRemoteData(){
   try{
     const r = await fetch('./data.json?t='+Date.now(), {cache:'no-store'});
