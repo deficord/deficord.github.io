@@ -592,6 +592,21 @@
     </div>
   </div>
 
+  <div class="modal-mask" id="checkinMask">
+    <div class="modal">
+      <h3>⚙ 打卡项设置</h3>
+      <p class="hint" style="margin-bottom:10px">修改打卡项名称、用 ↑/↓ 调整前后顺序，可新增或删除打卡项。改动即时保存，并自动同步历史打卡记录。</p>
+      <div class="idx-tabedit">
+        <div class="idx-add-hd">✎ 打卡项与顺序</div>
+        <div id="checkinItems"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="pill" data-act="checkinAdd">＋ 增加打卡项</button>
+        <button class="pill secondary" data-act="checkinClose">完成</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
 
   <!-- 删除/隐藏模块 确认弹窗（自定义 是/否） -->
@@ -2505,37 +2520,71 @@ function renderCheckin(body){
   const today = todayStr();
   const rec = loadData('wb_checkinRecords', {})[today] || {};
   const items = getCheckinItems();
-  let html = '<div class="page-head"><h2 class="page-title">今日打卡面板</h2><button class="pill" data-act="saveCheckin">保存今日打卡</button></div>';
-  html += '<p class="hint">日期：'+today+'（本工作台唯一使用表格的模块）。「打卡项」列可直接点输入框改名；下方可新增打卡项。</p>';
-  html += '<table class="checkin-table"><thead><tr><th>打卡项（可点改名）</th><th>今日打卡</th><th>备注</th></tr></thead><tbody>';
+  let html = '<div class="page-head"><h2 class="page-title">今日打卡面板</h2><button class="pill secondary" data-act="checkin-settings">⚙ 设置</button><button class="pill" data-act="saveCheckin">保存今日打卡</button></div>';
+  html += '<p class="hint">日期：'+today+'（本工作台唯一使用表格的模块）。点右上角「⚙ 设置」可修改打卡项名称、调整顺序、新增或删除打卡项。</p>';
+  html += '<table class="checkin-table"><thead><tr><th>打卡项</th><th>今日打卡</th><th>备注</th></tr></thead><tbody>';
   items.forEach((it,idx)=>{
     const done = rec[it] && rec[it].done;
     const note = (rec[it] && rec[it].note) || '';
-    html += '<tr><td><input type="text" class="ckname" data-idx="'+idx+'" value="'+esc(it)+'" placeholder="打卡项名称"></td><td style="text-align:center"><input type="checkbox" class="ck" data-idx="'+idx+'"'+(done?' checked':'')+'></td><td><input type="text" class="cknote" data-idx="'+idx+'" value="'+esc(note)+'" placeholder="可选"></td></tr>';
+    html += '<tr><td>'+esc(it)+'</td><td style="text-align:center"><input type="checkbox" class="ck" data-idx="'+idx+'"'+(done?' checked':'')+'></td><td><input type="text" class="cknote" data-idx="'+idx+'" value="'+esc(note)+'" placeholder="可选"></td></tr>';
   });
   html += '</tbody></table>';
-  html += '<div style="margin-top:12px"><button class="pill" data-act="addCheckin">＋ 增加打卡项</button></div>';
   body.innerHTML = html;
 }
-function renameCheckinItem(idx, newName){
+function renderCheckinItemsEditor(){
+  const box = $('checkinItems'); if(!box) return;
+  const items = getCheckinItems();
+  let h = '';
+  items.forEach((it,i)=>{
+    h += '<div class="stk-tab-row"><span class="stk-idx">'+(i+1)+'</span>'
+      + '<input class="ck-edit-name stk-label" data-idx="'+i+'" value="'+esc(it)+'" placeholder="打卡项名称">'
+      + '<span class="ad-tools">'
+      + (i>0 ? '<button data-act="ckUp" data-idx="'+i+'">↑</button>' : '<button disabled>↑</button>')
+      + (i<items.length-1 ? '<button data-act="ckDown" data-idx="'+i+'">↓</button>' : '<button disabled>↓</button>')
+      + '<button data-act="ckDel" data-idx="'+i+'" title="删除">✕</button>'
+      + '</span></div>';
+  });
+  box.innerHTML = h;
+}
+function openCheckinSettings(){ renderCheckinItemsEditor(); $('checkinMask').classList.add('show'); }
+function closeCheckinSettings(){ $('checkinMask').classList.remove('show'); }
+function checkinRenameItem(idx, newName){
   newName = String(newName==null?'':newName).trim();
   const items = getCheckinItems();
-  const oldName = items[idx];
-  if(!oldName) return;
-  if(!newName){ if(chkBody) renderCheckin(chkBody); return; } // 空名：恢复显示
-  if(newName===oldName) return;
+  const old = items[idx]; if(!old) return;
+  if(!newName){ renderCheckinItemsEditor(); return; } // 空名：恢复显示
+  if(newName===old) return;
   items[idx] = newName;
   saveData('wb_checkinItems', items);
   // 迁移所有历史记录中该 key -> 新名，保证历史汇总不丢
   const all = loadData('wb_checkinRecords', {});
-  Object.keys(all).forEach(d=>{ const r=all[d]; if(r && r[oldName]!==undefined){ r[newName]=r[oldName]; delete r[oldName]; } });
+  Object.keys(all).forEach(d=>{ const r=all[d]; if(r && r[old]!==undefined){ r[newName]=r[old]; delete r[old]; } });
   saveData('wb_checkinRecords', all);
 }
-function addCheckinItem(){
+function checkinMove(idx, dir){
+  const items = getCheckinItems();
+  const j = idx + dir;
+  if(j<0 || j>=items.length) return;
+  const t = items[idx]; items[idx] = items[j]; items[j] = t;
+  saveData('wb_checkinItems', items);
+  renderCheckinItemsEditor();
+}
+function checkinDel(idx){
+  const items = getCheckinItems();
+  const old = items[idx]; if(old===undefined) return;
+  items.splice(idx,1);
+  saveData('wb_checkinItems', items);
+  // 同步删除历史对应记录
+  const all = loadData('wb_checkinRecords', {});
+  Object.keys(all).forEach(d=>{ const r=all[d]; if(r && r[old]!==undefined){ delete r[old]; } });
+  saveData('wb_checkinRecords', all);
+  renderCheckinItemsEditor();
+}
+function checkinAdd(){
   const items = getCheckinItems();
   items.push('新打卡项');
   saveData('wb_checkinItems', items);
-  if(chkBody) renderCheckin(chkBody);
+  renderCheckinItemsEditor();
 }
 function saveCheckin(){
   const today = todayStr();
@@ -2544,18 +2593,12 @@ function saveCheckin(){
   const rec = {};
   document.querySelectorAll('.ck').forEach(c=>{
     const i = Number(c.dataset.idx);
-    const nameEl = document.querySelector('.ckname[data-idx="'+i+'"]');
-    let name = nameEl ? String(nameEl.value||'').trim() : '';
-    name = name || items[i] || ('项'+(i+1));
+    const name = items[i] || ('项'+(i+1));
     const noteEl = document.querySelector('.cknote[data-idx="'+i+'"]');
     rec[name] = {done:c.checked, note: noteEl?noteEl.value:''};
   });
   all[today] = rec;
   saveData('wb_checkinRecords', all);
-  // 同步名字列表（覆盖改名未触发 change 的边缘场景）
-  const names=[];
-  document.querySelectorAll('.ckname').forEach(inp=> names.push(String(inp.value||'').trim()||('项'+(names.length+1))));
-  saveData('wb_checkinItems', names);
   toast('已保存今日打卡');
 }
 
@@ -3464,7 +3507,12 @@ function bindEvents(){
         const commRate=parseFloat(($('calcComm')?$('calcComm').value:''))||0; const stampRate=parseFloat(($('calcStamp')?$('calcStamp').value:''))||0; const transferRate=parseFloat(($('calcTransfer')?$('calcTransfer').value:''))||0; const buyAmount=buy*shares; const buyComm=Math.max(buyAmount*commRate/100,5); const buyTransfer=buyAmount*transferRate/100; const invest=buyAmount+buyComm+buyTransfer; const mv=(cur!=null)?cur*shares:null; let proceed=null, sellFee=null, pnl=null, pct=null; if(mv!=null){ const sellComm=Math.max(mv*commRate/100,5); const sellTransfer=mv*transferRate/100; const stamp=mv*stampRate/100; sellFee=sellComm+sellTransfer+stamp; proceed=mv-sellFee; pnl=proceed-invest; pct=(invest>0)?(pnl/invest*100):null; } if(box){ let h='<div class="cr-row"><span>买入金额</span><b>¥ '+buyAmount.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>买入费用(佣+过户)</span><b>¥ '+(buyComm+buyTransfer).toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>投入本金(含买入费)</span><b>¥ '+invest.toFixed(2)+'</b></div>'; h+='<div class="cr-row"><span>当前价</span><b>'+(cur!=null?Number(cur).toFixed(2):'待刷新')+'</b></div>'; if(mv!=null) h+='<div class="cr-row"><span>当前市值</span><b>¥ '+mv.toFixed(2)+'</b></div>'; if(sellFee!=null) h+='<div class="cr-row"><span>卖出费用(佣+过户+印花税)</span><b>¥ '+sellFee.toFixed(2)+'</b></div>'; if(proceed!=null) h+='<div class="cr-row"><span>卖出到账(扣卖出费)</span><b>¥ '+proceed.toFixed(2)+'</b></div>'; if(pnl!=null){ const cls=pnl>0?'up':(pnl<0?'down':''); h+='<div class="cr-row"><span>净收益(含费)</span><b class="'+cls+'">'+(pnl>0?'+':'')+pnl.toFixed(2)+'</b></div>'; } if(pct!=null){ const cls=pct>0?'up':(pct<0?'down':''); h+='<div class="cr-big '+cls+'">'+(pct>0?'+':'')+pct.toFixed(2)+'%</div>'; } box.innerHTML=h; } return; }
       /* ===== 股票基金分析模块事件 END ===== */
       if(act==='saveCheckin'){ saveCheckin(); return; }
-      if(act==='addCheckin'){ addCheckinItem(); return; }
+      if(act==='checkin-settings'){ openCheckinSettings(); return; }
+      if(act==='checkinClose'){ closeCheckinSettings(); if(currentPage==='health-checkin') renderCurrent(); return; }
+      if(act==='checkinAdd'){ checkinAdd(); return; }
+      if(act==='ckUp'){ checkinMove(Number(f.dataset.idx), -1); return; }
+      if(act==='ckDown'){ checkinMove(Number(f.dataset.idx), 1); return; }
+      if(act==='ckDel'){ checkinDel(Number(f.dataset.idx)); return; }
       if(act==='summarize'){ summarizeCheckin(); toast('已汇总本月'); return; }
       if(act==='dca'){ openDca(idx); return; }
       if(act==='kbGen'){ kbGenerate(); return; }
@@ -3481,10 +3529,11 @@ function bindEvents(){
     const td = e.target.closest('.tdone');
     if(td){ const arr=loadData('wb_todo',[]); arr[td.dataset.idx].done = td.checked; saveData('wb_todo', arr); return; }
   });
-  // 打卡项名称即时改名（失焦/回车时触发）
-  $('content').addEventListener('change', e=>{
-    const ck = e.target.closest('.ckname');
-    if(ck){ renameCheckinItem(Number(ck.dataset.idx), ck.value); }
+  // 打卡项设置弹窗内：改名即时保存（失焦/回车触发）
+  const ckm = $('checkinMask');
+  if(ckm) ckm.addEventListener('change', e=>{
+    const ck = e.target.closest('.ck-edit-name');
+    if(ck){ checkinRenameItem(Number(ck.dataset.idx), ck.value); }
   });
   // ===== 卡片拖拽排序（Pointer 事件；触摸=长按拿起后自由拖动松手落位，鼠标=按住拖动）=====
   (function initCardDrag(){
