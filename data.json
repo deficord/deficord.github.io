@@ -1,5 +1,5 @@
 {
-  "siteVersion": "2026-08-17.1010",
+  "siteVersion": "2026-08-17.1030",
   "holdings": [],
   "sideHustle": [
     {
@@ -1370,19 +1370,12 @@
     }
   ],
   "fundQuotes": {
-    "000216": {
-      "fundcode": "000216",
-      "name": "华安黄金ETF联接A",
-      "gszzl": 0.89,
-      "dwjz": 3.3079,
-      "gztime": "2026-08-12"
-    },
-    "017641": {
-      "fundcode": "017641",
-      "name": "摩根标普500指数(QDII)人民币A",
-      "gszzl": -0.29,
-      "dwjz": 1.7166,
-      "gztime": "2026-08-11"
+    "510300": {
+      "fundcode": "510300",
+      "name": "沪深300ETF华泰柏瑞",
+      "gszzl": 0.19,
+      "dwjz": 4.726,
+      "gztime": "2026-08-17"
     }
   },
   "fundamentals": {
