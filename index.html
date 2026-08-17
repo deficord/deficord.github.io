@@ -352,6 +352,7 @@
   .watch-row .wr-code{font-size:11px;color:var(--muted);}
   .watch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:14px;}
   .watch-grid .card{margin-bottom:0;}
+  .idx-grid{grid-template-columns:repeat(auto-fill,minmax(min(360px,100%),1fr));}
   .quote-card{position:relative;background:linear-gradient(135deg,var(--card-soft,#F8FAFC),#fff);border:1px solid var(--border);border-radius:12px;padding:14px 14px 14px 18px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 3px rgba(15,23,42,.05),0 4px 12px rgba(15,23,42,.04);overflow:hidden;--card-accent:#2563EB;transition:box-shadow .18s ease,transform .18s ease;}
   .quote-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-2px);}
   .quote-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--card-accent);}
@@ -1682,7 +1683,7 @@ function renderIndexTrack(body){
   if(m.tabs) html += modTabBarHtml('index-track', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无指数。</div>'; }
-  html += '<div class="watch-grid draggable-cards" data-drag-page="index-track">';
+  html += '<div class="watch-grid idx-grid draggable-cards" data-drag-page="index-track">';
   view.forEach(o=>{ const it=o.it, i=o.i;
     const _toneColor={'bull':'#16A34A','neutral':'#F59E0B','bear':'#EF4444'}[it.tone||'neutral']||'#F59E0B';
     html += '<div class="card" id="card_index-track_'+i+'" data-card-idx="'+i+'" data-card-page="index-track" style="--card-accent:'+_toneColor+';--card-soft:'+softOf(_toneColor)+';">';
