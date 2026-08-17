@@ -2586,7 +2586,7 @@ function openHoldingForm(idx){
     fields += '<div class="form-field"><label>持有份额(份)</label><input id="fi_shares" type="number" value="'+esc(fshares)+'" placeholder="如 1000"></div>'+
       '<div class="form-field"><label>成本价(元/份)</label><input id="fi_cost" type="number" value="'+esc(fcostPx)+'" placeholder="如 1.250"></div>'+
       '<p class="hint" style="margin:2px 0 0">市值按「持有份额 × 单位净值」自动算。若已用卡片「定投」按钮设置批次，份额与成本价以便次为准，此处可留空。</p>';
-    fields += '<p class="hint">定投（频率 / 每期金额 / 费率 / 批次）请在卡片「定投」按钮中设置。联系方式示例（仅参考、不保存）：手机 138xxxx / QQ 12345 / 邮箱 a@b.com</p>';
+    fields += '<p class="hint">定投（频率 / 每期金额 / 费率 / 批次）请在卡片「定投」按钮中设置。</p>';
   }
   $('formFields').innerHTML = fields;
   $('formMask').classList.add('show');
@@ -3024,7 +3024,7 @@ function openDca(idx){
   html += '<div class="dca-rates"><div class="form-field"><label>定投频率</label><select id="dca_freq">'+freqOpts+'</select></div>';
   html += '<div class="form-field"><label>每期金额(元)</label><input id="dca_amount" type="number" value="'+esc(d.amount||0)+'" placeholder="如 50"></div>';
   html += '<div class="form-field"><label>起始日期</label><input id="dca_start" type="date" value="'+esc(d.startDate||'')+'"></div></div>';
-  html += '<p class="hint">申购费 / 赎回费计入成本核算；管理费 / 销售服务费由基金每日从净值中扣除（已体现在净值里），此处仅作展示参考，不重复计入成本。定投金额示例：如 50；联系方式示例（仅参考、不保存）：手机 138xxxx / QQ 12345 / 邮箱 a@b.com</p>';
+  html += '<p class="hint">申购费 / 赎回费计入成本核算；管理费 / 销售服务费由基金每日从净值中扣除（已体现在净值里），此处仅作展示参考，不重复计入成本。定投金额示例：如 50；</p>';
   html += '<div class="dca-rates"><div class="form-field"><label>申购费率(%)</label><input id="dca_sub" type="number" step="0.01" value="'+esc(d.subscribeRate!=null?d.subscribeRate:0)+'" placeholder="如 0.15"></div>';
   html += '<div class="form-field"><label>赎回费率(%)</label><input id="dca_redeem" type="number" step="0.01" value="'+esc(d.redeemRate!=null?d.redeemRate:0)+'" placeholder="如 0.5"></div>';
   html += '<div class="form-field"><label>管理费率(年%)</label><input id="dca_manage" type="number" step="0.01" value="'+esc(d.manageRate!=null?d.manageRate:0)+'" placeholder="如 0.5"></div>';
