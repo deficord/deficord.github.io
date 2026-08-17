@@ -634,9 +634,9 @@ const GROUPS = [
     {id:'rebalance', label:'调仓平衡记录'},
   ]},
   {n:2, title:'🚀 账号运营', items:[
-    {id:'operation-ideas', label:'运营思路&选题素材库'},
-    {id:'account-observe', label:'对标账号观测记录'},
-    {id:'work-review', label:'作品复盘记录表'},
+    {id:'operation-ideas', label:'运营思路题库'},
+    {id:'account-observe', label:'对标账号观测'},
+    {id:'work-review', label:'作品复盘记录'},
   ]},
   {n:3, title:'🛍️ 好物带货', items:[
     {id:'product-lib', label:'选品库管理'},
@@ -667,13 +667,13 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路&选题素材库', key:'operationIdeas', tabs:{cats:['运营方法论','财经选题','AI科技选题','对标账号'], field:'cat'}},
-  'account-observe':{type:'list', title:'对标账号观测记录', key:'wb_account_observe', fields:[
+  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['运营方法论','财经选题','AI科技选题','对标账号'], field:'cat'}},
+  'account-observe':{type:'list', title:'对标账号观测', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
     {k:'hit',l:'爆款特点',t:'text'},{k:'note',l:'备注',t:'textarea'},
   ]},
-  'work-review':{type:'list', title:'作品复盘记录表', key:'wb_work_review', fields:[
+  'work-review':{type:'list', title:'作品复盘记录', key:'wb_work_review', fields:[
     {k:'title',l:'作品标题',t:'text',title:true},{k:'date',l:'发布时间',t:'date'},
     {k:'play',l:'播放',t:'number'},{k:'like',l:'点赞',t:'number'},
     {k:'conv',l:'转化',t:'text'},{k:'conclusion',l:'复盘结论',t:'textarea'},
@@ -773,7 +773,7 @@ const CAT_COLOR = {
   '加仓':'#10B981','减仓':'#EF4444','调仓':'#3B82F6','再平衡':'#8B5CF6','平衡':'#F59E0B','建仓':'#10B981','清仓':'#EF4444',
   // 知识库分类
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
-  // 运营思路&选题素材库 cat
+  // 运营思路题库 cat
   '运营方法论':'#F59E0B','财经选题':'#3B82F6','AI科技选题':'#6366F1','对标账号':'#14B8A6',
   // 副业·创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
