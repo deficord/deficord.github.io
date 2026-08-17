@@ -1691,7 +1691,7 @@ function renderHoldings(body){
       const dwjz = (fq.dwjz!=null)? Number(fq.dwjz):null;
       pct = gz; up = gz>0; down = gz<0;
       priceTxt = (dwjz!=null)? dwjz.toFixed(4) : '';
-      updTime = fmtFundUpd(fq);
+      updTime = (gz!=null)? '今日' : '待刷新';
       q = fq;
     }
     if(shares!=null){
@@ -1959,8 +1959,6 @@ function normalizeCode(raw){
 function avg(a){ if(!a||!a.length) return null; return a.reduce((s,v)=>s+v,0)/a.length; }
 function fmtYi(v){ if(v==null||isNaN(v)) return '--'; const yi=v/1e8; if(yi>=10000) return (yi/10000).toFixed(2)+'万亿'; return yi.toFixed(2)+'亿'; }
 function fmtPct(v){ if(v==null||isNaN(v)) return '--'; return (v>0?'+':'')+v.toFixed(2)+'%'; }
-function fmtAgo(ts){ if(!ts) return ''; const d=new Date(ts); const diff=(Date.now()-ts)/1000; const p=n=>String(n).padStart(2,'0'); const hm=p(d.getHours())+':'+p(d.getMinutes()); if(diff<60) return '刚刚'; if(diff<3600) return Math.floor(diff/60)+'分钟前'; const today=new Date(); if(d.toDateString()===today.toDateString()) return '今天 '+hm; const y=new Date(Date.now()-86400000); if(d.toDateString()===y.toDateString()) return '昨天 '+hm; return (d.getMonth()+1)+'/'+d.getDate()+' '+hm; }
-function fmtFundUpd(fq){ if(!fq) return '待刷新'; if(fq.fetchedAt) return '实时 '+fmtAgo(fq.fetchedAt); if(fq.gztime) return String(fq.gztime); return '待刷新'; }
 function emJsonp(url){
   return new Promise((resolve,reject)=>{
     const cb='EM_'+Math.random().toString(36).slice(2);
@@ -2883,7 +2881,7 @@ async function loadRemoteData(){
     cleanupSeedHoldings();
     $('demoBanner').style.display='none';
     renderCurrent();
-    toast('已拉取最新 data.json');
+    toast('已同步最新数据');
   }catch(e){
     $('demoBanner').style.display='block';
     renderCurrent();
