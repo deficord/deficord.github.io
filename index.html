@@ -638,6 +638,7 @@ const GROUPS = [
     {id:'project-archive', label:'项目归档复盘'},
   ]},
   {n:5, title:'🧘 健康养生', items:[
+    {id:'health-news', label:'科普知识'},
     {id:'health-checkin', label:'今日打卡面板'},
     {id:'checkin-history', label:'查看历史打卡汇总'},
     {id:'body-note', label:'身体观察备忘录'},
@@ -704,6 +705,7 @@ const MODULES = {
   ]},
   'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle', tabs:{cats:['AI副业','内容创作','轻资产创业','实操案例'], field:'cat'}},
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF','加密货币']}},
+  'health-news':{type:'finance', title:'健康养生科普', key:'healthNews', tabs:{field:'cat', cats:['饮食营养','运动健身','睡眠健康','心理健康','慢病防控','中医养生','误区辟谣']}},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
   'index-track':{type:'indexTrack', title:'指数跟踪数据', key:'indexTrack', tabs:{derive:'idxRegion', cats:['A股','港股','美股','防御']}},
@@ -760,6 +762,8 @@ const CAT_COLOR = {
   '运营方法论':'#F59E0B','财经选题':'#3B82F6','AI科技选题':'#6366F1','对标账号':'#14B8A6',
   // 副业·创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
+  // 健康养生科普 cat
+  '饮食营养':'#10B981','运动健身':'#F59E0B','睡眠健康':'#6366F1','心理健康':'#EC4899','慢病防控':'#EF4444','中医养生':'#14B8A6','误区辟谣':'#8B5CF6',
 };
 function namedCardVars(str){ if(CAT_COLOR[str]){ const a=CAT_COLOR[str]; return '--card-accent:'+a+';--card-soft:'+softOf(a)+';'; } return cardVars(str); }
 function softOf(a){ const hit=CARD_PALETTE.find(p=>p.a===a); return hit?hit.s:'#F8FAFC'; }
@@ -994,7 +998,7 @@ function renderPage(page){
   else if(m.type==='overview') renderOverview(body);
   else if(m.type==='list') renderList(page, body);
   else if(m.type==='aiText') renderAiText(page, body);
-  else if(m.type==='finance') renderFinance(body);
+  else if(m.type==='finance') renderFinance(page, body);
   else if(m.type==='holdings') renderHoldings(body);
   else if(m.type==='indexTrack') renderIndexTrack(body);
   else if(m.type==='stockAnalysis') renderStockAnalysis(body, page);
@@ -1646,28 +1650,33 @@ function renderAiText(page, body){
 
 
 /* ============== 理财新知 ============== */
-function renderFinance(body){
-  const m = MODULES['finance-news'];
-  const arr0 = remoteData.financeNews || [];
-  const active = modTab['finance-news'] || '__all__';
+function renderFinance(page, body){
+  // 向后兼容旧调用 renderFinance(body)
+  if (page && page.nodeType) { body = page; page = 'finance-news'; }
+  const m = MODULES[page];
+  const arr0 = remoteData[m.key] || [];
+  const active = modTab[page] || '__all__';
   let view = modView(m, arr0, active);
-  view = displayOrdered('finance-news', arr0, view);
+  view = displayOrdered(page, arr0, view);
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button><button class="pill secondary" data-act="fin-settings">⚙ 设置</button></div>';
-  html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何买卖建议。</p>';
-  if(m.tabs) html += modTabBarHtml('finance-news', modTabCats(m, arr0), active);
+  const suffix = page==='health-news' ? '仅供健康科普参考，不构成任何医疗或养生建议。' : '仅作信息整理，不构成任何买卖建议。';
+  let headBtns = '<button class="pill ai" data-act="airefresh">AI刷新抓取</button>';
+  if(page==='finance-news') headBtns += '<button class="pill secondary" data-act="fin-settings">⚙ 设置</button>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(page))+'</h2>'+headBtns+'</div>';
+  html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ '+suffix+'</p>';
+  if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到理财新知 —— 发「刷新」让 AI 推送，或部署后点「AI刷新抓取」。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
-    html += '<div class="finance-grid draggable-cards" data-drag-page="finance-news" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
+    html += '<div class="finance-grid draggable-cards" data-drag-page="'+page+'" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || it.summary || '';
       const cv = it.cat ? namedCardVars(it.cat) : '';
-      html += '<div class="card fn-card" id="card_finance-news_'+i+'" data-card-idx="'+i+'" data-card-page="finance-news" '+(cv?' style="'+cv+'"':'')+'>';
+      html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
       html += '<div class="summary" id="fn-sum-'+i+'">'+esc(content)+'</div>';
-      html += '<a class="detail-link" href="#" data-act="full" data-page="finance-news" data-idx="'+i+'">查看详情 ›</a>';
+      html += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
       html += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span>'+(it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener">原文链接</a>':'')+'</div>';
       html += '</div>';
     });
@@ -2762,7 +2771,7 @@ function getSearchIndex(){
     } else if(m.type==='aiText'){
       (remoteData[m.key]||[]).forEach((it,i)=> idx.push({page:pid, title:it.title, content:(it.title||'')+' '+(it.content||'')+' '+(it.url||''), cardId:'card_'+pid+'_'+i}));
     } else if(m.type==='finance'){
-      (remoteData.financeNews||[]).forEach((it,i)=> idx.push({page:pid, title:it.title, content:(it.title||'')+' '+(it.summary||'')+' '+(it.content||''), cardId:'card_finance-news_'+i}));
+      (remoteData[m.key]||[]).forEach((it,i)=> idx.push({page:pid, title:it.title, content:(it.title||'')+' '+(it.summary||'')+' '+(it.content||''), cardId:'card_'+pid+'_'+i}));
     } else if(m.type==='indexTrack'){
       loadIndexTrack().forEach((it,i)=> idx.push({page:pid, title:it.name, content:(it.name||'')+' '+(it.rows||[]).map(r=>r.label+r.val).join(' ')+' '+(it.note||''), cardId:'card_index-track_'+i}));
     }
