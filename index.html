@@ -228,6 +228,9 @@
   .card h4{margin:0 0 8px;color:var(--card-accent,#111827);font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .card .row{display:flex;gap:8px;margin:5px 0;font-size:13px;}
   .card .row .k{color:var(--muted);min-width:60px;flex-shrink:0;}
+  .index-track .card .row span.idx-low{color:#16A34A;font-weight:700;}
+  .index-track .card .row span.idx-mid{color:#F59E0B;font-weight:700;}
+  .index-track .card .row span.idx-high{color:#EF4444;font-weight:700;}
   .card .content{font-size:13px;color:#444;white-space:pre-wrap;word-break:break-word;}
   .card .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
   .card-foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;flex-wrap:wrap;}
@@ -1640,6 +1643,34 @@ function migrateIndexTrack(){
   saveIndexTrack(base);
   try{ localStorage.setItem('wb_index_track_ver', String(IDX_SEED_VER)); }catch(e){}
 }
+// 指数 PE 估值分位着色：从"当前PE(TTM)"取当前值、从"估值区间(PE近1年)"取区间，算近1年分位
+// 返回 {cls,pct,cur} 或 null（无PE/无法解析则不染色）；cls: val-low(绿/低估) val-mid(黄/中性) val-high(红/高估)
+function idxPeTone(rows){
+  if(!Array.isArray(rows)) return null;
+  const pe = rows.find(r=>/当前PE|PE\(TTM\)|市盈率/.test(r.label||''));
+  if(!pe || pe.val==null || String(pe.val).trim()==='') return null;
+  const m0 = String(pe.val).match(/[\d.]+/);
+  const cur = m0?parseFloat(m0[0]):NaN;
+  if(isNaN(cur)) return null;
+  let pct=null;
+  const range = rows.find(r=>/估值区间.*PE近1年|PE近1年/.test(r.label||''));
+  if(range && range.val!=null){
+    const rm = String(range.val).match(/(\d+(?:\.\d+)?)\s*[–\-~～至]\s*(\d+(?:\.\d+)?)\s*倍/i);
+    if(rm){ const lo=parseFloat(rm[1]), hi=parseFloat(rm[2]); if(hi>lo) pct=(cur-lo)/(hi-lo); }
+  }
+  // 退化：区间缺失时，用当前PE行里策展给出的"约XX%分位"作为兜底
+  if(pct==null){
+    const m=String(pe.val).match(/(\d+(?:\.\d+)?)\s*%\s*分位/);
+    if(m) pct=parseFloat(m[1])/100;
+  }
+  if(pct==null || isNaN(pct)) return null;
+  pct=Math.max(0,Math.min(1,pct));
+  let cls='val-mid';
+  if(pct<0.3) cls='val-low';
+  else if(pct>0.7) cls='val-high';
+  return {cls,pct,cur};
+}
+
 function renderIndexTrack(body){
   const m = MODULES['index-track'];
   const arr0 = loadIndexTrack();
@@ -1657,7 +1688,8 @@ function renderIndexTrack(body){
     html += '<div class="card" id="card_index-track_'+i+'" data-card-idx="'+i+'" data-card-page="index-track" style="--card-accent:'+_toneColor+';--card-soft:'+softOf(_toneColor)+';">';
     const _badge='<span style="margin-left:8px;font-size:11px;font-weight:600;color:#fff;background:'+_toneColor+';padding:2px 8px;border-radius:10px;vertical-align:middle">'+esc(it.rating||'评级待定')+' · 置信'+esc(it.confidence||'-')+'</span>';
     html += '<h4><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+esc(it.color||'#999')+';margin-right:6px"></span>'+esc(it.name||'')+_badge+'</h4>';
-    (it.rows||[]).forEach((r,j)=>{ html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span>'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
+    const _pe = idxPeTone(it.rows);
+    (it.rows||[]).forEach((r,j)=>{ const _peCls=(_pe && /当前PE|PE\(TTM\)|市盈率/.test(r.label||''))?(' '+_pe.cls):''; html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span class="'+_peCls.trim()+'">'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
     if(it.note){ html += '<div class="row"><span class="k">判断</span><span>'+esc(it.note).replace(/\n/g,'<br>')+'</span></div>'; }
     html += '<div class="row"><span class="k">来源</span>AI 策展 · data.json</div>';
     html += '</div>';
