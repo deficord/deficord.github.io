@@ -645,7 +645,7 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路&选题素材库', key:'operationIdeas'},
+  'operation-ideas':{type:'aiText', title:'运营思路&选题素材库', key:'operationIdeas', tabs:{cats:['运营方法论','财经选题','AI科技选题','对标账号'], field:'cat'}},
   'account-observe':{type:'list', title:'对标账号观测记录', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -696,7 +696,7 @@ const MODULES = {
     {k:'expect',l:'预期收益',t:'text'},{k:'risk',l:'风险',t:'textarea'},
     {k:'score',l:'评分',t:'number'},{k:'conclusion',l:'结论',t:'textarea'},
   ]},
-  'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle'},
+  'side-hustle':{type:'aiText', title:'副业·创业精选', key:'sideHustle', tabs:{cats:['AI副业','内容创作','轻资产创业','实操案例'], field:'cat'}},
   'finance-news':{type:'finance', title:'理财每日新知', key:'financeNews', tabs:{field:'cat', cats:['市场综述','黄金大宗','AI科技','政策宏观','个股公司','基金ETF','加密货币']}},
   'asset-account':{type:'holdings', title:'基金持仓台账', key:'wb_holdings', source:'fund', tabs:{field:'type', auto:true}},
   'stock-account':{type:'holdings', title:'股票持仓台账', key:'wb_stock_holdings', source:'stock', tabs:{field:'sector', auto:true}},
@@ -750,6 +750,10 @@ const CAT_COLOR = {
   '加仓':'#10B981','减仓':'#EF4444','调仓':'#3B82F6','再平衡':'#8B5CF6','平衡':'#F59E0B','建仓':'#10B981','清仓':'#EF4444',
   // 知识库分类
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
+  // 运营思路&选题素材库 cat
+  '运营方法论':'#F59E0B','财经选题':'#3B82F6','AI科技选题':'#6366F1','对标账号':'#14B8A6',
+  // 副业·创业精选 cat
+  'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
 };
 function namedCardVars(str){ if(CAT_COLOR[str]){ const a=CAT_COLOR[str]; return '--card-accent:'+a+';--card-soft:'+softOf(a)+';'; } return cardVars(str); }
 function softOf(a){ const hit=CARD_PALETTE.find(p=>p.a===a); return hit?hit.s:'#F8FAFC'; }
@@ -1602,15 +1606,27 @@ function renderKnowledge(body){
 /* ============== AI 文本模块(运营/选题) ============== */
 function renderAiText(page, body){
   const m = MODULES[page];
-  const arr = remoteData[m.key] || [];
+  const arr0 = remoteData[m.key] || [];
+  const active = modTab[page] || '__all__';
+  let view = modView(m, arr0, active);
+  view = displayOrdered(page, arr0, view);
+  let lastUpdate='';
+  arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
-  html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
-  if(arr.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
+  if(m.tabs){
+    html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
+  } else {
+    html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
+  }
+  if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
+  if(arr0.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
+  else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
-    html += '<div class="finance-grid" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
-    arr.forEach((it,i)=>{
+    html += '<div class="finance-grid draggable-cards" data-drag-page="'+page+'" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
+    view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || '';
-      html += '<div class="card fn-card" id="card_'+page+'_'+i+'">';
+      const cv = it.cat ? namedCardVars(it.cat) : '';
+      html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
       html += '<div class="summary" id="fn-sum-'+page+'-'+i+'">'+esc(content)+'</div>';
       html += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
