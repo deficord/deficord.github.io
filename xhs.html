@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>小红书图文生成器 · GLUCK 运营思路题库</title>
+<title>小红书图文生成器</title>
 <style>
   :root{
     --bg:#f6f7f9; --panel:#ffffff; --ink:#1f2329; --sub:#8a9099;
@@ -65,11 +65,51 @@
   .stylechip{font-size:12px; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
     background:#fff; cursor:pointer; white-space:nowrap;}
   .stylechip.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  /* 新风格4：暖光手写治愈——给 .page.warmletter 一个白色信纸层 */
+  .page.warmletter{background:radial-gradient(circle at 50% 30%, #fff3e0 0%, #ffe0b0 55%, #d4a26a 100%);}
+  .page.warmletter .warm-paper{position:absolute; left:18px; right:18px; top:120px; bottom:38px;
+    background:rgba(255,253,247,.92); border-radius:6px; box-shadow:0 4px 18px rgba(120,60,0,.18);
+    z-index:0;}
+  .page.warmletter .warm-rays{position:absolute; inset:0; background:
+    conic-gradient(from 0deg at 50% 30%, transparent 0deg, rgba(255,235,180,.18) 5deg, transparent 10deg,
+      rgba(255,235,180,.18) 15deg, transparent 20deg, rgba(255,235,180,.18) 25deg, transparent 30deg); z-index:0;}
+
+  /* 新风格2：Q萌插画治愈——给 .page.qillu 一个心形云朵 */
+  .page.qillu{background:linear-gradient(170deg, #fff8e7 0%, #ffe6c8 55%, #ffd2a8 100%);}
+  .page.qillu .q-cloud{position:absolute; left:24px; right:24px; top:130px; bottom:46px;
+    background:rgba(255,255,255,.85); border-radius:60% 60% 50% 50% / 70% 70% 30% 30%;
+    z-index:0; box-shadow:0 6px 22px rgba(255,150,150,.20);}
+
+  /* 新风格3：都市霓虹金句——深紫底+发光字 */
+  .page.neonnight{background:linear-gradient(180deg, #0a0420 0%, #1f0d2e 60%, #3a1450 100%);}
+  .page.neonnight .cover .txt,
+  .page.neonnight .txt, .page.neonnight .qbox{
+    text-shadow:0 0 8px rgba(255,45,146,.75), 0 0 22px rgba(255,45,146,.45), 0 0 36px rgba(180,120,255,.35) !important;
+    color:#fff8dc !important;}
+  .page.neonnight .hl{color:#19e3ff !important; text-shadow:0 0 12px rgba(25,227,255,.95) !important;}
+  .page.neonnight .body{position:relative;}
+  .page.neonnight .neon-stars{position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(2px 2px at 18% 22%, #ffe9a8, transparent 50%),
+      radial-gradient(2px 2px at 72% 38%, #ffb3d9, transparent 50%),
+      radial-gradient(3px 3px at 35% 78%, #ffffff, transparent 50%),
+      radial-gradient(2px 2px at 88% 14%, #b478ff, transparent 50%),
+      radial-gradient(2px 2px at 60% 90%, #19e3ff, transparent 50%);}
+
+  /* 新风格4：大字+人像剪影——金黄麦田+粗黑字+底部剪影 */
+  .page.boldportrait{background:linear-gradient(180deg, #f5d97a 0%, #d4a847 100%);}
+  .page.boldportrait .portrait{position:absolute; left:0; right:0; bottom:0; height:160px;
+    background:linear-gradient(180deg, transparent 0%, rgba(50,30,8,.65) 100%); z-index:0;}
+  .page.boldportrait .cover .txt,
+  .page.boldportrait .txt{
+    text-shadow:0 2px 0 rgba(255,255,255,.55), 0 -1px 0 rgba(0,0,0,.15);
+    color:#1a1208 !important; letter-spacing:.5px;}
 </style>
 </head>
 <body>
 <header>
-  <h1>小红书图文生成器 · GLUCK 运营思路题库</h1>
+  <h1>小红书图文生成器</h1>
   <p>零积分产出：每条选题自动配上「不同的视觉风格」，拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。</p>
 </header>
 <details class="usage" open>
@@ -78,7 +118,7 @@
     <b>它不是 AI 画图工具</b>，不会自动生成照片。它的作用是：把题库里每条「口播脚本」排成小红书风格的 3:4 图文卡片，方便你直接截图发布、或导出 PNG。<br>
     <b>三步用法：</b>① 选「分类」+「具体选题」；② 右侧自动出封面大字 / 标题 / 正文 / 话题标签；③ 用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截左侧卡片，按 1→末 顺序发 5–6 张即可。<br>
     也可点卡片下方「<b>保存这张</b>」直接下载高清 PNG（纯本地生成，<b>无需联网</b>）。<br>
-    <b>每种文案都自动配不同风格</b>（共 8 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷），下方「风格」可手动切换或随机，保证你的图文不重样、有个性。
+    <b>每种文案都自动配不同风格</b>（共 12 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷 / 暖光手写 / Q萌插画 / 都市霓虹 / 大字人像），下方「风格」可手动切换或随机，保证你的图文不重样、有个性。
   </div>
 </details>
 <div class="wrap">
@@ -142,9 +182,12 @@ const CAT_TAGS = {
 const HL_WORDS = ['真的','别','最','一定要','记住','狠','绝了','救命','其实','反而','才是','根本','果然','要命','上头','扎心','破防','离谱','爽','绝','狠人','谁懂','破大防'];
 
 /* ============================================================
-   8 种视觉风格（HTML 与 Canvas 共用同一组参数）
-   依据真实调研：高对比/大字/少元素、手写体有温度、留白、
-   衬线高级感、黑金质感、ins 清新、极简、霓虹潮酷
+   12 种视觉风格（HTML 与 Canvas 共用同一组参数）
+   v2：增加 4 款参考小红书爆款的原创风格
+   - warm-letter 暖光手写治愈  → 治愈感（信纸+暖光）
+   - q-illustrate Q萌插画治愈  → 温柔可爱（云朵+圆体）
+   - neon-night   都市霓虹金句  → 夜景发光金句（玫瑰花墙灵感）
+   - bold-portrait 大字+人像剪影 → 麦田大字+剪影（金句冲击力）
    ============================================================ */
 const STYLES = [
   { id:'boldpop', name:'大字撞色',
@@ -195,20 +238,50 @@ const STYLES = [
     ink:'#eafcff', accent:'#19e3ff', sub:'#9a7bff',
     family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'800',
     familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
-    deco:'glow', emo:['⚡','💜','🔷','✨'] }
+    deco:'glow', emo:['⚡','💜','🔷','✨'] },
+
+  /* —— v2 新增 4 款（参考真实爆款图原创）—— */
+  { id:'warm-letter', name:'暖光手写治愈',
+    bgCss:'radial-gradient(circle at 50% 30%, #fff3e0 0%, #ffe0b0 55%, #d4a26a 100%)',
+    bgCanvas:{type:'warm-glow',base:'#fff3e0',edge:'#d4a26a'},
+    ink:'#3a2a1a', accent:'#c4621f', sub:'#8a6a48',
+    family:'"KaiTi","STKaiti","楷体",cursive', weight:'700',
+    familyBody:'"KaiTi","STKaiti","楷体",cursive',
+    deco:'warm-rays', emo:['💌','🌷','☕','🕯'] },
+  { id:'q-illustrate', name:'Q萌插画治愈',
+    bgCss:'linear-gradient(170deg, #fff8e7 0%, #ffe6c8 55%, #ffd2a8 100%)',
+    bgCanvas:{type:'gradient',from:'#fff8e7',to:'#ffd2a8'},
+    ink:'#5a3a30', accent:'#ff5a8a', sub:'#a07050',
+    family:'"Yuanti SC","Hiragino Sans GB","PingFang SC",sans-serif', weight:'800',
+    familyBody:'"Yuanti SC","Hiragino Sans GB","PingFang SC",sans-serif',
+    deco:'q-cloud', emo:['🐰','🍄','🌸','🐢'] },
+  { id:'neon-night', name:'都市霓虹金句',
+    bgCss:'linear-gradient(180deg, #0a0420 0%, #1f0d2e 60%, #3a1450 100%)',
+    bgCanvas:{type:'gradient',from:'#0a0420',to:'#3a1450'},
+    ink:'#fff8dc', accent:'#ff2d92', sub:'#b478ff',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'900',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'neon-glow', emo:['🌹','🦋','✨','🌟'] },
+  { id:'bold-portrait', name:'大字人像剪影',
+    bgCss:'linear-gradient(180deg, #f5d97a 0%, #d4a847 100%)',
+    bgCanvas:{type:'gradient',from:'#f5d97a',to:'#c89336'},
+    ink:'#1a1208', accent:'#8b1a1a', sub:'#6a4a20',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'900',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'portrait', emo:['🌾','🍃','✏️','🖌'] }
 ];
 const STYLE_BY_ID = {};
 STYLES.forEach(s=>STYLE_BY_ID[s.id]=s);
 
 // 赛道偏好：让风格契合内容调性，同时保证同赛道也分散、不重样
 const CAT_STYLE_PREF = {
-  '健身':['airy','boldpop','minimal'],
-  '生活现实句子':['journal','retro','airy'],
-  '家庭教育':['journal','retro','magazine'],
-  '高情商恋爱关系':['magazine','noir','airy'],
+  '健身':['bold-portrait','warm-letter','airy'],
+  '生活现实句子':['neon-night','journal','warm-letter'],
+  '家庭教育':['warm-letter','journal','magazine'],
+  '高情商恋爱关系':['q-illustrate','neon-night','magazine'],
   '知识科普类':['minimal','magazine','noir'],
-  '发布运营':['boldpop','minimal','neon'],
-  '搞笑类':['boldpop','neon','journal']
+  '发布运营':['boldpop','neon','minimal'],
+  '搞笑类':['q-illustrate','boldpop','neon-night']
 };
 function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return Math.abs(h); }
 function autoStyleId(cat,title){
@@ -303,8 +376,7 @@ function render(){
 }
 
 function buildCardHTML(p,style,meta,t){
-  const d=document.createElement('div'); d.className='page '+p.t;
-  d.style.background=style.bgCss;
+  const d=document.createElement('div'); d.className='page '+p.t+' '+style.id;
   d.style.color=style.ink;
   d.style.fontFamily=style.familyBody;
   // 顶部分类色条（minimal/通用都给一点识别）
@@ -355,6 +427,23 @@ function decoHTML(style,p){
   if(c==='confetti' || c==='leaf'){
     return ''; // 点缀用 emoji 行与底色即可
   }
+  // —— v2 新增 4 风格 HTML 装饰 ——
+  if(c==='warm-letter'){
+    // 信纸层 + 暖光放射
+    return '<div class="warm-rays deco-layer"></div><div class="warm-paper deco-layer"></div>';
+  }
+  if(c==='q-illustrate'){
+    // 云朵背景
+    return '<div class="q-cloud deco-layer"></div>';
+  }
+  if(c==='neon-night'){
+    // 星光+星空层（在 .body 内用伪元素受限，所以放在 page 顶层）
+    return '<div class="neon-stars deco-layer"></div>';
+  }
+  if(c==='bold-portrait'){
+    // 麦田+剪影暗色遮罩
+    return '<div class="portrait deco-layer"></div>';
+  }
   return '';
 }
 
@@ -387,11 +476,19 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
 function drawBg(ctx,W,H,bg){
-  if(bg.type==='gradient'){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,bg.from); g.addColorStop(1,bg.to); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
-  else if(bg.type==='grid'){ ctx.fillStyle=bg.base; ctx.fillRect(0,0,W,H); ctx.strokeStyle=bg.line; ctx.lineWidth=1;
+  if(bg.type==='gradient'){
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,bg.from); g.addColorStop(1,bg.to); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  } else if(bg.type==='grid'){
+    ctx.fillStyle=bg.base; ctx.fillRect(0,0,W,H); ctx.strokeStyle=bg.line; ctx.lineWidth=1;
     for(let y=0;y<=H;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    for(let x=0;x<=W;x+=22){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();} }
-  else { ctx.fillStyle=bg.color; ctx.fillRect(0,0,W,H); }
+    for(let x=0;x<=W;x+=22){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  } else if(bg.type==='warm-glow'){
+    // 径向暖光 + 边缘棕黄
+    const g=ctx.createRadialGradient(W/2,H*0.3,40, W/2,H*0.3, Math.max(W,H));
+    g.addColorStop(0,bg.base); g.addColorStop(1,bg.edge); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  } else {
+    ctx.fillStyle=bg.color; ctx.fillRect(0,0,W,H);
+  }
 }
 function renderCardToCanvas(page,style,meta){
   const W=600,H=800;
@@ -419,28 +516,126 @@ function renderCardToCanvas(page,style,meta){
   } else if(style.deco==='glow'){
     // 由文字 shadow 体现
   }
+  // —— v2 4 新风格 canvas 装饰 ——
+  if(style.deco==='warm-rays'){
+    // 暖光射线 + 信纸
+    const cx=W/2, cy=H*0.3;
+    ctx.save();
+    for(let i=0;i<14;i++){
+      const a=(Math.PI*2/14)*i;
+      const g=ctx.createLinearGradient(cx,cy, cx+Math.cos(a)*W, cy+Math.sin(a)*H);
+      g.addColorStop(0,'rgba(255,230,160,.18)'); g.addColorStop(1,'rgba(255,230,160,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(a-.05)*W, cy+Math.sin(a-.05)*H); ctx.lineTo(cx+Math.cos(a+.05)*W, cy+Math.sin(a+.05)*H); ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    // 信纸层（白色矩形）
+    ctx.save();
+    ctx.fillStyle='rgba(255,253,247,.92)';
+    roundRect(ctx,40,H*0.35, W-80, H*0.55, 14); ctx.fill();
+    // 信纸横线
+    ctx.strokeStyle='rgba(180,140,90,.18)'; ctx.lineWidth=1;
+    for(let y=H*0.42; y<H*0.85; y+=24){ ctx.beginPath(); ctx.moveTo(60,y); ctx.lineTo(W-60,y); ctx.stroke(); }
+    ctx.restore();
+  }
+  if(style.deco==='q-cloud'){
+    // 可爱云朵（白色椭圆 + 阴影）
+    ctx.save();
+    ctx.fillStyle='rgba(255,255,255,.85)';
+    ctx.beginPath();
+    ctx.ellipse(W/2, H*0.55, W*0.36, H*0.20, 0, 0, Math.PI*2); ctx.fill();
+    // 几个小配件（角落的小装饰）
+    ctx.font='52px serif'; ctx.fillText('🐰', 36, 110); ctx.fillText('🌸', W-90, 130);
+    ctx.fillText('🍄', 60, H-150); ctx.fillText('🐢', W-90, H-130);
+    ctx.restore();
+  }
+  if(style.deco==='neon-glow'){
+    // 都市霓虹：星光点 + 玫瑰花环顶 + 蝴蝶
+    ctx.save();
+    const stars=[[80,120],[500,90],[120,640],[520,600],[300,720],[460,300],[90,400],[550,500]];
+    stars.forEach((p,i)=>{
+      ctx.fillStyle=['#ffe9a8','#ffb3d9','#b478ff','#19e3ff','#ffffff'][i%5];
+      ctx.beginPath(); ctx.arc(p[0],p[1], 4+(i%3)*2, 0, Math.PI*2); ctx.fill();
+    });
+    // 顶部玫瑰花环（canvas 画一串）
+    const cx=W/2, cy=70;
+    ctx.fillStyle='#ff2d92'; ctx.font='40px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    const wreath='🌹 🌹 🌹 🌹 🌹';
+    ctx.fillText(wreath, cx, cy);
+    ctx.font='34px serif'; ctx.fillText('🦋', cx-180, cy+6); ctx.fillText('🦋', cx+180, cy+6);
+    ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.restore();
+  }
+  if(style.deco==='portrait'){
+    // 麦田金黄底 + 人像剪影（简化：椭圆头+梯形身体+手绘线条）
+    ctx.save();
+    // 麦田横线纹理
+    ctx.strokeStyle='rgba(110,70,20,.18)'; ctx.lineWidth=1;
+    for(let y=H*0.6; y<H; y+=10){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    // 人像剪影
+    const px=W/2, py=H*0.78;
+    ctx.fillStyle='rgba(40,25,5,.55)';
+    ctx.beginPath();
+    // 头
+    ctx.arc(px, py-60, 30, 0, Math.PI*2); ctx.fill();
+    // 身体（梯形）
+    ctx.beginPath();
+    ctx.moveTo(px-50, py-30); ctx.lineTo(px+50, py-30);
+    ctx.lineTo(px+90, py+80); ctx.lineTo(px-90, py+80); ctx.closePath(); ctx.fill();
+    // 一只手（弯曲）
+    ctx.beginPath(); ctx.arc(px+60, py-10, 14, 0, Math.PI*2); ctx.fill();
+    // 麦穗 emoji
+    ctx.font='48px serif'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    ctx.fillText('🌾', 30, H-80); ctx.fillText('🌾', W-90, H-50);
+    ctx.restore();
+  }
+
   const px=44;
   // 徽章
   ctx.font='700 24px '+style.familyBody; ctx.textBaseline='middle';
   const bText=page.label; const bw=ctx.measureText(bText).width+36, bh=40, by=30;
   ctx.fillStyle=style.accent; roundRect(ctx,px,by,bw,bh,20); ctx.fill();
   ctx.fillStyle=(style.id==='noir'?'#14110d':'#ffffff'); ctx.fillText(bText,px+18,by+bh/2+1);
-  let y=by+bh+22;
+
+  // 文字位置：4 新风格做特殊处理（贴在信纸/云朵/风景区）
+  let textTopY = by+bh+22;
+  if(style.deco==='warm-rays') textTopY = H*0.40; // 信纸内
+  if(style.deco==='q-cloud') textTopY = H*0.43;
+  if(style.deco==='neon-glow') textTopY = H*0.30;
+  // bold-portrait 默认顶部即可
+
+  let y=textTopY;
   const bottomReserve=80;
+  const textMaxW = (style.deco==='warm-rays'||style.deco==='q-cloud') ? W-140 : W-px*2;
+
   if(page.t==='cover'){
     ctx.font=style.weight+' 56px '+style.family;
-    if(style.deco==='glow'){ ctx.shadowColor=style.accent; ctx.shadowBlur=18; }
-    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2);
+    if(style.deco==='neon-glow' || style.deco==='glow'){ ctx.shadowColor=style.accent; ctx.shadowBlur=22; }
+    else if(style.deco==='warm-rays'){ ctx.shadowColor='rgba(180,90,20,.25)'; ctx.shadowBlur=2; }
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),textMaxW);
     ctx.textBaseline='top';
-    for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=78; if(y>H-bottomReserve-90) break; }
+    const lh=78;
+    for(const ln of lines){ let x=px; if(style.deco==='q-cloud' || style.deco==='warm-rays') x = (W-textMaxW)/2 - 8;
+      for(const c of ln){
+        ctx.fillStyle=c.hl?style.accent:style.ink;
+        ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width;
+      }
+      y+=lh; if(y>H-bottomReserve-90) break;
+    }
     ctx.shadowBlur=0;
     ctx.font='38px '+style.familyBody; ctx.textAlign='center';
-    ctx.fillText((style.emo[0]+' '+style.emo[1]+' '+style.emo[2]),W/2,H-130); ctx.textAlign='left';
+    if(style.deco==='warm-rays' || style.deco==='q-cloud' || style.deco==='neon-glow'){
+      // 装饰emoji放卡片底部（不在信纸内）
+      ctx.fillText((style.emo[0]+' '+style.emo[1]+' '+style.emo[2]),W/2,H-90);
+    } else {
+      ctx.fillText((style.emo[0]+' '+style.emo[1]+' '+style.emo[2]),W/2,H-130);
+    }
+    ctx.textAlign='left';
   } else if(page.t==='interact'){
     ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
     ctx.fillText(page.label,px,y); y+=34;
     ctx.font='700 34px '+style.familyBody;
-    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2-28);
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),textMaxW);
     const lh=46; const qh=Math.max(60, lines.length*lh+24);
     ctx.fillStyle=hexA(style.accent,0.12); roundRect(ctx,px,y,W-px*2,qh,16); ctx.fill();
     ctx.fillStyle=style.accent; ctx.fillRect(px,y,8,qh);
@@ -450,7 +645,7 @@ function renderCardToCanvas(page,style,meta){
     ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
     ctx.fillText(page.label,px,y); y+=34;
     ctx.font=style.weight+' 40px '+style.familyBody;
-    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2);
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),textMaxW);
     for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=58; if(y>H-bottomReserve) break; }
   }
   // 页脚
