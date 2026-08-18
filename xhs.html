@@ -19,46 +19,36 @@
   .usage summary{cursor:pointer; font-weight:700; color:#c8123a;}
   .usage b{color:#c8123a;}
   .wrap{display:flex; gap:18px; padding:18px 20px; align-items:flex-start; flex-wrap:wrap;}
-  .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px;}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:12px;}
   select,button{font-size:13px; padding:8px 12px; border:1px solid var(--line);
     border-radius:10px; background:#fff; color:var(--ink); cursor:pointer;}
   button.primary{background:var(--accent); color:#fff; border-color:var(--accent);}
   button:hover{opacity:.92;}
-  .left{flex:0 0 auto;}
+  .left{flex:0 0 auto; max-width:100%;}
   .right{flex:1 1 320px; min-width:300px;}
   .pages{display:flex; gap:14px; flex-wrap:wrap;}
 
   /* ===== 通用卡片 300x400 ≈ 3:4 ===== */
-  .page{width:300px; height:400px; background:#fff; border-radius:16px; position:relative;
+  .page{width:300px; height:400px; border-radius:16px; position:relative;
     overflow:hidden; box-shadow:0 6px 22px rgba(0,0,0,.10); padding:22px 20px;
-    display:flex; flex-direction:column;}
+    display:flex; flex-direction:column; color:var(--ink);}
   .page .badge{align-self:flex-start; font-size:12px; font-weight:700; color:#fff;
-    padding:4px 10px; border-radius:999px; margin-bottom:14px;}
+    padding:4px 10px; border-radius:999px; margin-bottom:14px; background:var(--accent);}
   .page .label{font-size:12px; color:var(--sub); margin-bottom:8px; font-weight:600;}
   .page .body{flex:1; display:flex; align-items:flex-start; padding-top:6px; overflow:hidden;}
   .page .txt{font-size:21px; line-height:1.5; font-weight:600; word-break:break-word;}
   .page.cover .txt{font-size:27px; line-height:1.4; font-weight:800;}
   .page .foot{font-size:11px; color:var(--sub); margin-top:10px;}
   .page .pagenum{position:absolute; right:16px; bottom:12px; font-size:11px; color:var(--sub);}
-  .page .hl{color:var(--red); font-weight:800;}
+  .page .hl{font-weight:800;}
+  .page .qbox{border-radius:0 12px 12px 0; padding:12px 12px 12px 14px;
+    font-size:18px; font-weight:700;}
 
-  /* ===== 小红书味皮肤（默认启用）===== */
-  .page.xhs{border:1px solid #ffe1e6; border-radius:22px;
-    box-shadow:0 10px 28px rgba(255,46,77,.10); padding-top:30px;}
-  .page.xhs .topbar{position:absolute; top:0; left:0; right:0; height:7px;
-    background:linear-gradient(90deg,var(--c,var(--red)),#ff9aae);}
-  .page.xhs .badge{background:var(--red); box-shadow:0 2px 6px rgba(255,46,77,.3);}
-  .page.xhs.cover{background:linear-gradient(165deg,#ffffff 56%, var(--c,var(--red)) 260%);}
-  .page.xhs .txt{font-weight:800; letter-spacing:.2px;}
-  .page.xhs .hl{color:#e01030; font-weight:800;}
-  .page.xhs.cover .txt{-webkit-text-stroke:.4px rgba(0,0,0,.05);
-    text-shadow:0 2px 10px rgba(0,0,0,.08);}
-  .page.xhs .qbox{background:#fff0f3; border-left:4px solid var(--red);
-    border-radius:0 12px 12px 0; padding:12px 12px 12px 14px;
-    font-size:18px; font-weight:700; color:#c8123a;}
-  .page.xhs .foot{color:#ff5c77; font-weight:600;}
-  .page.xhs .emojirow{font-size:20px; letter-spacing:5px; text-align:center;
-    padding:8px 0 2px; opacity:.92;}
+  /* 装饰层（各风格不同） */
+  .deco-layer{position:absolute; inset:0; pointer-events:none; z-index:0;}
+  .page > .badge, .page > .label, .page > .body, .page > .foot, .page > .pagenum, .page > .emojirow{position:relative; z-index:1;}
+  .page .emojirow{font-size:20px; letter-spacing:5px; text-align:center;
+    padding:8px 0 2px; opacity:.92; z-index:1; position:relative;}
 
   .side{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px;}
   .side h3{margin:0 0 10px; font-size:14px;}
@@ -71,19 +61,24 @@
   .note{font-size:12px; color:var(--sub); margin-top:8px; line-height:1.6;}
   .src{font-size:11px; color:var(--sub); margin-top:6px;}
   .savebtn{font-size:12px; padding:6px 12px; background:#fff; color:var(--accent); border:1px solid #ffd0d8; border-radius:999px;}
+  .stylechips{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .stylechip{font-size:12px; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
+    background:#fff; cursor:pointer; white-space:nowrap;}
+  .stylechip.on{background:var(--ink); color:#fff; border-color:var(--ink);}
 </style>
 </head>
 <body>
 <header>
   <h1>小红书图文生成器 · GLUCK 运营思路题库</h1>
-  <p>零积分产出：把每条选题拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。</p>
+  <p>零积分产出：每条选题自动配上「不同的视觉风格」，拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。</p>
 </header>
 <details class="usage" open>
   <summary>❓ 这工具怎么用？（点此收起）</summary>
   <div>
     <b>它不是 AI 画图工具</b>，不会自动生成照片。它的作用是：把题库里每条「口播脚本」排成小红书风格的 3:4 图文卡片，方便你直接截图发布、或导出 PNG。<br>
     <b>三步用法：</b>① 选「分类」+「具体选题」；② 右侧自动出封面大字 / 标题 / 正文 / 话题标签；③ 用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截左侧卡片，按 1→末 顺序发 5–6 张即可。<br>
-    也可点卡片下方「<b>保存这张</b>」直接下载高清 PNG（纯本地生成，<b>无需联网</b>）。想换文案，去主站「运营思路题库」选别的选题即可，本工具随题库更新。
+    也可点卡片下方「<b>保存这张</b>」直接下载高清 PNG（纯本地生成，<b>无需联网</b>）。<br>
+    <b>每种文案都自动配不同风格</b>（共 8 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷），下方「风格」可手动切换或随机，保证你的图文不重样、有个性。
   </div>
 </details>
 <div class="wrap">
@@ -95,8 +90,13 @@
       <button id="nextBtn">下一条</button>
       <button id="randBtn">随机一条</button>
     </div>
+    <div class="controls">
+      <span style="font-size:12px;color:var(--sub);">风格：</span>
+      <div class="stylechips" id="styleChips"></div>
+      <button id="randStyle">🎲 随机风格</button>
+    </div>
     <div class="pages" id="pages"></div>
-    <div class="note">操作：用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截取左侧 3:4 卡片，按顺序发 5-6 张图即可。点「保存这张」可下载高清 PNG（本地生成，无需联网）。</div>
+    <div class="note">操作：用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截取左侧 3:4 卡片，按顺序发 5-6 张图即可。点「保存这张」可下载高清 PNG（本地生成，无需联网）。同一选题换风格后截图，就是另一张完全不同的图。</div>
   </div>
   <div class="right">
     <div class="side">
@@ -138,8 +138,84 @@ const CAT_TAGS = {
   '发布运营':['#自媒体','#起号','#小红书运营','#内容创作','#涨粉'],
   '搞笑类':['#搞笑','#沙雕日常','#打工人','#段子','#快乐源泉']
 };
-// 关键词红色高亮（小红书"重点词标红"习惯，保守匹配情绪/强调词）
+// 关键词红色高亮（小红书"重点词标红"习惯）
 const HL_WORDS = ['真的','别','最','一定要','记住','狠','绝了','救命','其实','反而','才是','根本','果然','要命','上头','扎心','破防','离谱','爽','绝','狠人','谁懂','破大防'];
+
+/* ============================================================
+   8 种视觉风格（HTML 与 Canvas 共用同一组参数）
+   依据真实调研：高对比/大字/少元素、手写体有温度、留白、
+   衬线高级感、黑金质感、ins 清新、极简、霓虹潮酷
+   ============================================================ */
+const STYLES = [
+  { id:'boldpop', name:'大字撞色',
+    bgCss:'#FFE34D', bgCanvas:{type:'solid',color:'#FFE34D'},
+    ink:'#16181d', accent:'#ff2e4d', sub:'#5a4a00',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'900',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'confetti', emo:['✨','💥','⭐','🔥'] },
+  { id:'journal', name:'手账涂鸦',
+    bgCss:'repeating-linear-gradient(#fbf7ee,#fbf7ee 22px,#efe7d6 22px,#efe7d6 23px),repeating-linear-gradient(90deg,#fbf7ee,#fbf7ee 22px,#efe7d6 22px,#efe7d6 23px)',
+    bgCanvas:{type:'grid',base:'#fbf7ee',line:'#e7ddc8'},
+    ink:'#4a3f2e', accent:'#2f8f6b', sub:'#9a8a6a',
+    family:'"KaiTi","STKaiti","楷体",serif', weight:'700',
+    familyBody:'"KaiTi","STKaiti","楷体",serif',
+    deco:'washi', emo:['🌿','📌','🍵','✏️'] },
+  { id:'magazine', name:'杂志拼贴',
+    bgCss:'#f3efe9', bgCanvas:{type:'solid',color:'#f3efe9'},
+    ink:'#1a1a1a', accent:'#b3122b', sub:'#7a7066',
+    family:'"SimSun","STSong","宋体",serif', weight:'700',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'frame', emo:['❖','◆','✎','☞'] },
+  { id:'retro', name:'复古撕纸',
+    bgCss:'#e9dcc3', bgCanvas:{type:'solid',color:'#e9dcc3'},
+    ink:'#4a3b28', accent:'#a8642f', sub:'#8a785a',
+    family:'"KaiTi","STKaiti","楷体",serif', weight:'700',
+    familyBody:'"KaiTi","STKaiti","楷体",serif',
+    deco:'torn', emo:['📜','🍂','✉️','🕰'] },
+  { id:'noir', name:'黑金高奢',
+    bgCss:'#14110d', bgCanvas:{type:'solid',color:'#14110d'},
+    ink:'#f3e9d2', accent:'#d4af37', sub:'#9a8b6a',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'800',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'shine', emo:['✦','◆','✧','❖'] },
+  { id:'airy', name:'ins 清新',
+    bgCss:'linear-gradient(160deg,#eef4ff 0%,#ffeef4 100%)', bgCanvas:{type:'gradient',from:'#eef4ff',to:'#ffeef4'},
+    ink:'#2f3a55', accent:'#ff7a9c', sub:'#8a93ad',
+    family:'"Yuanti SC","Hiragino Sans GB","PingFang SC",sans-serif', weight:'700',
+    familyBody:'"Yuanti SC","Hiragino Sans GB","PingFang SC",sans-serif',
+    deco:'leaf', emo:['🌸','🍃','☁️','💭'] },
+  { id:'minimal', name:'极简大字',
+    bgCss:'#ffffff', bgCanvas:{type:'solid',color:'#ffffff'},
+    ink:'#111111', accent:'#111111', sub:'#999999',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'900',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'dash', emo:['·','—','○','□'] },
+  { id:'neon', name:'霓虹潮酷',
+    bgCss:'linear-gradient(160deg,#0e1230 0%,#1a0f3a 100%)', bgCanvas:{type:'gradient',from:'#0e1230',to:'#1a0f3a'},
+    ink:'#eafcff', accent:'#19e3ff', sub:'#9a7bff',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'800',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    deco:'glow', emo:['⚡','💜','🔷','✨'] }
+];
+const STYLE_BY_ID = {};
+STYLES.forEach(s=>STYLE_BY_ID[s.id]=s);
+
+// 赛道偏好：让风格契合内容调性，同时保证同赛道也分散、不重样
+const CAT_STYLE_PREF = {
+  '健身':['airy','boldpop','minimal'],
+  '生活现实句子':['journal','retro','airy'],
+  '家庭教育':['journal','retro','magazine'],
+  '高情商恋爱关系':['magazine','noir','airy'],
+  '知识科普类':['minimal','magazine','noir'],
+  '发布运营':['boldpop','minimal','neon'],
+  '搞笑类':['boldpop','neon','journal']
+};
+function hashStr(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return Math.abs(h); }
+function autoStyleId(cat,title){
+  const pref = CAT_STYLE_PREF[cat] || STYLES.map(s=>s.id);
+  return pref[ hashStr(cat+'|'+title) % pref.length ];
+}
+
 function getSeg(c,name){
   const re = new RegExp('【'+name+'】([\\s\\S]*?)(?=\\n?【|$)');
   const m = c.match(re); return m ? m[1].trim() : '';
@@ -155,17 +231,28 @@ function splitSpoken(text){
 }
 function clean(t){ return (t||'').replace(/[｜|]/g,' ').replace(/\s+/g,' ').trim(); }
 function esc(s){return (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
-function hl(s){
+function hl(s,accent){
   let r=esc(s);
-  HL_WORDS.forEach(w=>{ if(w && r.indexOf(w)>=0) r=r.split(w).join('<span class="hl">'+w+'</span>'); });
+  HL_WORDS.forEach(w=>{ if(w && r.indexOf(w)>=0) r=r.split(w).join('<span class="hl" style="color:'+accent+'">'+w+'</span>'); });
   return r;
 }
 
-let curIdx=0, curList=[];
+let curIdx=0, curList=[], curStyleId=null, manualStyle=false;
 const catSel=document.getElementById('catSel');
 const cardSel=document.getElementById('cardSel');
 const cats=[...new Set(TOPICS.map(t=>t.cat))];
 cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;catSel.appendChild(o);});
+
+// 风格 chips
+const styleChips=document.getElementById('styleChips');
+STYLES.forEach(s=>{
+  const b=document.createElement('button'); b.className='stylechip'; b.dataset.id=s.id; b.textContent=s.name;
+  b.onclick=()=>{ curStyleId=s.id; manualStyle=true; render(); };
+  styleChips.appendChild(b);
+});
+function syncChips(){
+  [...styleChips.children].forEach(b=>b.classList.toggle('on', b.dataset.id===curStyleId));
+}
 
 function loadCat(){
   const cat=catSel.value;
@@ -173,14 +260,18 @@ function loadCat(){
   cardSel.innerHTML='';
   curList.forEach((t,i)=>{const o=document.createElement('option');o.value=i;
     o.textContent=(t.title||('选题'+(i+1)));cardSel.appendChild(o);});
-  curIdx=0; render();
+  curIdx=0; manualStyle=false; render();
 }
 function render(){
   const t=curList[curIdx]; if(!t) return;
+  const cat=t.cat;
+  if(!manualStyle) curStyleId=autoStyleId(cat, t.title||'');
+  const style = STYLE_BY_ID[curStyleId] || STYLES[0];
+  syncChips();
   const c=t.content||'';
   const hook=getSeg(c,'0-3s 钩子'), scene=getSeg(c,'3-12s 场景');
   const spoken=getSeg(c,'12-42s 口播'), inter=getSeg(c,'42-50s 升华+互动');
-  const cat=t.cat, color=CAT_COLOR[cat]||'#ff2e4d', emoji=CAT_EMOJI[cat]||'✨';
+  const color=CAT_COLOR[cat]||'#ff2e4d', emoji=CAT_EMOJI[cat]||'✨';
   const spokenChunks=splitSpoken(spoken);
   const pages=[];
   pages.push({t:'cover',txt:clean(hook),label:emoji+' '+cat});
@@ -189,25 +280,9 @@ function render(){
   if(inter) pages.push({t:'interact',txt:clean(inter),label:'💬 互动引导'});
   const box=document.getElementById('pages'); box.innerHTML='';
   pages.forEach((p,i)=>{
-    const d=document.createElement('div'); d.className='page '+p.t+' xhs';
-    d.style.setProperty('--c',color);
-    let inner='<div class="topbar"></div>';
-    inner+='<div class="badge">'+esc(p.label)+'</div>';
-    if(p.t==='cover'){
-      inner+='<div class="body"><div class="txt">'+hl(p.txt)+'</div></div>';
-      inner+='<div class="emojirow">'+(emoji+' '+CAT_EMOJI[cat]+' ✨ 🔥 💡')+'</div>';
-    }
-    else if(p.t==='interact'){
-      inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="qbox">'+hl(p.txt)+'</div></div>';
-    }
-    else {
-      inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt">'+hl(p.txt)+'</div></div>';
-    }
-    inner+='<div class="foot">@GLUCK 的图文笔记</div><div class="pagenum">'+(i+1)+'/'+pages.length+'</div>';
-    d.innerHTML=inner;
-    d._page=p; d._meta={color:color, emoji:emoji, cat:cat, idx:i, total:pages.length};
     const wrap=document.createElement('div');
     wrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
+    const d=buildCardHTML(p,style,{color:color,emoji:emoji,cat:cat,idx:i,total:pages.length},t);
     wrap.appendChild(d);
     const btn=document.createElement('button'); btn.className='savebtn'; btn.textContent='保存这张'; btn.style.marginTop='8px';
     btn.onclick=()=>saveCard(d);
@@ -227,10 +302,65 @@ function render(){
   document.getElementById('srcOut').textContent='选题来源：'+ (t.source||'GLUCK·运营思路题库')+' · '+ (t.date||'');
 }
 
+function buildCardHTML(p,style,meta,t){
+  const d=document.createElement('div'); d.className='page '+p.t;
+  d.style.background=style.bgCss;
+  d.style.color=style.ink;
+  d.style.fontFamily=style.familyBody;
+  // 顶部分类色条（minimal/通用都给一点识别）
+  let inner='';
+  inner+='<div class="badge" style="background:'+style.accent+';color:'+ (style.id==='noir'?'#14110d':'#fff') +';">'+esc(p.label)+'</div>';
+  if(p.t==='cover'){
+    inner+='<div class="body"><div class="txt" style="font-family:'+style.family+';font-weight:'+style.weight+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
+    inner+='<div class="emojirow">'+ (style.emo[0]+' '+style.emo[1]+' '+style.emo[2]) +'</div>';
+  }
+  else if(p.t==='interact'){
+    inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="qbox" style="background:'+hexA(style.accent,0.12)+';border-left:4px solid '+style.accent+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
+  }
+  else {
+    inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt" style="font-family:'+style.familyBody+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
+  }
+  inner+='<div class="foot" style="color:'+style.sub+';">@GLUCK 的图文笔记</div><div class="pagenum">'+(meta.idx+1)+'/'+meta.total+'</div>';
+  // 装饰层（z-index:0）
+  inner = decoHTML(style,p) + inner;
+  d.innerHTML=inner;
+  d._page=p; d._style=style; d._meta={color:meta.color,emoji:meta.emoji,cat:meta.cat,idx:meta.idx,total:meta.total};
+  return d;
+}
+function hexA(hex,a){
+  if(hex[0]!=='#') return hex;
+  const n=parseInt(hex.slice(1),16); const r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  return 'rgba('+r+','+g+','+b+','+a+')';
+}
+function decoHTML(style,p){
+  const c=style.id;
+  if(c==='washi'){
+    return '<div class="deco-layer"><div style="position:absolute;top:40px;right:-18px;width:90px;height:26px;background:rgba(255,220,120,.55);transform:rotate(8deg);"></div><div style="position:absolute;bottom:60px;left:-14px;width:80px;height:24px;background:rgba(120,200,170,.4);transform:rotate(-6deg);"></div></div>';
+  }
+  if(c==='frame'){
+    return '<div class="deco-layer"><div style="position:absolute;inset:14px;border:1.5px solid '+hexA(style.accent,0.5)+';border-radius:6px;"></div></div>';
+  }
+  if(c==='shine'){
+    return '<div class="deco-layer"><div style="position:absolute;top:0;left:0;right:0;height:3px;background:'+style.accent+';"></div><div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:'+style.accent+';"></div></div>';
+  }
+  if(c==='torn'){
+    return '<div class="deco-layer"><div style="position:absolute;bottom:0;left:0;right:0;height:18px;background:#fff;clip-path:polygon(0 100%,0 40%,8% 60%,16% 35%,24% 62%,32% 40%,40% 65%,48% 38%,56% 64%,64% 42%,72% 66%,80% 40%,88% 63%,96% 42%,100% 60%,100% 100%);"></div></div>';
+  }
+  if(c==='dash'){
+    return '<div class="deco-layer"><div style="position:absolute;top:0;left:0;right:0;height:6px;background:'+style.sub+';"></div></div>';
+  }
+  if(c==='glow'){
+    return ''; // 发光靠文字 shadow，在 canvas 体现；HTML 用 box-shadow
+  }
+  if(c==='confetti' || c==='leaf'){
+    return ''; // 点缀用 emoji 行与底色即可
+  }
+  return '';
+}
+
 /* ===== 纯本地 Canvas 导出 PNG（不依赖任何外部库 / 无需联网）===== */
-const FONT='-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif';
 function escapeRe(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
-function richSegments(text){
+function richSegments(text,accent){
   if(!HL_WORDS.length) return [{t:text,hl:false}];
   const re=new RegExp('('+HL_WORDS.map(escapeRe).join('|')+')','g');
   const out=[]; let last=0,m;
@@ -256,77 +386,96 @@ function roundRect(ctx,x,y,w,h,r){
   ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
   ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
-function renderCardToCanvas(page,meta){
-  const W=600,H=800, dpr=2;
+function drawBg(ctx,W,H,bg){
+  if(bg.type==='gradient'){ const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,bg.from); g.addColorStop(1,bg.to); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  else if(bg.type==='grid'){ ctx.fillStyle=bg.base; ctx.fillRect(0,0,W,H); ctx.strokeStyle=bg.line; ctx.lineWidth=1;
+    for(let y=0;y<=H;y+=22){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    for(let x=0;x<=W;x+=22){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();} }
+  else { ctx.fillStyle=bg.color; ctx.fillRect(0,0,W,H); }
+}
+function renderCardToCanvas(page,style,meta){
+  const W=600,H=800;
   const cv=document.createElement('canvas'); cv.width=W; cv.height=H;
   const ctx=cv.getContext('2d');
-  // 背景
-  if(page.t==='cover'){
-    const g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,'#ffffff'); g.addColorStop(0.55,'#ffffff'); g.addColorStop(1,meta.color);
-    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  } else { ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H); }
-  // 顶条
-  const tg=ctx.createLinearGradient(0,0,W,0);
-  tg.addColorStop(0,meta.color); tg.addColorStop(1,'#ff9aae');
-  ctx.fillStyle=tg; ctx.fillRect(0,0,W,14);
+  drawBg(ctx,W,H,style.bgCanvas);
+  // 装饰
+  if(style.deco==='washi'){
+    ctx.save(); ctx.globalAlpha=.55; ctx.fillStyle='#ffdc78'; ctx.fillRect(W-110,90,120,30);
+    ctx.globalAlpha=.4; ctx.fillStyle='#78c8aa'; ctx.fillRect(-20,H-130,100,28); ctx.restore();
+  } else if(style.deco==='frame'){
+    ctx.strokeStyle=hexA(style.accent,0.5); ctx.lineWidth=3; ctx.strokeRect(28,28,W-56,H-56);
+  } else if(style.deco==='shine'){
+    ctx.fillStyle=style.accent; ctx.fillRect(0,0,W,6); ctx.fillRect(0,H-6,W,6);
+  } else if(style.deco==='torn'){
+    ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.moveTo(0,H);
+    const steps=20; for(let i=0;i<=steps;i++){ const x=W*i/steps; const y=H-18-(i%2? 14:0); ctx.lineTo(x,y); } ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  } else if(style.deco==='dash'){
+    ctx.fillStyle=style.sub; ctx.fillRect(0,0,W,12);
+  } else if(style.deco==='confetti'){
+    const pts=[[80,120],[500,90],[120,640],[520,600],[300,720],[460,300],[90,400]];
+    ctx.fillStyle=style.accent; pts.forEach((p,i)=>{ctx.beginPath();ctx.arc(p[0],p[1],6+(i%3)*3,0,7);ctx.fill();});
+  } else if(style.deco==='leaf'){
+    ctx.font='40px serif'; ctx.textAlign='right'; ctx.fillText('🌸',W-40,H-60); ctx.textAlign='left';
+  } else if(style.deco==='glow'){
+    // 由文字 shadow 体现
+  }
   const px=44;
   // 徽章
-  ctx.font='700 24px '+FONT; ctx.textBaseline='middle';
+  ctx.font='700 24px '+style.familyBody; ctx.textBaseline='middle';
   const bText=page.label; const bw=ctx.measureText(bText).width+36, bh=40, by=30;
-  ctx.fillStyle='#ff2e4d'; roundRect(ctx,px,by,bw,bh,20); ctx.fill();
-  ctx.fillStyle='#ffffff'; ctx.fillText(bText,px+18,by+bh/2+1);
+  ctx.fillStyle=style.accent; roundRect(ctx,px,by,bw,bh,20); ctx.fill();
+  ctx.fillStyle=(style.id==='noir'?'#14110d':'#ffffff'); ctx.fillText(bText,px+18,by+bh/2+1);
   let y=by+bh+22;
   const bottomReserve=80;
   if(page.t==='cover'){
-    ctx.font='800 52px '+FONT;
-    const lines=layoutRich(ctx,richSegments(page.txt),W-px*2);
+    ctx.font=style.weight+' 56px '+style.family;
+    if(style.deco==='glow'){ ctx.shadowColor=style.accent; ctx.shadowBlur=18; }
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2);
     ctx.textBaseline='top';
-    for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?'#e01030':'#16181d'; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=74; if(y>H-bottomReserve-90) break; }
-    // emoji 行
-    ctx.font='38px '+FONT; ctx.textAlign='center';
-    ctx.fillText((meta.emoji+' '+CAT_EMOJI[meta.cat]+' ✨ 🔥 💡'),W/2,H-130); ctx.textAlign='left';
+    for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=78; if(y>H-bottomReserve-90) break; }
+    ctx.shadowBlur=0;
+    ctx.font='38px '+style.familyBody; ctx.textAlign='center';
+    ctx.fillText((style.emo[0]+' '+style.emo[1]+' '+style.emo[2]),W/2,H-130); ctx.textAlign='left';
   } else if(page.t==='interact'){
-    ctx.font='600 24px '+FONT; ctx.fillStyle='#8a9099'; ctx.textBaseline='top';
+    ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
     ctx.fillText(page.label,px,y); y+=34;
-    const qx=px, qw=W-px*2;
-    ctx.font='700 34px '+FONT;
-    const lines=layoutRich(ctx,richSegments(page.txt),qw-28);
-    let lh=46;
-    const qh=Math.max(60, lines.length*lh+24);
-    ctx.fillStyle='#fff0f3'; roundRect(ctx,qx,y,qw,qh,16); ctx.fill();
-    ctx.fillStyle='#ff2e4d'; ctx.fillRect(qx,y,8,qh);
+    ctx.font='700 34px '+style.familyBody;
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2-28);
+    const lh=46; const qh=Math.max(60, lines.length*lh+24);
+    ctx.fillStyle=hexA(style.accent,0.12); roundRect(ctx,px,y,W-px*2,qh,16); ctx.fill();
+    ctx.fillStyle=style.accent; ctx.fillRect(px,y,8,qh);
     let ty=y+14; ctx.textBaseline='top';
-    for(const ln of lines){ let x=qx+22; for(const c of ln){ ctx.fillStyle=c.hl?'#e01030':'#c8123a'; ctx.fillText(c.ch,x,ty); x+=ctx.measureText(c.ch).width; } ty+=lh; }
+    for(const ln of lines){ let x=px+22; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,ty); x+=ctx.measureText(c.ch).width; } ty+=lh; }
   } else {
-    ctx.font='600 24px '+FONT; ctx.fillStyle='#8a9099'; ctx.textBaseline='top';
+    ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
     ctx.fillText(page.label,px,y); y+=34;
-    ctx.font='700 40px '+FONT;
-    const lines=layoutRich(ctx,richSegments(page.txt),W-px*2);
-    for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?'#e01030':'#1f2329'; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=58; if(y>H-bottomReserve) break; }
+    ctx.font=style.weight+' 40px '+style.familyBody;
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2);
+    for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=58; if(y>H-bottomReserve) break; }
   }
   // 页脚
-  ctx.font='600 22px '+FONT; ctx.fillStyle='#ff5c77'; ctx.textBaseline='alphabetic';
+  ctx.font='600 22px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='alphabetic';
   ctx.fillText('@GLUCK 的图文笔记',px,H-34);
-  ctx.font='600 20px '+FONT; ctx.fillStyle='#8a9099'; ctx.textAlign='right';
+  ctx.font='600 20px '+style.familyBody; ctx.textAlign='right';
   ctx.fillText((meta.idx+1)+'/'+meta.total,W-px,H-34); ctx.textAlign='left';
   return cv;
 }
 function saveCard(el){
   try{
-    const cv=renderCardToCanvas(el._page, el._meta);
+    const cv=renderCardToCanvas(el._page, el._style, el._meta);
     const a=document.createElement('a');
-    a.download='xhs_'+(el._meta.idx+1)+'_'+Date.now()+'.png';
+    a.download='xhs_'+(el._meta.idx+1)+'_'+el._style.id+'_'+Date.now()+'.png';
     a.href=cv.toDataURL('image/png');
     a.click();
   }catch(e){ alert('导出失败：'+e.message); }
 }
 
 catSel.onchange=loadCat;
-cardSel.onchange=()=>{curIdx=+cardSel.value; render();};
-document.getElementById('prevBtn').onclick=()=>{curIdx=(curIdx-1+curList.length)%curList.length;cardSel.value=curIdx;render();};
-document.getElementById('nextBtn').onclick=()=>{curIdx=(curIdx+1)%curList.length;cardSel.value=curIdx;render();};
-document.getElementById('randBtn').onclick=()=>{curIdx=Math.floor(Math.random()*curList.length);cardSel.value=curIdx;render();};
+cardSel.onchange=()=>{curIdx=+cardSel.value; manualStyle=false; render();};
+document.getElementById('prevBtn').onclick=()=>{curIdx=(curIdx-1+curList.length)%curList.length;cardSel.value=curIdx;manualStyle=false;render();};
+document.getElementById('nextBtn').onclick=()=>{curIdx=(curIdx+1)%curList.length;cardSel.value=curIdx;manualStyle=false;render();};
+document.getElementById('randBtn').onclick=()=>{curIdx=Math.floor(Math.random()*curList.length);cardSel.value=curIdx;manualStyle=false;render();};
+document.getElementById('randStyle').onclick=()=>{ const ids=STYLES.map(s=>s.id); curStyleId=ids[Math.floor(Math.random()*ids.length)]; manualStyle=true; render(); };
 document.getElementById('copyBody').onclick=()=>{const ta=document.getElementById('bodyOut');ta.select();document.execCommand('copy');alert('正文已复制');};
 
 // 线上打开时尝试拉取最新 data.json 覆盖本地内置数据
