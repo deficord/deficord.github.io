@@ -667,7 +667,7 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['运营方法论','财经选题','AI科技选题','对标账号'], field:'cat'}},
+  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['健身','生活现实句子','家庭教育','高情商恋爱关系','知识科普类'], field:'cat'}},
   'account-observe':{type:'list', title:'对标账号观测', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -773,8 +773,8 @@ const CAT_COLOR = {
   '加仓':'#10B981','减仓':'#EF4444','调仓':'#3B82F6','再平衡':'#8B5CF6','平衡':'#F59E0B','建仓':'#10B981','清仓':'#EF4444',
   // 知识库分类
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
-  // 运营思路题库 cat
-  '运营方法论':'#F59E0B','财经选题':'#3B82F6','AI科技选题':'#6366F1','对标账号':'#14B8A6',
+  // 运营思路题库 cat（短视频赛道）
+  '健身':'#F97316','生活现实句子':'#64748B','家庭教育':'#EC4899','高情商恋爱关系':'#F43F5E','知识科普类':'#06B6D4',
   // 副业创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
   // 健康科普知识 cat
@@ -1653,7 +1653,11 @@ function renderAiText(page, body){
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   if(m.tabs){
-    html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
+    if(page==='operation-ideas'){
+      html += '<p class="hint">短视频赛道提示词模板：点开卡片复制整段提示词，粘贴到任意 AI 即可生成对应选题 / 脚本 / 标题。内容仅作创作参考。</p>';
+    } else {
+      html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
+    }
   } else {
     html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   }
