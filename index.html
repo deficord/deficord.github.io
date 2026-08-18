@@ -1655,6 +1655,9 @@ function renderAiText(page, body){
   if(m.tabs){
     if(page==='operation-ideas'){
       html += '<p class="hint">短视频脚本库：每 2-3 天自动刷新。每条都是「约 50 秒完整口播脚本」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率短视频。内容仅作创作参考。</p>';
+      html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
+            + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#ff2e4d;color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
+            + '<span class="hint" style="margin:0;">把任意选题一键拆成 3:4 图文，截图即发，零积分</span></div>';
     } else {
       html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
     }
