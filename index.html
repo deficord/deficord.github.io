@@ -1654,7 +1654,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频赛道提示词模板：点开卡片复制整段提示词，粘贴到任意 AI 即可生成对应选题 / 脚本 / 标题。内容仅作创作参考。</p>';
+      html += '<p class="hint">短视频选题库：每 2-3 天自动刷新真实可用的选题 / 标题 / 口播要点，点开卡片复制即用。内容仅作创作参考。</p>';
     } else {
       html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
     }
