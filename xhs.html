@@ -7,7 +7,7 @@
 <style>
   :root{
     --bg:#f6f7f9; --panel:#ffffff; --ink:#1f2329; --sub:#8a9099;
-    --line:#e7e9ee; --accent:#ff2e4d;
+    --line:#e7e9ee; --red:#ff2e4d;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   body{margin:0; background:var(--bg); color:var(--ink);
@@ -24,6 +24,8 @@
   .left{flex:0 0 auto;}
   .right{flex:1 1 320px; min-width:300px;}
   .pages{display:flex; gap:14px; flex-wrap:wrap;}
+
+  /* ===== 通用卡片 300x400 ≈ 3:4 ===== */
   .page{width:300px; height:400px; background:#fff; border-radius:16px; position:relative;
     overflow:hidden; box-shadow:0 6px 22px rgba(0,0,0,.10); padding:22px 20px;
     display:flex; flex-direction:column;}
@@ -34,9 +36,27 @@
   .page .txt{font-size:21px; line-height:1.5; font-weight:600; word-break:break-word;}
   .page.cover .txt{font-size:27px; line-height:1.4; font-weight:800;}
   .page .foot{font-size:11px; color:var(--sub); margin-top:10px;}
-  .page.interact .qbox{background:#fff4f5; border:1px dashed var(--accent);
-    border-radius:12px; padding:12px; font-size:18px; font-weight:700; color:var(--accent);}
   .page .pagenum{position:absolute; right:16px; bottom:12px; font-size:11px; color:var(--sub);}
+  .page .hl{color:var(--red); font-weight:800;}
+
+  /* ===== 小红书味皮肤（默认启用）===== */
+  .page.xhs{border:1px solid #ffe1e6; border-radius:22px;
+    box-shadow:0 10px 28px rgba(255,46,77,.12); padding-top:30px;}
+  .page.xhs .topbar{position:absolute; top:0; left:0; right:0; height:7px;
+    background:linear-gradient(90deg,var(--c,var(--red)),#ff9aae);}
+  .page.xhs .badge{background:var(--red); box-shadow:0 2px 6px rgba(255,46,77,.3);}
+  .page.xhs.cover{background:linear-gradient(165deg,#ffffff 56%, var(--c,var(--red)) 260%);}
+  .page.xhs .txt{font-weight:800; letter-spacing:.2px;}
+  .page.xhs .hl{color:#e01030; font-weight:800;}
+  .page.xhs.cover .txt{-webkit-text-stroke:.4px rgba(0,0,0,.05);
+    text-shadow:0 2px 10px rgba(0,0,0,.08);}
+  .page.xhs .qbox{background:#fff0f3; border-left:4px solid var(--red);
+    border-radius:0 12px 12px 0; padding:12px 12px 12px 14px;
+    font-size:18px; font-weight:700; color:#c8123a;}
+  .page.xhs .foot{color:#ff5c77; font-weight:600;}
+  .page.xhs .emojirow{font-size:20px; letter-spacing:5px; text-align:center;
+    padding:8px 0 2px; opacity:.92;}
+
   .side{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px;}
   .side h3{margin:0 0 10px; font-size:14px;}
   .side textarea{width:100%; min-height:120px; border:1px solid var(--line); border-radius:10px;
@@ -52,7 +72,7 @@
 <body>
 <header>
   <h1>小红书图文生成器 · GLUCK 运营思路题库</h1>
-  <p>零积分产出：把每条选题拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。数据取自题库，线上打开自动取最新。</p>
+  <p>零积分产出：把每条选题拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。小红书味皮肤（红徽章 / 分类色顶条 / 封面渐变 / 关键词标红 / 红色引用互动框）。数据取自题库，线上打开自动取最新。</p>
 </header>
 <div class="wrap">
   <div class="left">
@@ -107,6 +127,8 @@ const CAT_TAGS = {
   '发布运营':['#自媒体','#起号','#小红书运营','#内容创作','#涨粉'],
   '搞笑类':['#搞笑','#沙雕日常','#打工人','#段子','#快乐源泉']
 };
+// 关键词红色高亮（小红书"重点词标红"习惯，保守匹配情绪/强调词）
+const HL_WORDS = ['真的','别','最','一定要','记住','狠','绝了','救命','其实','反而','才是','根本','果然','要命','上头','扎心','破防','离谱','爽','绝','狠人','谁懂','破大防'];
 function getSeg(c,name){
   const re = new RegExp('【'+name+'】([\\s\\S]*?)(?=\\n?【|$)');
   const m = c.match(re); return m ? m[1].trim() : '';
@@ -120,6 +142,12 @@ function splitSpoken(text){
   return [a,b].filter(s=>s.trim());
 }
 function clean(t){ return (t||'').replace(/[｜|]/g,' ').replace(/\s+/g,' ').trim(); }
+function esc(s){return (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
+function hl(s){
+  let r=esc(s);
+  HL_WORDS.forEach(w=>{ if(w && r.indexOf(w)>=0) r=r.split(w).join('<span class="hl">'+w+'</span>'); });
+  return r;
+}
 
 let curIdx=0, curList=[];
 const catSel=document.getElementById('catSel');
@@ -149,12 +177,21 @@ function render(){
   if(inter) pages.push({t:'interact',txt:clean(inter),label:'💬 互动引导'});
   const box=document.getElementById('pages'); box.innerHTML='';
   pages.forEach((p,i)=>{
-    const d=document.createElement('div'); d.className='page '+p.t;
-    let inner='<div class="badge" style="background:'+color+'">'+p.label+'</div>';
-    if(p.t==='cover'){ inner+='<div class="body"><div class="txt">'+esc(p.txt)+'</div></div>'; }
-    else if(p.t==='interact'){ inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="qbox">'+esc(p.txt)+'</div></div>'; }
-    else { inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt">'+esc(p.txt)+'</div></div>'; }
-    inner+='<div class="foot">GLUCK · 运营思路题库</div><div class="pagenum">'+(i+1)+'/'+pages.length+'</div>';
+    const d=document.createElement('div'); d.className='page '+p.t+' xhs';
+    d.style.setProperty('--c',color);
+    let inner='<div class="topbar"></div>';
+    inner+='<div class="badge">'+esc(p.label)+'</div>';
+    if(p.t==='cover'){
+      inner+='<div class="body"><div class="txt">'+hl(p.txt)+'</div></div>';
+      inner+='<div class="emojirow">'+(emoji+' '+CAT_EMOJI[cat]+' ✨ 🔥 💡')+'</div>';
+    }
+    else if(p.t==='interact'){
+      inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="qbox">'+hl(p.txt)+'</div></div>';
+    }
+    else {
+      inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt">'+hl(p.txt)+'</div></div>';
+    }
+    inner+='<div class="foot">@GLUCK 的图文笔记</div><div class="pagenum">'+(i+1)+'/'+pages.length+'</div>';
     d.innerHTML=inner;
     const wrap=document.createElement('div');
     wrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
@@ -176,7 +213,6 @@ function render(){
     '建议时间：工作日 12:00-13:00、20:00-22:00；周末 9:00-11:00、20:00-23:00。<br>封面用第 1 张（大字钩子），前 3 张决定点击，结尾图抛问题拉评论权重（小红书评论=4分、关注=8分）。';
   document.getElementById('srcOut').textContent='选题来源：'+ (t.source||'GLUCK·运营思路题库')+' · '+ (t.date||'');
 }
-function esc(s){return (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
 function savePage(el){
   if(typeof html2canvas!=='function'){alert('截图库未加载（需联网）。请直接用系统截图工具截取。');return;}
   html2canvas(el,{scale:3,backgroundColor:'#ffffff',logging:false}).then(cv=>{
