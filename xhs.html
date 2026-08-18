@@ -134,7 +134,8 @@ function getSeg(c,name){
   const m = c.match(re); return m ? m[1].trim() : '';
 }
 function splitSpoken(text){
-  const parts = text.split(/(?<=[。！？])/).filter(s=>s.trim());
+  const raw = (text||'').match(/[^。！？]+[。！？]?/g) || [];
+  const parts = raw.filter(s=>s.trim());
   if(parts.length<=1) return [text];
   const mid=Math.ceil(parts.length/2);
   let a=parts.slice(0,mid).join(''), b=parts.slice(mid).join('');
