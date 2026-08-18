@@ -38,6 +38,7 @@
   .page .body{flex:1; display:flex; align-items:flex-start; padding-top:6px; overflow:hidden;}
   .page .txt{font-size:21px; line-height:1.5; font-weight:600; word-break:break-word;}
   .page.cover .txt{font-size:27px; line-height:1.4; font-weight:800;}
+  .page.quote .txt{font-size:24px; line-height:1.65; font-weight:800; text-align:center; padding:0 6px; letter-spacing:.5px;}
   .page .foot{font-size:11px; color:var(--sub); margin-top:10px;}
   .page .pagenum{position:absolute; right:16px; bottom:12px; font-size:11px; color:var(--sub);}
   .page .hl{font-weight:800;}
@@ -70,15 +71,15 @@
 <body>
 <header>
   <h1>小红书图文生成器</h1>
-  <p>零积分产出：每条选题自动配上「不同的视觉风格」，拆成 3:4 封面大字图 + 内页 + 正文 + 话题标签，截图即可发布。</p>
+  <p>零积分产出：每条选题自动配上「不同的视觉风格」，稳定拆成 6 张 3:4 图文卡（封面大字 + 真实场景 + 口播 1/2 + 口播 2/2 + 互动 + 金句），截图即可发布。</p>
 </header>
 <details class="usage" open>
   <summary>❓ 这工具怎么用？（点此收起）</summary>
   <div>
     <b>它不是 AI 画图工具</b>，不会自动生成照片。它的作用是：把题库里每条「口播脚本」排成小红书风格的 3:4 图文卡片，方便你直接截图发布、或导出 PNG。<br>
-    <b>三步用法：</b>① 选「分类」+「具体选题」；② 右侧自动出封面大字 / 标题 / 正文 / 话题标签；③ 用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截左侧卡片，按 1→末 顺序发 5–6 张即可。<br>
+    <b>三步用法：</b>① 选「分类」+「具体选题」；② 左侧自动出 6 张 3:4 卡（封面钩子 / 真实场景 / 口播 1/2 / 口播 2/2 / 互动引导 / 金句），右侧出标题 / 正文 / 标签 / 发布建议；③ 用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截左侧卡片，按 1→6 顺序发即可。<br>
     也可点卡片下方「<b>保存这张</b>」直接下载高清 PNG（纯本地生成，<b>无需联网</b>）。<br>
-    <b>每种文案都自动配不同风格</b>（共 8 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷），下方「风格」可手动切换或随机，保证你的图文不重样、有个性。
+    <b>每种文案都自动配不同风格</b>（共 10 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷 / <b>夜景白墙发光字</b> / <b>书籍书页</b>），下方「风格」可手动切换或 🎲 随机，保证你的图文不重样、有个性。
   </div>
 </details>
 <div class="wrap">
@@ -96,7 +97,7 @@
       <button id="randStyle">🎲 随机风格</button>
     </div>
     <div class="pages" id="pages"></div>
-    <div class="note">操作：用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截取左侧 3:4 卡片，按顺序发 5-6 张图即可。点「保存这张」可下载高清 PNG（本地生成，无需联网）。同一选题换风格后截图，就是另一张完全不同的图。</div>
+    <div class="note">操作：用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截取左侧 3:4 卡片，按顺序发 6 张图即可。点「保存这张」可下载高清 PNG（本地生成，无需联网）。同一选题换风格后截图，就是另一张完全不同的图。</div>
   </div>
   <div class="right">
     <div class="side">
@@ -195,7 +196,24 @@ const STYLES = [
     ink:'#eafcff', accent:'#19e3ff', sub:'#9a7bff',
     family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'800',
     familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
-    deco:'glow', emo:['⚡','💜','🔷','✨'] }
+    deco:'glow', emo:['⚡','💜','🔷','✨'] },
+  // 仿用户参考图：夜景白墙 + 顶部暖光灯带 + 黑色粗体字 + 暖橙外发光 + 黄昏天空
+  { id:'night-glow', name:'夜景白墙发光字',
+    bgCss:'linear-gradient(180deg,#ead0c4 0%,#d6c4c0 40%,#b0a0a8 100%),radial-gradient(ellipse 80% 25% at 50% 0%,rgba(255,200,140,.95) 0%,rgba(255,200,140,0) 70%)',
+    bgCanvas:{type:'night-glow',sky:'#ead0c4',wall:'#d6c4c0',wall2:'#b0a0a8',band:'#ffe0a8',glow:'#ffb86b',leaf:'#2a3a2a'},
+    ink:'#141414', accent:'#ff8c42', sub:'#5a4438',
+    family:'"PingFang SC","Microsoft YaHei",sans-serif', weight:'900',
+    familyBody:'"PingFang SC","Microsoft YaHei",sans-serif',
+    textShadow:'0 0 8px rgba(255,184,107,.9), 0 0 18px rgba(255,140,66,.6), 0 0 34px rgba(255,140,66,.35)',
+    deco:'night-glow', emo:['🌆','🏮','🌙','✨'] },
+  // 仿「书籍」感：复古米黄底 + 顶部精装书脊 + 金色装饰边 + 宋体
+  { id:'book-page', name:'书籍书页',
+    bgCss:'linear-gradient(160deg,#f5e9d0 0%,#e8d4a8 60%,#c9a868 100%)',
+    bgCanvas:{type:'book',cover:'#3a2818',page:'#f5e9d0',gold:'#c9a35c',rib:'#5a3a20'},
+    ink:'#2a1810', accent:'#c9a35c', sub:'#6a5230',
+    family:'"SimSun","STSong","宋体",serif', weight:'700',
+    familyBody:'"SimSun","STSong","宋体",serif',
+    deco:'book', emo:['📖','📜','✒','🕯'] }
 ];
 const STYLE_BY_ID = {};
 STYLES.forEach(s=>STYLE_BY_ID[s.id]=s);
@@ -203,10 +221,10 @@ STYLES.forEach(s=>STYLE_BY_ID[s.id]=s);
 // 赛道偏好：让风格契合内容调性，同时保证同赛道也分散、不重样
 const CAT_STYLE_PREF = {
   '健身':['airy','boldpop','minimal'],
-  '生活现实句子':['journal','retro','airy'],
-  '家庭教育':['journal','retro','magazine'],
-  '高情商恋爱关系':['magazine','noir','airy'],
-  '知识科普类':['minimal','magazine','noir'],
+  '生活现实句子':['journal','retro','airy','night-glow','book-page'],
+  '家庭教育':['journal','retro','magazine','book-page'],
+  '高情商恋爱关系':['magazine','noir','airy','book-page'],
+  '知识科普类':['minimal','magazine','noir','book-page'],
   '发布运营':['boldpop','minimal','neon'],
   '搞笑类':['boldpop','neon','journal']
 };
@@ -221,13 +239,22 @@ function getSeg(c,name){
   const m = c.match(re); return m ? m[1].trim() : '';
 }
 function splitSpoken(text){
-  const raw = (text||'').match(/[^。！？]+[。！？]?/g) || [];
-  const parts = raw.filter(s=>s.trim());
-  if(parts.length<=1) return [text];
-  const mid=Math.ceil(parts.length/2);
-  let a=parts.slice(0,mid).join(''), b=parts.slice(mid).join('');
-  if(a.length<8 && b.length>0){ const half=Math.ceil(b.length/2); a+=b.slice(0,half); b=b.slice(half); }
-  return [a,b].filter(s=>s.trim());
+  const t = clean(text);
+  if(!t) return ['',''];
+  if(t.length<18) return [t, t+(t.length<10?'...':'')]; // 太短复制+省略号，保证 2 段
+  const half = Math.ceil(t.length/2);
+  let cut = half;
+  for(let i=half; i<Math.min(half+24, t.length); i++){
+    if('。！？，、'.indexOf(t[i])>=0){ cut = i+1; break; }
+  }
+  return [t.slice(0,cut), t.slice(cut)];
+}
+function extractQuote(hook, spoken){
+  const h = clean(hook);
+  if(h.length>=8 && h.length<=30) return h;
+  const m = clean(spoken).match(/^[^。！？\n]{6,32}/);
+  if(m) return m[0].slice(0,28);
+  return clean(spoken).slice(0,24);
 }
 function clean(t){ return (t||'').replace(/[｜|]/g,' ').replace(/\s+/g,' ').trim(); }
 function esc(s){return (s||'').replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]));}
@@ -272,12 +299,18 @@ function render(){
   const hook=getSeg(c,'0-3s 钩子'), scene=getSeg(c,'3-12s 场景');
   const spoken=getSeg(c,'12-42s 口播'), inter=getSeg(c,'42-50s 升华+互动');
   const color=CAT_COLOR[cat]||'#ff2e4d', emoji=CAT_EMOJI[cat]||'✨';
-  const spokenChunks=splitSpoken(spoken);
+  const sp = splitSpoken(spoken);
+  const sA = clean(sp[0] || spoken);
+  const sB = clean(sp[1] || spoken.slice(Math.ceil(spoken.length/2)) || sA);
+  const quote = extractQuote(hook, spoken) || clean(hook).slice(0,24);
   const pages=[];
+  // 稳定 6 张：cover + scene + 口播1/2 + 口播2/2 + interact + quote
   pages.push({t:'cover',txt:clean(hook),label:emoji+' '+cat});
-  if(scene) pages.push({t:'scene',txt:clean(scene),label:'📍 真实场景'});
-  spokenChunks.forEach((s,i)=>pages.push({t:'spoken',txt:clean(s),label:'🎙 口播 '+(i+1)+'/'+spokenChunks.length}));
-  if(inter) pages.push({t:'interact',txt:clean(inter),label:'💬 互动引导'});
+  pages.push({t:'scene',txt:clean(scene)||clean(hook),label:'📍 真实场景'});
+  pages.push({t:'spoken',txt:sA,label:'🎙 口播 1/2'});
+  pages.push({t:'spoken',txt:sB,label:'🎙 口播 2/2'});
+  pages.push({t:'interact',txt:clean(inter)||'评论区聊聊你的看法~',label:'💬 互动引导'});
+  pages.push({t:'quote',txt:clean(quote),label:'✨ 金句卡'});
   const box=document.getElementById('pages'); box.innerHTML='';
   pages.forEach((p,i)=>{
     const wrap=document.createElement('div');
@@ -311,8 +344,11 @@ function buildCardHTML(p,style,meta,t){
   let inner='';
   inner+='<div class="badge" style="background:'+style.accent+';color:'+ (style.id==='noir'?'#14110d':'#fff') +';">'+esc(p.label)+'</div>';
   if(p.t==='cover'){
-    inner+='<div class="body"><div class="txt" style="font-family:'+style.family+';font-weight:'+style.weight+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
+    inner+='<div class="body"><div class="txt" style="font-family:'+style.family+';font-weight:'+style.weight+';color:'+style.ink+(style.textShadow?';text-shadow:'+style.textShadow:'')+';">'+hl(p.txt,style.accent)+'</div></div>';
     inner+='<div class="emojirow">'+ (style.emo[0]+' '+style.emo[1]+' '+style.emo[2]) +'</div>';
+  }
+  else if(p.t==='quote'){
+    inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt" style="font-family:'+style.family+';font-weight:'+style.weight+';color:'+style.ink+(style.textShadow?';text-shadow:'+style.textShadow:'')+';">「'+hl(p.txt,style.accent)+'」</div></div>';
   }
   else if(p.t==='interact'){
     inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="qbox" style="background:'+hexA(style.accent,0.12)+';border-left:4px solid '+style.accent+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
@@ -351,6 +387,25 @@ function decoHTML(style,p){
   }
   if(c==='glow'){
     return ''; // 发光靠文字 shadow，在 canvas 体现；HTML 用 box-shadow
+  }
+  if(c==='night-glow'){
+    // 顶部暖光灯带 + 光晕散射 + 左侧小树枝剪影（克制，不堆）
+    return '<div class="deco-layer">'+
+      '<div style="position:absolute;top:0;left:0;right:0;height:48px;background:linear-gradient(180deg,rgba(255,210,160,.95) 0%,rgba(255,180,110,0) 100%);box-shadow:0 0 36px rgba(255,170,100,.55);"></div>'+
+      '<div style="position:absolute;top:0;left:0;right:0;height:3px;background:#fff0d0;"></div>'+
+      '<div style="position:absolute;top:6px;left:-4px;font-size:22px;opacity:.55;transform:rotate(-15deg);">🌿</div>'+
+      '<div style="position:absolute;top:18px;right:10px;font-size:18px;opacity:.6;">🏮</div>'+
+      '</div>';
+  }
+  if(c==='book'){
+    // 顶部精装书脊 + 金色双线 + 底部金边
+    return '<div class="deco-layer">'+
+      '<div style="position:absolute;top:0;left:0;right:0;height:34px;background:#3a2818;box-shadow:0 2px 6px rgba(0,0,0,.18);"></div>'+
+      '<div style="position:absolute;top:6px;left:0;right:0;height:1.5px;background:'+style.accent+';"></div>'+
+      '<div style="position:absolute;top:27px;left:0;right:0;height:1.5px;background:'+style.accent+';"></div>'+
+      '<div style="position:absolute;top:11px;left:0;right:0;text-align:center;color:'+style.accent+';font-size:11px;font-weight:700;letter-spacing:6px;">· GLUCK ·</div>'+
+      '<div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:'+style.accent+';"></div>'+
+      '</div>';
   }
   if(c==='confetti' || c==='leaf'){
     return ''; // 点缀用 emoji 行与底色即可
@@ -418,6 +473,31 @@ function renderCardToCanvas(page,style,meta){
     ctx.font='40px serif'; ctx.textAlign='right'; ctx.fillText('🌸',W-40,H-60); ctx.textAlign='left';
   } else if(style.deco==='glow'){
     // 由文字 shadow 体现
+  } else if(style.deco==='night-glow'){
+    // 顶部灯带 + 多层暖色辉光散射（克制，不堆）
+    const grd = ctx.createLinearGradient(0,0,0,140);
+    grd.addColorStop(0,'rgba(255,210,160,0.95)');
+    grd.addColorStop(0.4,'rgba(255,180,110,0.35)');
+    grd.addColorStop(1,'rgba(255,180,110,0)');
+    ctx.fillStyle=grd; ctx.fillRect(0,0,W,140);
+    ctx.fillStyle='#fff0d0'; ctx.fillRect(0,0,W,5);
+    // 4 个柔光圈
+    for(let i=0;i<4;i++){
+      ctx.fillStyle='rgba(255,184,107,'+(0.18-i*0.035)+')';
+      ctx.beginPath(); ctx.arc(W*(0.12+i*0.26), 35, 90-i*12, 0, 7); ctx.fill();
+    }
+  } else if(style.deco==='book'){
+    // 顶部精装书脊
+    ctx.fillStyle='#3a2818'; ctx.fillRect(0,0,W,72);
+    ctx.fillStyle=style.accent; ctx.fillRect(0,12,W,2); ctx.fillRect(0,56,W,2);
+    ctx.fillStyle=style.accent; ctx.font='700 20px serif'; ctx.textAlign='center';
+    ctx.fillText('·  GLUCK  ·', W/2, 42);
+    ctx.textAlign='left';
+    // 底部金边
+    ctx.fillStyle=style.accent; ctx.fillRect(0,H-6,W,6);
+    // 内部细金边框
+    ctx.strokeStyle='rgba(201,163,92,0.35)'; ctx.lineWidth=1.5;
+    ctx.strokeRect(28,96,W-56,H-128);
   }
   const px=44;
   // 徽章
@@ -430,6 +510,8 @@ function renderCardToCanvas(page,style,meta){
   if(page.t==='cover'){
     ctx.font=style.weight+' 56px '+style.family;
     if(style.deco==='glow'){ ctx.shadowColor=style.accent; ctx.shadowBlur=18; }
+    else if(style.deco==='night-glow'){ ctx.shadowColor='rgba(255,140,66,0.9)'; ctx.shadowBlur=22; }
+    else if(style.deco==='book'){ ctx.shadowColor='rgba(201,163,92,0.5)'; ctx.shadowBlur=6; }
     const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2);
     ctx.textBaseline='top';
     for(const ln of lines){ let x=px; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,y); x+=ctx.measureText(c.ch).width; } y+=78; if(y>H-bottomReserve-90) break; }
@@ -446,6 +528,27 @@ function renderCardToCanvas(page,style,meta){
     ctx.fillStyle=style.accent; ctx.fillRect(px,y,8,qh);
     let ty=y+14; ctx.textBaseline='top';
     for(const ln of lines){ let x=px+22; for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,x,ty); x+=ctx.measureText(c.ch).width; } ty+=lh; }
+  } else if(page.t==='quote'){
+    // 独立金句卡：居中、style.family、style.weight 大字号、night-glow 加暖色辉光
+    ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
+    ctx.fillText(page.label,px,y); y+=40;
+    if(style.deco==='night-glow'){ ctx.shadowColor='rgba(255,140,66,0.9)'; ctx.shadowBlur=20; }
+    else if(style.deco==='glow'){ ctx.shadowColor=style.accent; ctx.shadowBlur=14; }
+    else if(style.deco==='book'){ ctx.shadowColor='rgba(201,163,92,0.55)'; ctx.shadowBlur=5; }
+    ctx.font=style.weight+' 46px '+style.family; ctx.textAlign='center';
+    const lines=layoutRich(ctx,richSegments(page.txt,style.accent),W-px*2-30);
+    const lh=66;
+    const totalH = lines.length*lh;
+    let qy = y + (H-bottomReserve - y - totalH)/2;
+    if(qy<y) qy=y;
+    for(const ln of lines){ let x=W/2; ctx.textAlign='center';
+      // 居中：累加每字宽度，从起点向左偏移总宽一半
+      let wSum=0; for(const c of ln) wSum+=ctx.measureText(c.ch).width;
+      let cx = W/2 - wSum/2;
+      for(const c of ln){ ctx.fillStyle=c.hl?style.accent:style.ink; ctx.fillText(c.ch,cx,qy); cx+=ctx.measureText(c.ch).width; }
+      qy+=lh;
+    }
+    ctx.shadowBlur=0; ctx.textAlign='left';
   } else {
     ctx.font='600 24px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='top';
     ctx.fillText(page.label,px,y); y+=34;
