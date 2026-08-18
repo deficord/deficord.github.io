@@ -1662,7 +1662,7 @@ function renderAiText(page, body){
       html += '<p class="hint">最后更新：'+(lastUpdate||'待刷新')+' ｜ 仅作信息整理，不构成任何投资/创业建议。</p>';
     }
   } else {
-    html += '<p class="hint">来源：data.json（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
+    html += '<p class="hint">来源：GLUCK 策展库（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   }
   if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署到 GitHub Pages 后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
@@ -1871,7 +1871,7 @@ function renderIndexTrack(body){
   let view = modView(m, arr0, active);
   view = displayOrdered('index-track', arr0, view);
   let html = '<div class="page-head"><h2 class="page-title">'+esc(modTitle(currentPage))+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button><button class="pill secondary" data-act="idx-settings">⚙ 设置</button></div>';
-  html += '<p class="hint">数据来源：data.json（AI 策展）。每个指数均含「当前PE」「市净率(PB)」「场内溢价率」「股息率」「风险溢价(股债利差)」「估值区间(PE近1年)」；纳指100/沪深300/中证A500/恒科另含「前十大权重」；纳指100/标普500/黄金含「美元指数/美债」联动。纳斯达克100 / 标普500 各自独立判断、不互相引用。卡片顶部彩色徽标为综合评级与判断置信度（绿=低估/看多，黄=中性，红=偏高估/谨慎）。</p>';
+  html += '<p class="hint">数据来源：GLUCK 策展库（AI 策展）。每个指数均含「当前PE」「市净率(PB)」「场内溢价率」「股息率」「风险溢价(股债利差)」「估值区间(PE近1年)」；纳指100/沪深300/中证A500/恒科另含「前十大权重」；纳指100/标普500/黄金含「美元指数/美债」联动。纳斯达克100 / 标普500 各自独立判断、不互相引用。卡片顶部彩色徽标为综合评级与判断置信度（绿=低估/看多，黄=中性，红=偏高估/谨慎）。</p>';
   if(m.tabs) html += modTabBarHtml('index-track', modTabCats(m, arr0), active);
   if(arr0.length===0){ html += '<div class="empty">尚未取到指数数据 —— 发「刷新」让 AI 推送。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无指数。</div>'; }
@@ -1884,7 +1884,7 @@ function renderIndexTrack(body){
     const _pe = idxPeTone(it.rows);
     (it.rows||[]).forEach((r,j)=>{ const _peCls=(_pe && /当前PE|PE\(TTM\)|市盈率/.test(r.label||''))?(' '+_pe.cls):''; html += '<div class="row"><span class="k">'+esc(r.label)+'</span><span class="'+_peCls.trim()+'">'+(r.val!=null&&r.val!==''?esc(r.val):'待刷新')+'</span></div>'; });
     if(it.note){ html += '<div class="row"><span class="k">判断</span><span>'+esc(it.note).replace(/\n/g,'<br>')+'</span></div>'; }
-    html += '<div class="row"><span class="k">来源</span>AI 策展 · data.json</div>';
+    html += '<div class="row"><span class="k">来源</span>AI 策展</div>';
     html += '</div>';
   });
   html += '</div>';
@@ -2443,7 +2443,7 @@ function stockRiskTabHtml(){
     if(sj&&sj.note){
       const _tc={'bull':'#16A34A','neutral':'#F59E0B','bear':'#EF4444'}[sj.tone||'neutral']||'#F59E0B';
       const _badge='<span style="font-size:11px;font-weight:600;color:#fff;background:'+_tc+';padding:2px 8px;border-radius:10px">'+esc(sj.rating||'评级待定')+' · 置信'+esc(sj.confidence||'-')+'</span>';
-      judgeHtml='<div class="stock-judge"><div class="sj-head"><span class="sj-label">判断</span>'+_badge+'</div><div class="sj-note">'+esc(sj.note).replace(/\n/g,'<br>')+'</div><div class="sj-src">AI 策展 · data.json · '+(sj.asOf||'')+'</div></div>';
+      judgeHtml='<div class="stock-judge"><div class="sj-head"><span class="sj-label">判断</span>'+_badge+'</div><div class="sj-note">'+esc(sj.note).replace(/\n/g,'<br>')+'</div><div class="sj-src">AI 策展'+( (sj.asOf)?(' · '+sj.asOf):'')+'</div></div>';
     } else {
       judgeHtml='<div class="stock-judge"><div class="sj-head"><span class="sj-label">判断</span><button class="pill mini" data-act="judge-request" data-code="'+esc(it.code)+'">🔄 申请研判</button></div><div class="sj-note sj-empty">暂无 AI 研判 · 点「申请研判」开 GitHub 申请，提交后次日 17:00 自动生成</div></div>';
     }
