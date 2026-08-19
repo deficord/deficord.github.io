@@ -109,6 +109,11 @@
       <div class="stylechips" id="styleChips"></div>
       <button id="randStyle">🎲 随机风格</button>
     </div>
+    <div class="controls">
+      <span style="font-size:12px;color:var(--sub);">图文署名：</span>
+      <input id="footInput" type="text" maxlength="20" placeholder="@GLUCK 的图文笔记" style="width:240px;padding:4px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;" />
+      <span style="font-size:11px;color:var(--sub);">（每张卡片底部文字，自动保存本地）</span>
+    </div>
     <div class="pages" id="pages"></div>
     <div class="note">操作：用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截取左侧 3:4 卡片，按顺序发 5 张图即可（有 AI 配图时多 1 张配图页）。点「保存这张」可下载高清 PNG（本地生成，无需联网）。同一选题换风格后截图，就是另一张完全不同的图。</div>
   </div>
@@ -292,6 +297,7 @@ function hl(s,accent){
 }
 
 let curIdx=0, curList=[], curStyleId=null, manualStyle=false;
+let footText = (function(){ try{ return localStorage.getItem('xhs_footer')||'@GLUCK 的图文笔记'; }catch(e){ return '@GLUCK 的图文笔记'; } })();
 const catSel=document.getElementById('catSel');
 const cardSel=document.getElementById('cardSel');
 const cats=[...new Set(TOPICS.map(t=>t.cat))];
@@ -401,7 +407,7 @@ function buildCardHTML(p,style,meta,t){
   else {
     inner+='<div class="label">'+esc(p.label)+'</div><div class="body"><div class="txt" style="font-family:'+style.familyBody+';color:'+style.ink+';">'+hl(p.txt,style.accent)+'</div></div>';
   }
-  inner+='<div class="foot" style="color:'+style.sub+';">@GLUCK 的图文笔记</div><div class="pagenum">'+(meta.idx+1)+'/'+meta.total+'</div>';
+  inner+='<div class="foot" style="color:'+style.sub+';">'+esc(footText)+'</div><div class="pagenum">'+(meta.idx+1)+'/'+meta.total+'</div>';
   // 装饰层（z-index:0）
   inner = decoHTML(style,p) + inner;
   d.innerHTML=inner;
@@ -603,7 +609,7 @@ function renderCardToCanvas(page,style,meta){
   }
   // 页脚
   ctx.font='600 22px '+style.familyBody; ctx.fillStyle=style.sub; ctx.textBaseline='alphabetic';
-  ctx.fillText('@GLUCK 的图文笔记',px,H-34);
+  ctx.fillText(footText,px,H-34);
   ctx.font='600 20px '+style.familyBody; ctx.textAlign='right';
   ctx.fillText((meta.idx+1)+'/'+meta.total,W-px,H-34); ctx.textAlign='left';
   return cv;
@@ -656,6 +662,9 @@ document.getElementById('prevBtn').onclick=()=>{curIdx=(curIdx-1+curList.length)
 document.getElementById('nextBtn').onclick=()=>{curIdx=(curIdx+1)%curList.length;cardSel.value=curIdx;manualStyle=false;render();};
 document.getElementById('randBtn').onclick=()=>{curIdx=Math.floor(Math.random()*curList.length);cardSel.value=curIdx;manualStyle=false;render();};
 document.getElementById('randStyle').onclick=()=>{ const ids=STYLES.map(s=>s.id); curStyleId=ids[Math.floor(Math.random()*ids.length)]; manualStyle=true; render(); };
+const footInput=document.getElementById('footInput');
+footInput.value=footText;
+footInput.oninput=()=>{ footText=footInput.value.trim()||'@GLUCK 的图文笔记'; try{ localStorage.setItem('xhs_footer',footText); }catch(e){} render(); };
 document.getElementById('copyBody').onclick=()=>{const ta=document.getElementById('bodyOut');ta.select();document.execCommand('copy');alert('正文已复制');};
 
 // 线上打开时尝试拉取最新 data.json 覆盖本地内置数据
