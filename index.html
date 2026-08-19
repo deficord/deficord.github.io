@@ -25,6 +25,17 @@
     --card-bg:#fff;
   }
   *{box-sizing:border-box;}
+  /* ===== 访问口令门（页面设为私有后挡内容，前端口令仅遮掩、非真加密） ===== */
+  .gate{position:fixed;inset:0;z-index:99999;background:#0f172a;display:flex;align-items:center;justify-content:center;}
+  .gate-box{background:#fff;border-radius:16px;padding:32px 28px;width:330px;max-width:90vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4);}
+  .gate-logo{font-size:18px;font-weight:800;color:#2563EB;margin-bottom:8px;}
+  .gate-tip{color:#6B7280;font-size:13px;margin:0 0 16px;}
+  .gate input{width:100%;padding:11px 12px;border:1px solid #E5E7EB;border-radius:10px;font-size:14px;margin-bottom:12px;}
+  .gate button{width:100%;padding:11px;border:0;border-radius:10px;background:#2563EB;color:#fff;font-size:15px;font-weight:700;cursor:pointer;}
+  .gate button:hover{background:#1d4ed8;}
+  .gate-err{color:#dc2626;font-size:12px;min-height:16px;margin-top:8px;}
+  .gate-foot{color:#9CA3AF;font-size:11px;margin-top:14px;}
+  .gate-foot code{background:#F3F4F6;padding:1px 6px;border-radius:4px;color:#374151;}
   html,body{margin:0;padding:0;}
   body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#fff;color:var(--text);font-size:14px;line-height:1.5;}
   a{color:var(--title);}
@@ -464,6 +475,16 @@
 </style>
 </head>
 <body>
+  <div class="gate" id="gate">
+    <div class="gate-box">
+      <div class="gate-logo">🔒 GLUCK 工作台</div>
+      <p class="gate-tip">本页面已设为私有访问，请输入查看口令</p>
+      <input id="gateInput" type="password" placeholder="查看口令" autocomplete="off">
+      <button id="gateBtn">进入</button>
+      <div class="gate-err" id="gateErr"></div>
+      <div class="gate-foot">默认口令 <code>gluck2026</code>（请尽快自行修改，见页面底部说明）</div>
+    </div>
+  </div>
   <button class="menu-float" id="mobileMenuBtn" aria-label="菜单">☰</button>
   <div class="demo-banner" id="demoBanner">演示模式：本地直接打开无法拉取联网数据。部署到 GitHub Pages 后点「AI刷新抓取」即可；AI 策展内容当前显示「待刷新 / 未取到」。</div>
   <div class="layout">
@@ -622,6 +643,58 @@
   </div>
 
 <script>
+/* ============== 访问口令门（页面已设私有，前端口令仅遮掩非真加密） ============== */
+(function(){
+  var GATE_PWD = 'gluck2026'; // ← 自行修改此默认口令
+  function passed(){ try { return sessionStorage.getItem('gluck_gate') === '1'; } catch(e){ return false; } }
+  function showGate(){
+    var gate = document.getElementById('gate');
+    var btn = document.getElementById('gateBtn');
+    var input = document.getElementById('gateInput');
+    var err = document.getElementById('gateErr');
+    if(!gate) return;
+    gate.style.display = 'flex';
+    function tryGo(){
+      var v = (input.value||'').trim();
+      if(v === GATE_PWD){
+        try { sessionStorage.setItem('gluck_gate','1'); } catch(e){}
+        gate.style.display = 'none';
+        var layout = document.querySelector('.layout');
+        if(layout) layout.style.visibility = 'visible';
+        window.__gluckGateOk = true;
+        try { window.dispatchEvent(new Event('gluck-gate-pass')); } catch(e){}
+      } else {
+        err.textContent = '口令错误，请重试';
+        input.value = '';
+        input.focus();
+      }
+    }
+    btn.addEventListener('click', tryGo);
+    input.addEventListener('keydown', function(e){ if(e.key==='Enter') tryGo(); });
+    setTimeout(function(){ input.focus(); }, 50);
+  }
+  window.__gluckGateOk = passed();
+  if(!window.__gluckGateOk){
+    // 阻止主应用渲染：隐藏布局，等口令通过
+    document.addEventListener('DOMContentLoaded', function(){
+      if(!window.__gluckGateOk){
+        var layout = document.querySelector('.layout');
+        if(layout) layout.style.visibility = 'hidden';
+        showGate();
+        // 监听通过事件
+        window.addEventListener('gluck-gate-pass', function(){
+          var layout2 = document.querySelector('.layout');
+          if(layout2) layout2.style.visibility = 'visible';
+        });
+      }
+    });
+  } else {
+    // 已通过：确保门隐藏
+    window.addEventListener('DOMContentLoaded', function(){
+      var gate = document.getElementById('gate'); if(gate) gate.style.display = 'none';
+    });
+  }
+})();
 /* ============== 配置 ============== */
 const GROUPS = [
   {n:1, title:'📈 理财研究', items:[
