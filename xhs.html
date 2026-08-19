@@ -338,15 +338,16 @@ function render(){
   const sB = clean(sp[1] || spoken.slice(Math.ceil(spoken.length/2)) || sA);
   const quote = extractQuote(hook, spoken) || clean(hook).slice(0,24);
   const pages=[];
-  // 稳定 6 张：cover + scene + 口播1/2 + 口播2/2 + interact + quote
-  pages.push({t:'cover',txt:clean(hook),label:emoji+' '+cat});
-  pages.push({t:'scene',txt:clean(scene)||clean(hook),label:'📍 真实场景'});
-  pages.push({t:'spoken',txt:sA,label:'🎙 口播 1/2'});
-  pages.push({t:'spoken',txt:sB,label:'🎙 口播 2/2'});
-  pages.push({t:'interact',txt:clean(inter)||'评论区聊聊你的看法~',label:'💬 互动引导'});
-  pages.push({t:'quote',txt:clean(quote),label:'✨ 金句卡'});
+  const pubTitle = t.title || clean(hook);
+  // 稳定 6 张：cover + scene + 口播1/2 + 口播2/2 + interact + quote（卡片顶部标签统一显示发布题目）
+  pages.push({t:'cover',txt:clean(hook),label:pubTitle});
+  pages.push({t:'scene',txt:clean(scene)||clean(hook),label:pubTitle});
+  pages.push({t:'spoken',txt:sA,label:pubTitle});
+  pages.push({t:'spoken',txt:sB,label:pubTitle});
+  pages.push({t:'interact',txt:clean(inter)||'评论区聊聊你的看法~',label:pubTitle});
+  pages.push({t:'quote',txt:clean(quote),label:pubTitle});
   // 按需：该选题已生成 AI 配图 → 追加第 7 张「配图页」
-  if(t.img){ pages.push({t:'photo', img:t.img, txt:clean(hook), label:'📷 AI 配图'}); }
+  if(t.img){ pages.push({t:'photo', img:t.img, txt:clean(hook), label:pubTitle}); }
   const box=document.getElementById('pages'); box.innerHTML='';
   pages.forEach((p,i)=>{
     const wrap=document.createElement('div');
@@ -363,7 +364,7 @@ function render(){
   const body=[clean(hook),clean(scene),clean(spoken),clean(inter),
     '觉得有用点个收藏⭐，评论区聊聊你的看法~'].filter(s=>s).join('\n\n');
   document.getElementById('bodyOut').value=body;
-  const tags=(CAT_TAGS[cat]||['#干货']).concat(['#GLUCK题库']);
+  const tags=(CAT_TAGS[cat]||['#干货']);
   const tagBox=document.getElementById('tagOut'); tagBox.innerHTML='';
   tags.forEach(tg=>{const s=document.createElement('span');s.className='tag';s.textContent=tg;tagBox.appendChild(s);});
   document.getElementById('pubTip').innerHTML=
