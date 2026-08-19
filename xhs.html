@@ -92,7 +92,7 @@
     <b>它不是 AI 画图工具，而是「排版 + 分镜」工具</b>：默认把题库里每条「口播脚本」排成小红书风格的 3:4 图文卡片（截图/导出 PNG 即用）。若该选题已在后台生成了 AI 配图，会自动多出 1 张「📷 配图页」真图。它还能把每条选题的「画面/BGM/字幕」解析成右侧「🎬 拍摄分镜表」，照着架手机就能拍。<br>
     <b>三步用法：</b>① 选「分类」+「具体选题」；② 左侧自动出 5 张 3:4 卡（封面 / 真实场景 / 口播 1/2 / 口播 2/2（含互动引导）/ 金句），<b>有 AI 配图时多 1 张配图页</b>；右侧出标题 / 正文 / 标签 / 发布建议 / <b>拍摄分镜表</b>；③ 用系统截图（Win+Shift+S / Mac Cmd+Shift+4）逐张截左侧卡片，按顺序发即可。<br>
     也可点卡片下方「<b>保存这张</b>」直接下载高清 PNG（纯本地生成，<b>无需联网</b>）。<br>
-    <b>每种文案都自动配不同风格</b>（共 10 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷 / <b>夜景白墙发光字</b> / <b>书籍书页</b>），下方「风格」可手动切换或 🎲 随机，保证你的图文不重样、有个性。<b>AI 配图也支持：</b>选中某条选题后，让我（小诺）按其「画面」描述生成真图并接入，生成器即自动显示配图页。
+    <b>每种文案都自动配不同风格</b>（共 10 种：大字撞色 / 手账涂鸦 / 杂志拼贴 / 复古撕纸 / 黑金高奢 / ins 清新 / 极简 / 霓虹潮酷 / <b>夜景白墙发光字</b> / <b>书籍书页</b>），下方「风格」可手动切换或 🎲 随机，保证你的图文不重样、有个性。<b>AI 配图两种用法：</b>① <b>自接 Key 实时出图</b>：右侧「🎨 AI 配图」填你自己的图像 API Key，点「生成当前配图」即可在浏览器实时生成真图拼进图文（不经过小诺、不耗我积分，图存本机刷新不丢）；② 也可让我（小诺）按其「画面」描述生成真图并接入仓库，生成器自动显示配图页。无论哪种，该选题都会多 1 张「📷 配图页」。
   </div>
 </details>
 <div class="wrap">
@@ -139,6 +139,29 @@
     <div class="side">
       <h3>🎬 拍摄分镜表（照着架手机拍）</h3>
       <div class="tip" id="shotOut"></div>
+    </div>
+    <div class="side">
+      <h3>🎨 AI 配图（可选 · 用自己的 Key）</h3>
+      <div class="tip">填入你自己的图像 API Key，点按钮即可在<b>浏览器实时</b>生成 AI 配图拼进图文（不经过小诺、不耗我积分）。Key 仅存本机浏览器，只发往你选的官方接口。⚠️ 需自备额度；国内访问部分接口需代理；前端暴露 Key 有被刷额度风险，建议用子账号 / 限额 Key。</div>
+      <div class="row">
+        <select id="apiProvider">
+          <option value="openai">OpenAI 兼容（DALL·E3 / 硅基流动等）</option>
+          <option value="qwen">通义万相 DashScope</option>
+        </select>
+      </div>
+      <div class="row">
+        <input id="apiKey" type="password" placeholder="API Key（仅存本机）" style="flex:1;min-width:200px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:13px;">
+      </div>
+      <div class="row" id="oaRow">
+        <input id="apiBase" placeholder="Base URL（如 https://api.openai.com/v1）" style="flex:1;min-width:160px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+        <input id="apiModel" placeholder="模型（如 dall-e-3）" style="width:140px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font-size:12px;">
+      </div>
+      <div class="row">
+        <button id="genBtn" class="primary">🎨 生成当前配图</button>
+        <button id="batchBtn">🎨 批量本分类</button>
+        <button id="clearBtn">🗑 清除</button>
+      </div>
+      <div class="note" id="genStatus">未生成。生成后自动存本机，刷新仍在。</div>
     </div>
   </div>
 </div>
@@ -320,7 +343,7 @@ function loadCat(){
   cardSel.innerHTML='';
   curList.forEach((t,i)=>{const o=document.createElement('option');o.value=i;
     o.textContent=(t.title||('选题'+(i+1)));cardSel.appendChild(o);});
-  curIdx=0; manualStyle=false; render();
+  curIdx=0; manualStyle=false; render(); preloadPhoto(curList[0]);
 }
 function render(){
   const t=curList[curIdx]; if(!t) return;
@@ -347,8 +370,9 @@ function render(){
   pages.push({t:'spoken',txt:sA,label:ICON.spoken+' '+(t.s1Title||'上集')});
   pages.push({t:'spoken',txt:sBfull,label:ICON.spoken+' '+(t.s2Title||'下集')});
   pages.push({t:'quote',txt:clean(quote),label:ICON.quote+' 金句'});
-  // 按需：该选题已生成 AI 配图 → 追加第 6 张「配图页」
-  if(t.img){ pages.push({t:'photo', img:t.img, txt:clean(hook), label:ICON.photo+' AI 配图'}); }
+  // 按需：该选题已有 AI 配图（后台 t.img 或浏览器本地 t._genImg）→ 追加第 6 张「配图页」
+  const photoImg = t._genImg || t.img;
+  if(photoImg){ pages.push({t:'photo', img:photoImg, txt:clean(hook), label:ICON.photo+' AI 配图'}); }
   const box=document.getElementById('pages'); box.innerHTML='';
   pages.forEach((p,i)=>{
     const wrap=document.createElement('div');
@@ -656,16 +680,85 @@ function saveCard(el){
   }catch(e){ alert('导出失败：'+e.message); }
 }
 
+function goTo(i){ curIdx=((i%curList.length)+curList.length)%curList.length; cardSel.value=curIdx; manualStyle=false; render(); preloadPhoto(curList[curIdx]); }
 catSel.onchange=loadCat;
-cardSel.onchange=()=>{curIdx=+cardSel.value; manualStyle=false; render();};
-document.getElementById('prevBtn').onclick=()=>{curIdx=(curIdx-1+curList.length)%curList.length;cardSel.value=curIdx;manualStyle=false;render();};
-document.getElementById('nextBtn').onclick=()=>{curIdx=(curIdx+1)%curList.length;cardSel.value=curIdx;manualStyle=false;render();};
-document.getElementById('randBtn').onclick=()=>{curIdx=Math.floor(Math.random()*curList.length);cardSel.value=curIdx;manualStyle=false;render();};
+cardSel.onchange=()=>goTo(+cardSel.value);
+document.getElementById('prevBtn').onclick=()=>goTo(curIdx-1);
+document.getElementById('nextBtn').onclick=()=>goTo(curIdx+1);
+document.getElementById('randBtn').onclick=()=>goTo(Math.floor(Math.random()*curList.length));
 document.getElementById('randStyle').onclick=()=>{ const ids=STYLES.map(s=>s.id); curStyleId=ids[Math.floor(Math.random()*ids.length)]; manualStyle=true; render(); };
 const footInput=document.getElementById('footInput');
 footInput.value=footText;
 footInput.oninput=()=>{ footText=footInput.value.trim()||'@GLUCK 的图文笔记'; try{ localStorage.setItem('xhs_footer',footText); }catch(e){} render(); };
 document.getElementById('copyBody').onclick=()=>{const ta=document.getElementById('bodyOut');ta.select();document.execCommand('copy');alert('正文已复制');};
+
+/* ===== AI 配图：浏览器端调用用户自己的图像 API（可选，不经过小诺）===== */
+const API_PRESETS = {
+  openai: { base:'https://api.openai.com/v1', model:'dall-e-3' },
+  qwen:   { base:'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis', model:'wanx-v1' }
+};
+const apiProvider=document.getElementById('apiProvider');
+const apiKey=document.getElementById('apiKey');
+const apiBase=document.getElementById('apiBase');
+const apiModel=document.getElementById('apiModel');
+const genBtn=document.getElementById('genBtn');
+const batchBtn=document.getElementById('batchBtn');
+const clearBtn=document.getElementById('clearBtn');
+const genStatus=document.getElementById('genStatus');
+(function restoreApi(){
+  try{
+    apiProvider.value=localStorage.getItem('xhs_apiprovider')||'openai';
+    apiKey.value=localStorage.getItem('xhs_apikey')||'';
+    apiBase.value=localStorage.getItem('xhs_apibase')||API_PRESETS.openai.base;
+    apiModel.value=localStorage.getItem('xhs_apimodel')||API_PRESETS.openai.model;
+  }catch(e){}
+  toggleOaRow();
+})();
+function toggleOaRow(){ const r=document.getElementById('oaRow'); if(r) r.style.display=(apiProvider.value==='openai')?'flex':'none'; }
+[apiProvider,apiKey,apiBase,apiModel].forEach(el=>{ el.onchange=()=>{ try{ localStorage.setItem('xhs_apiprovider',apiProvider.value); localStorage.setItem('xhs_apikey',apiKey.value); localStorage.setItem('xhs_apibase',apiBase.value); localStorage.setItem('xhs_apimodel',apiModel.value); }catch(e){} toggleOaRow(); }; });
+
+// IndexedDB 存图：浏览器本地持久，刷新不丢，且不写 GitHub 仓库
+let _db=null;
+function openDB(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('xhs_photos',1); r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('photos')) r.result.createObjectStore('photos'); }; r.onsuccess=()=>{ _db=r.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
+function photoKey(t){ return 'ph_'+hashStr(t.cat+'|'+t.title); }
+async function savePhoto(t,dataUrl){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').put({dataUrl,ts:Date.now()},photoKey(t)); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function getPhoto(t){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readonly'); const rq=tx.objectStore('photos').get(photoKey(t)); rq.onsuccess=()=>res(rq.result?rq.result.dataUrl:null); rq.onerror=()=>rej(rq.error); }); }
+async function delPhoto(t){ const db=await openDB(); return new Promise((res)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').delete(photoKey(t)); tx.oncomplete=res; tx.onerror=res; }); }
+async function preloadPhoto(t){ if(!t) return; try{ const d=await getPhoto(t); if(d && curList[curIdx]===t){ t._genImg=d; render(); } }catch(e){} }
+
+function buildPrompt(t){
+  const shot=parseShot(t.content||'');
+  let scene='';
+  shot.rows.forEach(r=>{ if(r.k==='画面') scene=r.v; });
+  if(!scene) scene=shot.tone||'';
+  if(!scene) scene=(t.title||'')+(t.cat?('，'+t.cat):'');
+  scene=scene.slice(0,200);
+  return scene+'。小红书风格 3:4 竖版配图，高清写实摄影感，电影级打光，留白构图，生活化氛围，画面无文字无水印无logo';
+}
+async function urlToDataUrl(u){ const r=await fetch(u); const b=await r.blob(); return await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(b); }); }
+async function genImage(t){
+  const provider=apiProvider.value; const key=apiKey.value.trim();
+  if(!key) throw new Error('请先填写 API Key');
+  const prompt=buildPrompt(t);
+  genStatus.textContent='正在调用接口生成…（约 10-30 秒，请稍候）';
+  if(provider==='qwen'){
+    const r=await fetch(API_PRESETS.qwen.base,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:API_PRESETS.qwen.model,input:{prompt},parameters:{size:'1024*1792',n:1}})});
+    const j=await r.json().catch(()=>({}));
+    if(j.output&&j.output.results&&j.output.results[0]) return await urlToDataUrl(j.output.results[0].url);
+    throw new Error(j.message||j.code||'通义万相返回异常');
+  } else {
+    const base=(apiBase.value.trim()||API_PRESETS.openai.base).replace(/\/$/,'');
+    const model=apiModel.value.trim()||API_PRESETS.openai.model;
+    const r=await fetch(base+'/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,prompt,n:1,size:'1024x1792',response_format:'b64_json'})});
+    const j=await r.json().catch(()=>({}));
+    if(j.data&&j.data[0]&&j.data[0].b64_json) return 'data:image/png;base64,'+j.data[0].b64_json;
+    if(j.error) throw new Error(j.error.message||JSON.stringify(j.error));
+    throw new Error('接口返回异常（检查 Key / 模型 / 网络）');
+  }
+}
+genBtn.onclick=async()=>{ const t=curList[curIdx]; if(!t) return; genBtn.disabled=true; genBtn.textContent='生成中…'; try{ const d=await genImage(t); if(d){ await savePhoto(t,d); t._genImg=d; render(); genStatus.textContent='✅ 配图已生成并自动存本机（刷新仍在）'; } }catch(e){ genStatus.textContent='❌ 失败：'+e.message; alert('生成失败：'+e.message); } finally{ genBtn.disabled=false; genBtn.textContent='🎨 生成当前配图'; } };
+batchBtn.onclick=async()=>{ if(!apiKey.value.trim()){ alert('请先填写 API Key'); return; } if(!confirm('将为本分类 '+curList.length+' 条选题逐条生成配图，可能产生较多 API 费用，确定？')) return; batchBtn.disabled=true; let done=0,succ=0; for(const t of curList){ genStatus.textContent='批量中 '+done+'/'+curList.length; try{ const d=await genImage(t); if(d){ await savePhoto(t,d); t._genImg=d; succ++; } }catch(e){} done++; } batchBtn.disabled=false; render(); genStatus.textContent='✅ 批量完成 '+succ+'/'+curList.length+' 成功'; };
+clearBtn.onclick=async()=>{ const t=curList[curIdx]; if(!t) return; await delPhoto(t).catch(()=>{}); t._genImg=null; render(); genStatus.textContent='🗑 已清除本选题配图'; };
 
 // 线上打开时尝试拉取最新 data.json 覆盖本地内置数据
 (async function refresh(){
