@@ -1716,6 +1716,16 @@ function renderKnowledge(body){
 }
 
 /* ============== AI 文本模块(运营/选题) ============== */
+function planBlock(h, t, sub){
+  if(t===undefined||t===null) t='';
+  let s='<div class="op-pb" style="margin:8px 0;padding:8px 10px;background:#fff;border:1px solid #ffe3e8;border-radius:10px;">';
+  s+='<div style="font-weight:700;font-size:12px;color:#b91c1c;margin-bottom:4px;">'+esc(h)+'</div>';
+  s+='<div class="op-pt" style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:#333;">'+esc(t)+'</div>';
+  if(sub) s+='<div class="op-psub" style="font-size:11px;color:#888;margin-top:4px;word-break:break-all;">'+esc(sub)+'</div>';
+  s+='<button class="op-copy" style="margin-top:6px;background:#e01030;color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;">复制</button>';
+  s+='</div>';
+  return s;
+}
 function renderAiText(page, body){
   const m = MODULES[page];
   const arr0 = remoteData[m.key] || [];
@@ -1745,16 +1755,43 @@ function renderAiText(page, body){
     view.forEach(o=>{ const it=o.it, i=o.i;
       const content = it.content || '';
       const cv = it.cat ? namedCardVars(it.cat) : '';
+      let planHtml = '';
+      if(page==='operation-ideas'){
+        const s50 = it.short50||'';
+        const s30 = (it.short30&&typeof it.short30==='object')?it.short30:{};
+        const s15 = (it.short15&&typeof it.short15==='object')?it.short15:{};
+        const hk = it.hook||'';
+        const wcs = it.wcSave||'';
+        planHtml += '<details class="op-plan" style="margin-top:10px;border-top:1px dashed #f0c0c8;padding-top:8px;">';
+        planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（50S / 30S / 15S 三版）</summary>';
+        planHtml += planBlock('🔥 黄金钩子（前3秒留人）', hk, '');
+        planHtml += planBlock('🎙 50S 口播母版（中视频/口播）', s50, '');
+        planHtml += planBlock('🌆 30S 风景叙事版（配素材/AI生成）', s30.text||'', '素材类型：'+(s30.footageTag||'')+' ｜ AI提示词：'+(s30.aiPrompt||''));
+        planHtml += planBlock('💔 15S 情感暴击版（AI视频生成）', s15.text||'', 'AI提示词：'+(s15.aiPrompt||''));
+        planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
+        planHtml += '</details>';
+      }
       html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
       html += '<div class="summary" id="fn-sum-'+page+'-'+i+'">'+esc(content)+'</div>';
       html += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
       html += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span>'+(m.hasStatus&&it.status?'<span class="tag '+esc(it.status)+'">'+statusLabel(it.status)+'</span>':'')+(it.url?'<a href="'+esc(it.url)+'" target="_blank" rel="noopener">原文链接</a>':'')+'</div>';
+      html += planHtml;
       html += '</div>';
     });
     html += '</div>';
   }
   body.innerHTML = html;
+  if(page==='operation-ideas'){
+    body.querySelectorAll('.op-copy').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const blk=b.closest('.op-pb'); if(!blk) return;
+        const t1=blk.querySelector('.op-pt'), t2=blk.querySelector('.op-psub');
+        let txt=t1?t1.innerText:''; if(t2) txt+='\n'+t2.innerText;
+        copyText(txt); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制',1500);
+      });
+    });
+  }
 }
 
 
