@@ -643,9 +643,9 @@
   </div>
 
 <script>
-/* ============== 访问口令门（页面已设私有，前端口令仅遮掩非真加密） ============== */
+/* ============== 访问口令门（GitHub Pages 用户站须公开，前端口令仅遮掩内容，非真加密） ============== */
 (function(){
-  var GATE_PWD = 'gluck2026'; // ← 自行修改此默认口令
+  var GATE_PWD = 'glk2026'; // ← 自行修改此默认口令
   function passed(){ try { return sessionStorage.getItem('gluck_gate') === '1'; } catch(e){ return false; } }
   function showGate(){
     var gate = document.getElementById('gate');
