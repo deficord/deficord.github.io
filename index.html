@@ -1716,13 +1716,20 @@ function renderKnowledge(body){
 }
 
 /* ============== AI 文本模块(运营/选题) ============== */
-function planBlock(h, t, sub){
+function planBlock(h, t, sub, prompt){
   if(t===undefined||t===null) t='';
   let s='<div class="op-pb" style="margin:8px 0;padding:8px 10px;background:#fff;border:1px solid #ffe3e8;border-radius:10px;">';
   s+='<div style="font-weight:700;font-size:12px;color:#b91c1c;margin-bottom:4px;">'+esc(h)+'</div>';
-  s+='<div class="op-pt" style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:#333;">'+esc(t)+'</div>';
-  if(sub) s+='<div class="op-psub" style="font-size:11px;color:#888;margin-top:4px;word-break:break-all;">'+esc(sub)+'</div>';
-  s+='<button class="op-copy" style="margin-top:6px;background:#e01030;color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;">复制</button>';
+  s+='<div class="op-pt" style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:#222;">'+esc(t)+'</div>';
+  if(sub) s+='<div class="op-psub" style="font-size:11px;color:#888;margin-top:4px;">'+esc(sub)+'</div>';
+  if(prompt){
+    s+='<div style="margin-top:7px;padding:7px 9px;background:#eef4ff;border:1px solid #d6e4ff;border-radius:8px;">';
+    s+='<div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:3px;">🤖 AI 视频生成提示词（可灵 / 即梦 / Sora 通用·英文）</div>';
+    s+='<div class="op-prompt" style="font-size:11px;line-height:1.5;color:#1e3a8a;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;">'+esc(prompt)+'</div>';
+    s+='<button class="op-copy-prompt" style="margin-top:5px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;">复制提示词</button>';
+    s+='</div>';
+  }
+  s+='<button class="op-copy" style="margin-top:6px;background:#e01030;color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;">复制文案</button>';
   s+='</div>';
   return s;
 }
@@ -1766,8 +1773,8 @@ function renderAiText(page, body){
         planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（50S / 30S / 15S 三版）</summary>';
         planHtml += planBlock('🔥 黄金钩子（前3秒留人）', hk, '');
         planHtml += planBlock('🎙 50S 口播母版（中视频/口播）', s50, '');
-        planHtml += planBlock('🌆 30S 风景叙事版（配素材/AI生成）', s30.text||'', '素材类型：'+(s30.footageTag||'')+' ｜ AI提示词：'+(s30.aiPrompt||''));
-        planHtml += planBlock('💔 15S 情感暴击版（AI视频生成）', s15.text||'', 'AI提示词：'+(s15.aiPrompt||''));
+        planHtml += planBlock('🌆 30S 风景叙事版（配素材 / AI 生成）', s30.text||'', '素材类型：'+(s30.footageTag||''), s30.aiPrompt||'');
+        planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
         planHtml += '</details>';
       }
@@ -1788,7 +1795,14 @@ function renderAiText(page, body){
         const blk=b.closest('.op-pb'); if(!blk) return;
         const t1=blk.querySelector('.op-pt'), t2=blk.querySelector('.op-psub');
         let txt=t1?t1.innerText:''; if(t2) txt+='\n'+t2.innerText;
-        copyText(txt); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制',1500);
+        copyText(txt); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制文案',1500);
+      });
+    });
+    body.querySelectorAll('.op-copy-prompt').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const blk=b.closest('.op-pb'); if(!blk) return;
+        const p=blk.querySelector('.op-prompt'); if(!p) return;
+        copyText(p.innerText); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制提示词',1500);
       });
     });
   }
@@ -2118,10 +2132,23 @@ function loadWatch(){
   try{ const a=JSON.parse(raw); return Array.isArray(a)?a:[]; }catch(e){ return []; }
 }
 function saveWatch(a){ saveData('wb_watchlist', a); }
-// 股票/基金分析模块：按 assetFilter 区分标的类型（5开头沪市ETF/基金、15/16开头深市ETF/LOF 视为基金）
-function isFundCode(code){ const c=(code||'').replace(/[^0-9]/g,''); if(!c) return false; return /^5/.test(c) || /^1[56]/.test(c); }
+// 股票/基金分析模块：标的类型优先用条目自带的 type 标记（添加时由当前模块 fund/stock 写入，最可靠）；
+// 无 type 的旧数据回退到 isFundCode 前缀启发式。注意 000xxx 中 000-003 为深A股票、004-009 为场外基金，
+// 30xxxx 中 30 为创业板股票、31-39 为场外基金，纯前缀无法 100% 区分，故添加时打 type 标记是正解。
+function isFundCode(code){
+  const c=(code||'').replace(/[^0-9]/g,''); if(!c) return false;
+  if(/^5/.test(c)) return true;            // 50/51/52/55/56/58/59 沪市ETF
+  if(/^1[56]/.test(c)) return true;        // 15/16 深市LOF/ETF/REITs
+  if(/^1[0-49]/.test(c)) return true;      // 10-14/17-19 场外开放式基金
+  if(/^00[4-9]/.test(c)) return true;      // 004-009 场外开放式基金
+  if(/^0[1-9]/.test(c)) return true;       // 01-09 场外开放式基金（联接A/B/C/E/F 等多在此段）
+  if(/^2/.test(c)) return true;            // 20-22 场外开放式基金
+  if(/^3[1-9]/.test(c)) return true;       // 31-39 场外（30 为创业板股票，需排除）
+  return false;
+}
 function currentStockFilter(){ const m=MODULES[currentPage]; return (m&&m.assetFilter)?m.assetFilter:null; }
-function filteredWatch(filter){ const all=loadWatch(); if(filter==='fund') return all.filter(it=>isFundCode(it.code)); if(filter==='stock') return all.filter(it=>!isFundCode(it.code)); return all; }
+function watchTypeOf(it){ if(it && it.type==='fund') return 'fund'; if(it && it.type==='stock') return 'stock'; return isFundCode(it?it.code:'')?'fund':'stock'; }
+function filteredWatch(filter){ const all=loadWatch(); if(filter==='fund') return all.filter(it=>watchTypeOf(it)==='fund'); if(filter==='stock') return all.filter(it=>watchTypeOf(it)==='stock'); return all; }
 function normCodeStr(s){ return (s||'').trim().toLowerCase(); }
 function normalizeCode(raw){
   raw=(raw||'').trim(); if(!raw) return null;
@@ -3620,7 +3647,7 @@ function bindEvents(){
       if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
       if(act==='fin-settings'){ renderTabLabels('finance-news','finTabLabels'); $('finMask').classList.add('show'); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
-      if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
+      if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const _sf=currentStockFilter(); parsed.forEach(p=>{ if(!p.type) p.type=(_sf==='fund'?'fund':(_sf==='stock'?'stock':(isFundCode(p.code)?'fund':'stock'))); }); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', '删除', '取消').then(ok=>{ if(ok){ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); } }); return; }
       if(act==='judge-request'){ const code=f.dataset.code; const title='研判申请 '+code; const body='请为股票/ETF 代码 '+code+' 生成 AI 研判（💡综合判断 + 📝个人判断，含评级/置信/免责/来源）。\n\n本 issue 由 GLUCK 工作台「申请研判」按钮创建，每日 17:00 自动化会读取并生成研判后自动关闭。'; const url='https://github.com/deficord/deficord.github.io/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body); try{ window.open(url,'_blank'); }catch(e){} toast('已打开 GitHub 申请页（'+code+'）· 点 Submit 提交，次日 17:00 自动生成研判'); return; }
