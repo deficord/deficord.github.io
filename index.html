@@ -1716,17 +1716,24 @@ function renderKnowledge(body){
 }
 
 /* ============== AI 文本模块(运营/选题) ============== */
-function planBlock(h, t, sub, prompt){
+function planBlock(h, t, sub, promptEn, promptCn){
   if(t===undefined||t===null) t='';
   let s='<div class="op-pb" style="margin:8px 0;padding:8px 10px;background:#fff;border:1px solid #ffe3e8;border-radius:10px;">';
   s+='<div style="font-weight:700;font-size:12px;color:#b91c1c;margin-bottom:4px;">'+esc(h)+'</div>';
   s+='<div class="op-pt" style="white-space:pre-wrap;font-size:13px;line-height:1.6;color:#222;">'+esc(t)+'</div>';
   if(sub) s+='<div class="op-psub" style="font-size:11px;color:#888;margin-top:4px;">'+esc(sub)+'</div>';
-  if(prompt){
+  if(promptEn){
     s+='<div style="margin-top:7px;padding:7px 9px;background:#eef4ff;border:1px solid #d6e4ff;border-radius:8px;">';
-    s+='<div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:3px;">🤖 AI 视频生成提示词（可灵 / 即梦 / Sora 通用·英文）</div>';
-    s+='<div class="op-prompt" style="font-size:11px;line-height:1.5;color:#1e3a8a;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;">'+esc(prompt)+'</div>';
-    s+='<button class="op-copy-prompt" style="margin-top:5px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;">复制提示词</button>';
+    s+='<div style="font-size:11px;font-weight:700;color:#1d4ed8;margin-bottom:3px;">🤖 AI 视频提示词（英文·喂可灵 / 即梦 / Sora）</div>';
+    s+='<div class="op-prompt-en" style="font-size:11px;line-height:1.5;color:#1e3a8a;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;">'+esc(promptEn)+'</div>';
+    s+='<button class="op-copy-prompt" style="margin-top:5px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;">复制提示词(EN)</button>';
+    s+='</div>';
+  }
+  if(promptCn){
+    s+='<div style="margin-top:6px;padding:6px 9px;background:#f3fbf4;border:1px solid #cdeccd;border-radius:8px;">';
+    s+='<div style="font-size:11px;font-weight:700;color:#15803d;margin-bottom:3px;">🇨🇳 中文说明（供参考·不必粘贴）</div>';
+    s+='<div class="op-prompt-cn" style="font-size:11px;line-height:1.5;color:#14532d;word-break:break-all;">'+esc(promptCn)+'</div>';
+    s+='<button class="op-copy-prompt-cn" style="margin-top:4px;background:#15803d;color:#fff;border:none;border-radius:8px;padding:3px 10px;font-size:11px;cursor:pointer;">复制中文</button>';
     s+='</div>';
   }
   s+='<button class="op-copy" style="margin-top:6px;background:#e01030;color:#fff;border:none;border-radius:8px;padding:4px 12px;font-size:12px;cursor:pointer;">复制文案</button>';
@@ -1764,7 +1771,7 @@ function renderAiText(page, body){
       const cv = it.cat ? namedCardVars(it.cat) : '';
       let planHtml = '';
       if(page==='operation-ideas'){
-        const s50 = it.short50||'';
+        const s50 = (it.short50&&typeof it.short50==='object')?it.short50:{text:it.short50||''};
         const s30 = (it.short30&&typeof it.short30==='object')?it.short30:{};
         const s15 = (it.short15&&typeof it.short15==='object')?it.short15:{};
         const hk = it.hook||'';
@@ -1772,9 +1779,9 @@ function renderAiText(page, body){
         planHtml += '<details class="op-plan" style="margin-top:10px;border-top:1px dashed #f0c0c8;padding-top:8px;">';
         planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（50S / 30S / 15S 三版）</summary>';
         planHtml += planBlock('🔥 黄金钩子（前3秒留人）', hk, '');
-        planHtml += planBlock('🎙 50S 口播母版（中视频/口播）', s50, '');
-        planHtml += planBlock('🌆 30S 风景叙事版（配素材 / AI 生成）', s30.text||'', '素材类型：'+(s30.footageTag||''), s30.aiPrompt||'');
-        planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'');
+        planHtml += planBlock('🎙 50S 口播母版（中视频/口播）', s50.text||'', '素材类型：'+(s50.footageTag||''), s50.aiPrompt||'', s50.aiPromptCn||'');
+        planHtml += planBlock('🌆 30S 风景叙事版（配素材 / AI 生成）', s30.text||'', '素材类型：'+(s30.footageTag||''), s30.aiPrompt||'', s30.aiPromptCn||'');
+        planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'', s15.aiPromptCn||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
         planHtml += '</details>';
       }
@@ -1801,8 +1808,15 @@ function renderAiText(page, body){
     body.querySelectorAll('.op-copy-prompt').forEach(b=>{
       b.addEventListener('click', ()=>{
         const blk=b.closest('.op-pb'); if(!blk) return;
-        const p=blk.querySelector('.op-prompt'); if(!p) return;
-        copyText(p.innerText); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制提示词',1500);
+        const p=blk.querySelector('.op-prompt-en'); if(!p) return;
+        copyText(p.innerText); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制提示词(EN)',1500);
+      });
+    });
+    body.querySelectorAll('.op-copy-prompt-cn').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const blk=b.closest('.op-pb'); if(!blk) return;
+        const p=blk.querySelector('.op-prompt-cn'); if(!p) return;
+        copyText(p.innerText); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制中文',1500);
       });
     });
   }
@@ -2223,6 +2237,9 @@ async function fetchQuotesBatch(codes){
   return {};
 }
 async function loadKline(code){
+  // 场外开放式基金：腾讯无日线，改走东方财富历史净值（与 loadFundQuote 同源）
+  const norm=normCodeStr(code);
+  try{ const list=filteredWatch(currentStockFilter())||[]; const it=list.find(x=>normCodeStr(x.code)===norm); if(it&&isOffExchangeFund(it)) return await loadFundNavKline(code); }catch(_){}
   const p=tencentPrefix(code); if(!p) return null;
   let lastErr=null;
   for(let attempt=0; attempt<3; attempt++){
@@ -2237,6 +2254,16 @@ async function loadKline(code){
     await new Promise(r=>setTimeout(r,700));
   }
   return null;
+}
+// 场外基金历史净值 → 收盘价序列（供 calcRisk 算均线/波动率/回撤）。复用 loadPingzhongData（与 loadFundQuote 同源、同代码只加载一次，消除并发竞态），按时间戳排序保证时序正确。
+function loadFundNavKline(code){
+  return loadPingzhongData(code).then(r=>{
+    const tr=r&&r.tr; if(!tr||!tr.length) return null;
+    const arr=tr.filter(e=>e).map(e=>{ const isObj=(e&&typeof e==='object'); return { x:isObj?e.x:(Array.isArray(e)?e[0]:0), y:isObj?e.y:(Array.isArray(e)?e[1]:null) }; })
+      .filter(o=>o.y!=null&&!isNaN(parseFloat(o.y))).sort((a,b)=>a.x-b.x);
+    const closes=arr.map(o=>parseFloat(o.y));
+    return closes.length>=5?{closes, nav:true}:null;
+  });
 }
 function calcRisk(closes){
   if(!closes||closes.length<5) return null;
@@ -3207,22 +3234,25 @@ async function liveQuotes(){
 }
 
 /* ============== 基金实时涨跌(直连东方财富) ============== */
-function loadFundQuote(code){
-  return new Promise((resolve)=>{
-    const s = document.createElement('script');
-    s.src = 'https://fund.eastmoney.com/pingzhongdata/'+code+'.js?_='+Date.now();
-    s.onload = ()=>{
-      try{
-        const trend = window.Data_netWorthTrend || [];
-        const last = trend[trend.length-1];
-        const q = {fundcode:code, name:window.fundname||'', gszzl: last?last.equityReturn:0, dwjz: last?last.y:0, gztime: last?last.x:''};
-        resolve(q);
-      }catch(e){ resolve(null); }
-      delete window.Data_netWorthTrend; delete window.fundname;
-      if(s.parentNode) s.parentNode.removeChild(s);
-    };
-    s.onerror = ()=>{ resolve(null); if(s.parentNode) s.parentNode.removeChild(s); };
+// 共享加载器：同一基金代码只注入一次 pingzhongdata 脚本（避免 refreshStockQuotes 与 loadDerivedForVisible 并发重复注入、互相 delete 全局变量导致读数失败）。返回 {tr:历史净值数组, nm:基金名}
+const _pzCache={};
+function loadPingzhongData(code){
+  const c=(code||'').replace(/[^0-9]/g,''); if(!c) return Promise.resolve({tr:null, nm:''});
+  if(_pzCache[c]) return _pzCache[c];
+  const p=new Promise((resolve)=>{
+    const s=document.createElement('script');
+    s.src='https://fund.eastmoney.com/pingzhongdata/'+c+'.js?_='+Date.now();
+    s.onload=()=>{ try{ const tr=window.Data_netWorthTrend||null; const nm=window.fundname||''; resolve({tr, nm}); }catch(e){ resolve({tr:null, nm:''}); } if(s.parentNode) s.parentNode.removeChild(s); };
+    s.onerror=()=>{ resolve({tr:null, nm:''}); if(s.parentNode) s.parentNode.removeChild(s); };
     document.body.appendChild(s);
+  });
+  _pzCache[c]=p; return p;
+}
+function loadFundQuote(code){
+  return loadPingzhongData(code).then(r=>{
+    const tr=r&&r.tr; if(!tr||!tr.length) return null;
+    const last=tr[tr.length-1];
+    return {fundcode:code, name:r.nm||'', gszzl:(last&&last.equityReturn!=null)?last.equityReturn:0, dwjz:(last&&last.y!=null)?last.y:0, gztime:(last&&last.x!=null)?last.x:''};
   });
 }
 async function refreshQuotes(page){
