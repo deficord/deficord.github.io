@@ -1751,7 +1751,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频脚本库：每周一自动刷新（50S-60S真人实拍版）。每条都是「50S-60S真人实拍版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率短视频，或直接架手机实拍。内容仅作创作参考。</p>';
+      html += '<p class="hint">短视频脚本库：每周一自动刷新（中视频 60S+ 口播母版）。每条都是「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率中视频。内容仅作创作参考。</p>';
       html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
             + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#fff0f3;color:#e01030;border:1px solid #ffd0d8;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
             + '<span class="hint" style="margin:0;">把任意选题一键拆成 3:4 图文，截图即发，零积分</span></div>';
@@ -1777,9 +1777,9 @@ function renderAiText(page, body){
         const hk = it.hook||'';
         const wcs = it.wcSave||'';
         planHtml += '<details class="op-plan" style="margin-top:10px;border-top:1px dashed #f0c0c8;padding-top:8px;">';
-        planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（50S-60S真人实拍版 / 30S / 15S 三版）</summary>';
+        planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（中视频60S+ / 30S / 15S 三版）</summary>';
         planHtml += planBlock('🔥 黄金钩子（前3秒留人）', hk, '');
-        planHtml += planBlock('🎙 50S-60S真人实拍版', s50.text||'', '素材类型：'+(s50.footageTag||''), s50.aiPrompt||'', s50.aiPromptCn||'');
+        planHtml += planBlock('🎙 中视频口播母版（60S+·横屏16:9）', s50.text||'', '素材类型：'+(s50.footageTag||''), s50.aiPrompt||'', s50.aiPromptCn||'');
         planHtml += planBlock('🌆 30S 风景叙事版（配素材 / AI 生成）', s30.text||'', '素材类型：'+(s30.footageTag||''), s30.aiPrompt||'', s30.aiPromptCn||'');
         planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'', s15.aiPromptCn||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
