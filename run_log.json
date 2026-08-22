@@ -1,10 +1,19 @@
 {
   "indexTrack": {
     "lastStart": "2026-08-20T08:30:46.480Z",
-    "lastStatus": "running"
+    "lastStatus": "error",
+    "note": "prior run crashed, manually unblocked"
   },
   "stockJudgments": {
-    "lastStart": "2026-08-20T09:00:59.658Z",
-    "lastStatus": "running"
+    "lastStart": "2026-08-22T01:31:51.497Z",
+    "lastEnd": "2026-08-22T01:31:51.497Z",
+    "lastStatus": "ok",
+    "note": "manual refresh 2026-08-22 real data"
+  },
+  "financeNews": {
+    "lastStart": "2026-08-22T01:31:51.497Z",
+    "lastEnd": "2026-08-22T01:31:51.497Z",
+    "lastStatus": "ok",
+    "note": "manual refresh 2026-08-22 real data"
   }
 }
