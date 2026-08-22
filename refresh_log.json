@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-08-22T01:31:58.991Z",
+  "checkedAt": "2026-08-22T06:12:37.357Z",
   "bjToday": "2026-08-22",
   "allFresh": false,
   "stale": [
@@ -14,9 +14,10 @@
     "financeNews[基金ETF] 2026-08-22",
     "financeNews[加密货币] 2026-08-22",
     "healthNews 2026-08-22",
-    "siteVersion 2026-08-22.01",
+    "siteVersion 2026-08-22.02",
     "stockJudgments[510300] 2026-08-22",
     "stockJudgments[600433] 2026-08-22",
-    "stockJudgments[000001] 2026-08-22"
+    "stockJudgments[000001] 2026-08-22",
+    "indexTrack 12 条 (周末休市，跳过 asOf 检查)"
   ]
 }
