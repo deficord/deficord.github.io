@@ -322,7 +322,8 @@ const VIDEO_PRESETS = {
     oa:false,
     applyUrl:'https://dashscope.console.aliyun.com',
     submit: async (key,prompt,model,size,dur)=>{
-      const r=await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/generation',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'X-DashScope-Async':'enable'},body:JSON.stringify({model:model,input:{prompt:prompt},parameters:{size:size,duration:dur}})});
+      const sz=size.replace(/x/g,'*'); // 万相 size 官方用 1280*720（星号）
+      const r=await fetch('https://dashscope.aliyuncs.com/api/v1/services/aigc/video-generation/generation',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'X-DashScope-Async':'enable'},body:JSON.stringify({model:model,input:{prompt:prompt},parameters:{size:sz,duration:dur}})});
       const j=await r.json().catch(()=>({}));
       if(j.output&&j.output.task_id) return j.output.task_id;
       throw new Error(j.message||j.code||'提交失败');
