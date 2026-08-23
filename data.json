@@ -4048,6 +4048,318 @@
         "aiPromptCn": "一个人在昏暗的房间里静静独舞，又快乐又心酸，温暖又调侃，接地气，电影感近景，柔焦散景，无文字，竖屏 9:16，高清 --ar 9:16"
       },
       "wcSave": "笑到了点个赞，想常乐关注我，顺手收了慢慢笑。"
+    },
+    {
+      "title": "领导画饼时，你该接哪句",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】领导说“好好干，明年给你升主管”，我默默把“明年”设成了日历提醒。\n【3-12s 场景】去年年会，领导端着酒杯说“公司不会亏待每一个努力的人”，台下掌声雷动，我低头看了眼工资条，它比掌声诚实。\n【12-52s 口播】说真的，领导画饼这事儿谁没听过。我以前真信，半夜还琢磨怎么对得起那份信任。后来明白，饼是画的不是吃的，你越接得认真他画得越起劲。真要高升，流程比饼实在。下次他说好好干，你笑着点头，心里把“好好干”翻译成“干好自己活”，别把别人愿景当KPI。职场最怕不是没机会，是把别人口号当自己目标。你负责把事做好，不是把领导梦圆了。\n【52-60s 升华+互动】职场里最体面的清醒，是笑着接饼，转头把活干漂亮。 你被画过最离谱的饼是啥？评论区说出来，我看看谁的比我的还圆。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：会议室里领导站在投影前比划大饼，主角坐角落低头看工资条，冷光打在脸上｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "领导说“好好干，明年给你升主管”，我默默把“明年”设成了日历提醒。",
+      "short50": {
+        "text": "说真的，领导画饼这事儿谁没听过。我以前真信，半夜还琢磨怎么对得起那份信任。后来明白，饼是画的不是吃的，你越接得认真他画得越起劲。真要高升，流程比饼实在。下次他说好好干，你笑着点头，心里把“好好干”翻译成“干好自己活”，别把别人愿景当KPI。职场最怕不是没机会，是把别人口号当自己目标。你负责把事做好，不是把领导梦圆了。 真想往上走，少听饼多攒本事，年底述职拿得出活，比什么饼都顶用。  拿「领导画饼时，你该接哪句」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_0",
+        "aiPrompt": "[0:00-0:08] 会议室里领导站在投影前比划大饼，主角坐角落低头看工资条，冷光打在脸上, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 会议室里领导站在投影前比划大饼，主角坐角落低头看工资条，冷光打在脸上，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你给自己设了无数个“明年”，却从没真的改变过今天。「领导画饼」这句话你一定熟——你以为在等机会，其实你只是在等一个，不拆穿的体面。",
+        "footageTag": "office_night",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "饼吃多了胃知道，饼听多了心知道。",
+        "footageTag": "calm_face",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "同事甩锅，别急着怼回去",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】锅从天降，第一反应不是骂人，是先拍张照留证。\n【3-12s 场景】项目黄了那天，群里 @ 我的人比平时多三倍，可方案文档的编辑记录明明写着别人的名字。\n【12-52s 口播】锅砸头上别急着跳脚，你一急就坐实了“心虚”。先把聊天记录、文档版本、邮件往来存好，证据比嘴快。等对方把锅甩圆了，你再慢悠悠把记录甩回去，不骂人但句句到位。职场吵架拼的不是嗓门，是材料。怼回去一时爽，留痕才长久。真有问题就认，但别人的锅你别替他背，背一次就有第二次。\n【52-60s 升华+互动】成年人的体面，是锅来了不慌，证据到了不饶。 你被甩过最冤的锅是啥？评论区吐出来，我们一起避雷。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：办公室群里弹出一连串 @ 消息，主角平静截图保存聊天记录｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "锅从天降，第一反应不是骂人，是先拍张照留证。",
+      "short50": {
+        "text": "锅砸头上别急着跳脚，你一急就坐实了“心虚”。先把聊天记录、文档版本、邮件往来存好，证据比嘴快。等对方把锅甩圆了，你再慢悠悠把记录甩回去，不骂人但句句到位。职场吵架拼的不是嗓门，是材料。怼回去一时爽，留痕才长久。真有问题就认，但别人的锅你别替他背，背一次就有第二次。 记住：先留痕再说话，你的沉默比反驳更有重量，等该亮证据时一击即中。  拿「同事甩锅，别急着怼回去」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_1",
+        "aiPrompt": "[0:00-0:08] 办公室群里弹出一连串 @ 消息，主角平静截图保存聊天记录, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 办公室群里弹出一连串 @ 消息，主角平静截图保存聊天记录，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你总怕冲突，于是把别人的错默默咽下。「同事甩锅」你一定遇过——你以为忍一忍就过去了，其实你是在给下次被甩铺路。",
+        "footageTag": "chat_screenshot",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "留痕，是成年人最低成本的自我保护。",
+        "footageTag": "screenshot",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "开会坐哪，决定你存在感",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】我坐最后一排三年，直到发现前排的人先被记住。\n【3-12s 场景】上周例会，老板问“谁有补充”，目光扫过前两排停了半秒，压根没往后排看，我举手他像才发现还有个人。\n【12-52s 口播】别小看座位，它是你存在感的开关。坐角落容易隐形，坐前排不一定抢戏，但至少被看见。重要的会往前坐，让你的脸和想法进老板视野。不是舔，是让付出被看见，不然活干再多也像透明人。当然也别每会都抢C位，挑重要的、跟你相关的坐前面。存在感不是喊出来的，是坐出来的。\n【52-60s 升华+互动】存在感不是争来的，是把自己放在能被看见的地方。 你是坐前排还是角落？评论区报座位，看看多少人跟我一样躲最后排。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：会议室长桌，主角从后排起身走向前排空位坐下｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "我坐最后一排三年，直到发现前排的人先被记住。",
+      "short50": {
+        "text": "别小看座位，它是你存在感的开关。坐角落容易隐形，坐前排不一定抢戏，但至少被看见。重要的会往前坐，让你的脸和想法进老板视野。不是舔，是让付出被看见，不然活干再多也像透明人。当然也别每会都抢C位，挑重要的、跟你相关的坐前面。存在感不是喊出来的，是坐出来的。 下次例会试试往前挪两排，你会发现被点名不可怕，可怕的是一直不被看见。  拿「开会坐哪，决定你存在感」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_2",
+        "aiPrompt": "[0:00-0:08] 会议室长桌，主角从后排起身走向前排空位坐下, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 会议室长桌，主角从后排起身走向前排空位坐下，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为努力就会被看见，其实先被看见才谈得上被认可。「开会坐哪」这件小事，藏着你混得透不透的底色——你躲得越远，机会离你越远。",
+        "footageTag": "meeting_room",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "躲到最后排的，连被看见都要排队。",
+        "footageTag": "empty_seat",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "微信“在吗”，比“在吗”更吓人",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】老板发“在吗”，比“在吗”更吓人的是你秒回“在的”。\n【3-12s 场景】周五晚十点，老板一个“在吗”弹出来，我手比脑子快回了“在的”，然后迎来了两千字的需求文档。\n【12-52s 口播】“在吗”不是问候，是任务的预告。秒回“在的”等于开门迎客，后面准没好事。聪明人回“刚看到，有事您说”，把球踢回去，先看清楚要干嘛再决定在不在。这不是敷衍，是给自己留缓冲。也别已读不回装死，那是另一个坑。职场沟通讲究节奏，你掌握回消息的主动权，就掌握了被安排的多少。\n【52-60s 升华+互动】回消息的快慢，藏着你被安排的多少。 你被“在吗”坑过几次？评论区报数，我猜没人零记录。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：深夜手机屏幕亮起“在吗”消息，主角手指悬在键盘上犹豫｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "老板发“在吗”，比“在吗”更吓人的是你秒回“在的”。",
+      "short50": {
+        "text": "“在吗”不是问候，是任务的预告。秒回“在的”等于开门迎客，后面准没好事。聪明人回“刚看到，有事您说”，把球踢回去，先看清楚要干嘛再决定在不在。这不是敷衍，是给自己留缓冲。也别已读不回装死，那是另一个坑。职场沟通讲究节奏，你掌握回消息的主动权，就掌握了被安排的多少。 下次“在吗”先别慌，回一句“刚看到，您说”，让对方先把事说清，你再决定要不要“在”。  拿「微信“在吗”，比“在吗”更吓人」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_3",
+        "aiPrompt": "[0:00-0:08] 深夜手机屏幕亮起“在吗”消息，主角手指悬在键盘上犹豫, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 深夜手机屏幕亮起“在吗”消息，主角手指悬在键盘上犹豫，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你总秒回，以为这是靠谱。「微信在吗」你一定熟——你以为在回应期待，其实在交出被随意支配的主动权。",
+        "footageTag": "phone_night",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "“在吗”两个字，够吓出一身冷汗。",
+        "footageTag": "phone_glow",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "请假别写“有事”，领导会脑补",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】请假条写“有事”俩字，领导脑补出的事比你一年都多。\n【3-12s 场景】我同事请假说“家里有点事”，领导当天找了三个人打听他是不是要离职，其实人家只是去拔牙。\n【12-52s 口播】请假理由越模糊越招疑。写“去医院拔牙”“回老家办个证”比“有事”强十倍，具体才可信。也别编太离谱，上次有人说外婆生日，结果被撞见在外滩喝咖啡。真诚+具体+可核实，是最稳的请假公式。提前把活交接好，让领导放心，假才好请。你遮遮掩掩，他才东想西想。\n【52-60s 升华+互动】请假的艺术，是把模糊留给自己，把确定交给领导。 你请过最离谱的假是啥？评论区乐一乐，别学我那同事。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：电脑请假审批界面，主角填理由“拔牙”并提交｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "请假条写“有事”俩字，领导脑补出的事比你一年都多。",
+      "short50": {
+        "text": "请假理由越模糊越招疑。写“去医院拔牙”“回老家办个证”比“有事”强十倍，具体才可信。也别编太离谱，上次有人说外婆生日，结果被撞见在外滩喝咖啡。真诚+具体+可核实，是最稳的请假公式。提前把活交接好，让领导放心，假才好请。你遮遮掩掩，他才东想西想。 下次请假把事说具体，再把活交接清楚，你会发现领导批得比你还快。  拿「请假别写“有事”，领导会脑补」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_4",
+        "aiPrompt": "[0:00-0:08] 电脑请假审批界面，主角填理由“拔牙”并提交, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 电脑请假审批界面，主角填理由“拔牙”并提交，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为“有事”是隐私，其实在领导眼里是悬念。「请假写有事」你一定干过——你以为省事，其实给自己挖了坑。",
+        "footageTag": "leave_form",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "“有事”俩字，是给领导发邀请函让他瞎想。",
+        "footageTag": "typing",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "领导说你“老实”，翻译过来是你好拿捏",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】领导夸你“老实”，别高兴太早，翻译过来是“你好拿捏”。\n【3-12s 场景】连续三次重要项目都没我，理由都是“你老实，这活交给能说会道的”，我才知道“老实”是块被挑剩下的牌子。\n【12-52s 口播】“老实”听着像夸，在职场常是贬义包装。它意味着你不会争、不懂要、好分配。老实不是错，但只会老实就亏了。该表现时开口，该要资源时伸手，该争功时站出来。别把木讷当本分，把委屈当修养。你可以踏实，但别让踏实变成别人省心的理由。\n【52-60s 升华+互动】踏实是底色，不是任人拿捏的软肋。 你被“老实”坑过吗？评论区聊聊，别一个人憋着。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：工位上主角低头干活，领导路过拍肩说“你最老实”｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "领导夸你“老实”，别高兴太早，翻译过来是“你好拿捏”。",
+      "short50": {
+        "text": "“老实”听着像夸，在职场常是贬义包装。它意味着你不会争、不懂要、好分配。老实不是错，但只会老实就亏了。该表现时开口，该要资源时伸手，该争功时站出来。别把木讷当本分，把委屈当修养。你可以踏实，但别让踏实变成别人省心的理由。 下次再被夸“老实”，笑着接，但该争的照样争，让对方知道你踏实但不傻。  拿「领导说你“老实”，翻译过来是你好拿捏」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_5",
+        "aiPrompt": "[0:00-0:08] 工位上主角低头干活，领导路过拍肩说“你最老实”, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 工位上主角低头干活，领导路过拍肩说“你最老实”，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以本分为荣，却不知有人拿它当你不争的把柄。「领导夸老实」你一定听过——你以为被认可，其实被归类。",
+        "footageTag": "desk_work",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "“老实”二字，有时是块免死金牌，有时是块软招牌。",
+        "footageTag": "pat_shoulder",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "饭局上别当那个抢着买单的冤种",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】抢着买单的人，往往最穷，也最容易被忘。\n【3-12s 场景】上月部门聚餐，我抢着扫码付了八百，月底花呗催我时，没人记得这顿是谁请的。\n【12-52s 口播】职场饭局不是比谁大方，是看谁清醒。抢着买单换不来真交情，只换来管理层的“这人好使”。该分摊就分摊，该让领导请客就别抢。真正的人脉不靠一顿饭买，靠平时靠谱攒。你越抢着付，越容易被当成提款机。下次聚餐，慢半拍，让该出钱的人出。\n【52-60s 升华+互动】饭局里的慷慨，常常是最贵的智商税。 你抢过最亏的一单是多少？评论区晒出来，我们一起戒掉冤种瘾。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：餐厅饭桌，主角手机伸向收银码却被别人按住｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "抢着买单的人，往往最穷，也最容易被忘。",
+      "short50": {
+        "text": "职场饭局不是比谁大方，是看谁清醒。抢着买单换不来真交情，只换来管理层的“这人好使”。该分摊就分摊，该让领导请客就别抢。真正的人脉不靠一顿饭买，靠平时靠谱攒。你越抢着付，越容易被当成提款机。下次聚餐，慢半拍，让该出钱的人出。 饭局上慢半拍，你省下的不只是钱，还有被当成冤种的概率。  拿「饭局上别当那个抢着买单的冤种」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_6",
+        "aiPrompt": "[0:00-0:08] 餐厅饭桌，主角手机伸向收银码却被别人按住, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 餐厅饭桌，主角手机伸向收银码却被别人按住，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为抢买单是情商，其实在别人眼里是标好价的冤大头。「饭局买单」你一定经历过——你以为拉近关系，其实在贴钱买冷淡。",
+        "footageTag": "dinner_table",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "抢着买单的手，最容易空。",
+        "footageTag": "pay_code",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "汇报别写小作文，先写结论",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】我把三千字汇报改成三行，老板反而记住了。\n【3-12s 场景】以前我汇报从背景写到意义，老板看到第二段就走神；后来我把结论放第一行，他当天就回了“就按这个办”。\n【12-52s 口播】汇报不是写作文，是交答案。第一句给结论，后面补依据，老板省时间你也显专业。没人想看你熬的夜，只想看结果。结构用“结论-原因-下一步”，三行能说清就别写三段。你写得越绕，越像在掩饰没想明白。把最重要的放最前，是职场最划算的礼貌。\n【52-60s 升华+互动】先给结论的人，永远比写小作文的先被听见。 你写过最长的一篇汇报多少字？评论区比惨，我见过八千的。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：电脑屏幕上长篇汇报被删减成三行结论｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "我把三千字汇报改成三行，老板反而记住了。",
+      "short50": {
+        "text": "汇报不是写作文，是交答案。第一句给结论，后面补依据，老板省时间你也显专业。没人想看你熬的夜，只想看结果。结构用“结论-原因-下一步”，三行能说清就别写三段。你写得越绕，越像在掩饰没想明白。把最重要的放最前，是职场最划算的礼貌。 下次写汇报，先把结论甩出来，再补三行理由，你会发现通过率高得离谱。  拿「汇报别写小作文，先写结论」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_7",
+        "aiPrompt": "[0:00-0:08] 电脑屏幕上长篇汇报被删减成三行结论, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 电脑屏幕上长篇汇报被删减成三行结论，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为写得越多越显用心，其实在消耗别人的耐心。「汇报写小作文」你一定干过——你以为详尽，其实在制造阅读成本。",
+        "footageTag": "report_screen",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "结论先行，是职场最便宜的体面。",
+        "footageTag": "three_lines",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "别把同事当闺蜜，做盟友更稳",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】把同事当闺蜜，离职那天才发现聊天记录是她的筹码。\n【3-12s 场景】前同事把我和主管的私下调侃截图发去邀功，我才懂职场没有树洞，只有录音笔。\n【12-52s 口播】同事是好搭档，不是倾诉桶。你吐槽老板的每句话，都可能变成别人的投名状。保持适当边界，聊工作、聊八卦浅尝辄止，别交底牌。做盟友比做朋友稳：互相补位、信息共享、关键时刻挺一把，但心里留一扇不上锁的窗。职场关系的最高形态，是舒服又有分寸。\n【52-60s 升华+互动】同事之间最好的距离，是并肩却不交心。 你被同事“闺蜜”坑过吗？评论区避雷，别重蹈我覆辙。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：工位旁两人说悄悄话，其中一人手机悄悄截图｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "把同事当闺蜜，离职那天才发现聊天记录是她的筹码。",
+      "short50": {
+        "text": "同事是好搭档，不是倾诉桶。你吐槽老板的每句话，都可能变成别人的投名状。保持适当边界，聊工作、聊八卦浅尝辄止，别交底牌。做盟友比做朋友稳：互相补位、信息共享、关键时刻挺一把，但心里留一扇不上锁的窗。职场关系的最高形态，是舒服又有分寸。 把秘密留给日记，把专业留给同事，你会发现职场轻松一大半。  拿「别把同事当闺蜜，做盟友更稳」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_8",
+        "aiPrompt": "[0:00-0:08] 工位旁两人说悄悄话，其中一人手机悄悄截图, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 工位旁两人说悄悄话，其中一人手机悄悄截图，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为交心是信任，其实在交把柄。「同事当闺蜜」你一定试过——你以为多了个伴，其实多了个风险源。",
+        "footageTag": "whisper",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "职场没有树洞，只有录音笔。",
+        "footageTag": "screenshot2",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "加班别发朋友圈，老板看的是效率",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】深夜发“还在加班”的人，老板看见的是“你效率不行”。\n【3-12s 场景】同事连发三天深夜工位照，第四天老板把他调去“不重要的活”，说“看来他时间多”。\n【12-52s 口播】加班不是勋章，发出来更像个警示牌。你秀勤奋，老板读出的可能是你搞不定。真忙就闷头干，干完早回家，比晒图值钱。也别演给别人看，演久了连自己都信了。效率才是硬通货，能准点下班还把活干漂亮，才是真本事。朋友圈留着晒生活，别拿加班给自己贴标签。\n【52-60s 升华+互动】真正的高手，是把活干完然后消失。 你发过“还在加班”吗？评论区举手，我猜举手的都后悔过。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：深夜工位，同事举手机自拍配文“还在加班”｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "深夜发“还在加班”的人，老板看见的是“你效率不行”。",
+      "short50": {
+        "text": "加班不是勋章，发出来更像个警示牌。你秀勤奋，老板读出的可能是你搞不定。真忙就闷头干，干完早回家，比晒图值钱。也别演给别人看，演久了连自己都信了。效率才是硬通货，能准点下班还把活干漂亮，才是真本事。朋友圈留着晒生活，别拿加班给自己贴标签。 把加班的时间用来想怎么少加班，你会发现准点下班比深夜打卡更高级。  拿「加班别发朋友圈，老板看的是效率」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_9",
+        "aiPrompt": "[0:00-0:08] 深夜工位，同事举手机自拍配文“还在加班”, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 深夜工位，同事举手机自拍配文“还在加班”，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为秀加班是态度，其实在展示短板。「加班发朋友圈」你一定见过——你以为被看见努力，其实被看见低效。",
+        "footageTag": "night_desk",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "深夜的工位照，是递给老板的效率报告。",
+        "footageTag": "selfie",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "被甩黑锅，别急着摘，先让它背两天",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】黑锅扣头上别急着摘，先让它背两天，证据自己会说话。\n【3-12s 场景】被冤枉那周我没辩解，只把每日工作日志准时发群里，两周后真凶自己露了馅。\n【12-52s 口播】被冤枉最蠢的做法是当场炸毛，越解释越像掩饰。冷静点，把每天的进度、沟通记录公开化，不喊冤但全程留痕。时间会把真相泡出来，急着摘锅反而显得心虚。等水落石出，你不用自证，事实替你说话。职场里最狠的反击，是不动声色的专业。\n【52-60s 升华+互动】不解释的清白，比喊冤更有力量。 你被冤枉时怎么翻的盘？评论区教两招，大家都学学。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：主角平静在群里发每日工作日志截图｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "黑锅扣头上别急着摘，先让它背两天，证据自己会说话。",
+      "short50": {
+        "text": "被冤枉最蠢的做法是当场炸毛，越解释越像掩饰。冷静点，把每天的进度、沟通记录公开化，不喊冤但全程留痕。时间会把真相泡出来，急着摘锅反而显得心虚。等水落石出，你不用自证，事实替你说话。职场里最狠的反击，是不动声色的专业。 下次被冤枉，先别急，把日志发群里，让真相自己追上那个甩锅的人。  拿「被甩黑锅，别急着摘，先让它背两天」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_10",
+        "aiPrompt": "[0:00-0:08] 主角平静在群里发每日工作日志截图, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 主角平静在群里发每日工作日志截图，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为沉默是认怂，其实在攒翻盘的证据。「被甩黑锅」你一定遇过——你以为要马上澄清，其实该让记录替你开口。",
+        "footageTag": "work_log",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "黑锅背两天，真相自己会掉。",
+        "footageTag": "calm_log",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
+    },
+    {
+      "title": "离职别说真话，体面退场最值钱",
+      "cat": "职场高情商",
+      "date": "2026-08-23",
+      "source": "原创选题",
+      "kind": "topic",
+      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】离职时说“这破公司我早想走了”，下家HR也是人，会听。\n【3-12s 场景】前同事离职群发长文骂管理层，三个月后面试，对方HR正好认识他老领导。\n【12-52s 口播】离职是 endings 不是 revenge。吐槽一时爽，圈子很小，话会绕回来。体面走人，感谢带过的团队，交接清清楚楚，留住的是口碑不是情绪。你永远不知道哪天路又绕回来。把不满咽下去，把专业亮出来，离职见人品，体面的人走哪儿都有回头饭吃。\n【52-60s 升华+互动】离职见人品，体面的人走到哪都有退路。 你见过最体面的离职是啥样？评论区说说，给大家打个样。 职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。\n【画面/BGM/字幕】职场沟通纪实短片，4K，明亮通透办公光，浅景深，真实办公室场景与微表情，自然对话感，不摆拍、去表演，冷调中性光为主、暖调点缀人情味；画面：主角在工位整理文件，与同事微笑道别｜机位：三脚架侧平拍/手持自拍视角｜景别：中景（办公桌面/半身）+特写（表情/手势）｜运镜：固定机位或轻微推近，节奏随对话｜表演：真人真实职场互动，自然不浮夸，微表情到位｜焦段：手机主摄广角等效24-28mm拍环境，表情特写切2x(约50mm)｜灯光：明亮均匀办公光，冷调中性，避免顶光鬼影，暖调台灯点缀人情味｜机位高度：平视眼高｜收音：领夹麦收清对话与环境白噪音，BGM压至15%｜剪辑节奏：对话卡点，关键笑点/金句处慢推或加音效｜BGM：轻快职场｜字幕：大字字幕，关键句高亮，70% 静音可懂",
+      "hook": "离职时说“这破公司我早想走了”，下家HR也是人，会听。",
+      "short50": {
+        "text": "离职是 endings 不是 revenge。吐槽一时爽，圈子很小，话会绕回来。体面走人，感谢带过的团队，交接清清楚楚，留住的是口碑不是情绪。你永远不知道哪天路又绕回来。把不满咽下去，把专业亮出来，离职见人品，体面的人走哪儿都有回头饭吃。 离职那天把活交接利索、把感谢说到位，你会发现体面比骂街值钱十倍。  拿「离职别说真话，体面退场最值钱」这事儿，你今天就能用：先把边界立在前面，别等吃了亏才长记性。职场里最稳的活法，是踏实但不傻、温和但有刺。评论区说说你最想改的一个习惯，我挑几个回。",
+        "footageTag": "mid_职场_11",
+        "aiPrompt": "[0:00-0:08] 主角在工位整理文件，与同事微笑道别, cinematic film still, --ar 16:9\n[0:08-0:35] A close-up of the person's calm face, subtle expression, office fluorescent light, static medium shot, cinematic film still, --ar 16:9\n[0:35-1:05] The person working focused at a desk, warm desk lamp, handheld push-in, cinematic film still, --ar 16:9\n[1:05-1:35] A candid workplace interaction, two colleagues talking, natural body language, side light, cinematic film still, --ar 16:9\n[1:35-1:50] The person leaving the office relaxed, golden-hour window light, long lens compression, cinematic film still, --ar 16:9",
+        "aiPromptCn": "[0:00-0:08] 主角在工位整理文件，与同事微笑道别，电影感静帧，--ar 16:9\n[0:08-0:35] 人物平静表情特写，微妙神态，办公室冷白光，固定中景，电影感静帧，--ar 16:9\n[0:35-1:05] 人物在工位专注工作，暖色台灯，手持轻推，电影感静帧，--ar 16:9\n[1:05-1:35] 真实职场互动，两位同事交谈，自然肢体语言，侧光，电影感静帧，--ar 16:9\n[1:35-1:50] 人物轻松走出办公室，黄金时刻窗光，长焦压缩，电影感静帧，--ar 16:9"
+      },
+      "short30": {
+        "text": "你以为骂完解气，其实在给自己挖坑。「离职说真话」你一定想干过——你以为出口恶气，其实堵了后路。",
+        "footageTag": "farewell",
+        "aiPrompt": "an office worker in a quiet moment, soft light, relatable, cinematic lighting, shallow depth of field, no text, no logos, 9:16 vertical, high quality --ar 9:16"
+      },
+      "short15": {
+        "text": "离职的嘴，决定下家的门。",
+        "footageTag": "smile_bye",
+        "aiPrompt": "a person's subtle expression at work, quiet strength, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16"
+      },
+      "wcSave": "说到你了吧点个赞❤，想常看这类关注我，用得上的先收着。"
     }
   ],
   "ideaLib": [
@@ -5095,7 +5407,8 @@
       "高情商恋爱关系": "关系是要练的，点关注进我粉丝群，每周一段关系实操+答疑，系统情感课里把「好好相爱」讲透。",
       "知识科普类": "科普不止这一条，点关注进我粉丝群，每周一个硬核知识点+资料包，系统课里把底层逻辑讲明白。",
       "发布运营": "起号不是玄学，点关注进我粉丝群，每周一条实操SOP+诊断，系统运营课里带你从0跑通。",
-      "搞笑类": "开心是刚需，点关注进我粉丝群，每周一波整活素材+选题库，系统短视频课里把「让人想追」拆给你看。"
+      "搞笑类": "开心是刚需，点关注进我粉丝群，每周一波整活素材+选题库，系统短视频课里把「让人想追」拆给你看。",
+      "职场高情商": "职场不是拼谁更能忍，点关注进我粉丝群，每周一个真实职场场景拆解+答疑，系统职场课里把「怎么体面地赢」讲明白。"
     }
   }
 }
