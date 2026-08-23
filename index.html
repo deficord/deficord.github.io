@@ -613,6 +613,23 @@
     </div>
   </div>
 
+  <!-- 运营思路题库：Tab 名称与顺序设置弹窗 -->
+  <div class="modal-mask" id="opTabMask">
+    <div class="modal">
+      <h3>⚙ 运营思路题库 · Tab 设置</h3>
+      <p class="hint" style="margin-bottom:10px">下方可自定义各 Tab 分类的显示名称（不改变归类与内容），并用 ↑/↓ 调整前后顺序。改动即时保存。</p>
+      <div class="idx-tabedit">
+        <div class="idx-add-hd">✎ Tab 分类名称与顺序（改名不变归类；↑/↓ 调整前后顺序）</div>
+        <div id="opTabLabels"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="pill secondary" data-act="opTabReset">恢复默认</button>
+        <button class="pill secondary" data-act="opClose">取消</button>
+        <button class="pill" data-act="opClose">完成</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-mask" id="checkinMask">
     <div class="modal">
       <h3>⚙ 打卡项设置</h3>
@@ -1748,7 +1765,9 @@ function renderAiText(page, body){
   view = displayOrdered(page, arr0, view);
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
-  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2><button class="pill ai" data-act="airefresh" '+'>AI刷新抓取</button></div>';
+  let headBtns = '<button class="pill ai" data-act="airefresh">AI刷新抓取</button>';
+  if(page==='operation-ideas') headBtns += '<button class="pill secondary" data-act="op-settings">⚙ 设置</button>';
+  let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>'+headBtns+'</div>';
   if(m.tabs){
     if(page==='operation-ideas'){
       html += '<p class="hint">短视频脚本库：每周一自动刷新（中视频 60S+ 口播母版）。每条都是「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率中视频。内容仅作创作参考。</p>';
@@ -2044,7 +2063,9 @@ function idxRegion(name){
 const TAB_LABELS_KEY='wb_tab_labels';
 let _tabLabels=null;
 function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getItem(TAB_LABELS_KEY); _tabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _tabLabels={}; } if(!_tabLabels||typeof _tabLabels!=='object') _tabLabels={}; try{ const old=localStorage.getItem('wb_idx_tab_labels'); if(old){ const o=JSON.parse(old); if(o&&typeof o==='object' && !_tabLabels['index-track']){ _tabLabels['index-track']=o; } } }catch(e){} } return _tabLabels; }
-function loadTabLabels(page){ const all=_ensureTabLabels(); return all[page]||{}; }
+// 运营思路题库默认 Tab 显示名（改名仅影响显示，底层 cat 数据键不变；localStorage 用户覆盖优先于默认）
+const DEFAULT_TAB_LABELS = { 'operation-ideas': { '健身':'健身运动类', '生活现实句子':'现实生活类', '家庭教育':'家庭教育类', '高情商恋爱关系':'恋爱高手类', '发布运营':'发布运营类', '搞笑类':'搞笑段子类' } };
+function loadTabLabels(page){ const all=_ensureTabLabels(); const d=(DEFAULT_TAB_LABELS&&DEFAULT_TAB_LABELS[page])||{}; return Object.assign({}, d, all[page]||{}); }
 function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
 function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
 // Tab 分类显示顺序（可在设置里通过 ↑/↓ 调整，不影响数据归类与内容）
@@ -3639,6 +3660,7 @@ function bindEvents(){
   }
   attachTabLabelInputs('idxTabLabels');
   attachTabLabelInputs('finTabLabels');
+  attachTabLabelInputs('opTabLabels');
 
   const finm = $('finMask');
   function closeFinEditor(){ if(finm) finm.classList.remove('show'); }
@@ -3646,6 +3668,13 @@ function bindEvents(){
     const f=e.target.closest('[data-act]'); if(!f) return;
     if(f.dataset.act==='finClose'){ closeFinEditor(); if(currentPage==='finance-news') renderCurrent(); return; }
     if(f.dataset.act==='tabUp'||f.dataset.act==='tabDown'){ moveTabOrder('finance-news', f.dataset.cat, f.dataset.act==='tabUp'?-1:1, f.dataset.box); return; }
+  });
+  const opm = $('opTabMask');
+  if(opm) opm.addEventListener('click', e=>{
+    const f=e.target.closest('[data-act]'); if(!f) return;
+    if(f.dataset.act==='opClose'){ opm.classList.remove('show'); if(currentPage==='operation-ideas') renderCurrent(); return; }
+    if(f.dataset.act==='opTabReset'){ const all=_ensureTabLabels(); delete all['operation-ideas']; saveData(TAB_LABELS_KEY, all); const ord=_ensureTabOrder(); delete ord['operation-ideas']; saveData(TAB_ORDER_KEY, ord); renderTabLabels('operation-ideas','opTabLabels'); if(currentPage==='operation-ideas') renderCurrent(); toast('已恢复默认 Tab 名称与顺序'); return; }
+    if(f.dataset.act==='tabUp'||f.dataset.act==='tabDown'){ moveTabOrder('operation-ideas', f.dataset.cat, f.dataset.act==='tabUp'?-1:1, f.dataset.box); return; }
   });
 
   $('searchBtn').onclick = ()=> handleSearchInput($('globalSearch').value);
@@ -3706,6 +3735,7 @@ function bindEvents(){
       if(act==='idx-settings'){ openIdxEditor(); return; }
       if(act==='idxClose'){ closeIdxEditor(); if(currentPage==='index-track') renderCurrent(); return; }
       if(act==='fin-settings'){ renderTabLabels('finance-news','finTabLabels'); $('finMask').classList.add('show'); return; }
+      if(act==='op-settings'){ renderTabLabels('operation-ideas','opTabLabels'); $('opTabMask').classList.add('show'); return; }
       if(act==='stock-refresh'){ refreshStockQuotes().catch(()=>{}); return; }
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const _sf=currentStockFilter(); parsed.forEach(p=>{ if(!p.type) p.type=(_sf==='fund'?'fund':(_sf==='stock'?'stock':(isFundCode(p.code)?'fund':'stock'))); }); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
