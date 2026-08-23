@@ -820,19 +820,22 @@ apiProvider.addEventListener('change',()=>{ const p=API_PRESETS[apiProvider.valu
 // IndexedDB 存图：浏览器本地持久，刷新不丢，且不写 GitHub 仓库
 let _db=null;
 function openDB(){ return new Promise((res,rej)=>{ if(_db) return res(_db); const r=indexedDB.open('xhs_photos',1); r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains('photos')) r.result.createObjectStore('photos'); }; r.onsuccess=()=>{ _db=r.result; res(_db); }; r.onerror=()=>rej(r.error); }); }
-function photoKey(t){ return 'ph_'+hashStr(t.cat+'|'+t.title); }
-async function savePhoto(t,dataUrl){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').put({dataUrl,ts:Date.now()},photoKey(t)); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
-async function getPhoto(t){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readonly'); const rq=tx.objectStore('photos').get(photoKey(t)); rq.onsuccess=()=>res(rq.result?rq.result.dataUrl:null); rq.onerror=()=>rej(rq.error); }); }
-async function delPhoto(t){ const db=await openDB(); return new Promise((res)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').delete(photoKey(t)); tx.oncomplete=res; tx.onerror=res; }); }
-async function preloadPhoto(t){ if(!t) return; try{ const d=await getPhoto(t); if(d && curList[curIdx]===t){ t._genImg=d; render(); } }catch(e){} }
-
-function buildPrompt(t){
+function sceneOf(t){
   const shot=parseShot(t.content||'');
   let scene='';
   shot.rows.forEach(r=>{ if(r.k==='画面') scene=r.v; });
   if(!scene) scene=shot.tone||'';
   if(!scene) scene=(t.title||'')+(t.cat?('，'+t.cat):'');
-  scene=scene.slice(0,200);
+  return scene.slice(0,200);
+}
+function photoKey(t){ return 'ph_'+hashStr(t.cat+'|'+t.title); }
+async function savePhoto(t,dataUrl){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').put({dataUrl,ts:Date.now(),sig:sceneOf(t)},photoKey(t)); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function getPhoto(t){ const db=await openDB(); return new Promise((res,rej)=>{ const tx=db.transaction('photos','readonly'); const rq=tx.objectStore('photos').get(photoKey(t)); rq.onsuccess=()=>{ const r=rq.result; if(!r){ res(null); return; } if(typeof r.sig==='string' && r.sig!==sceneOf(t)){ const dt=db.transaction('photos','readwrite'); dt.objectStore('photos').delete(photoKey(t)); res(null); return; } res(r.dataUrl); }; rq.onerror=()=>rej(rq.error); }); }
+async function delPhoto(t){ const db=await openDB(); return new Promise((res)=>{ const tx=db.transaction('photos','readwrite'); tx.objectStore('photos').delete(photoKey(t)); tx.oncomplete=res; tx.onerror=res; }); }
+async function preloadPhoto(t){ if(!t) return; try{ const d=await getPhoto(t); if(d && curList[curIdx]===t){ t._genImg=d; render(); } }catch(e){} }
+
+function buildPrompt(t){
+  const scene=sceneOf(t);
   return scene+'。小红书风格 3:4 竖版配图，高清写实摄影感，电影级打光，留白构图，生活化氛围，画面无文字无水印无logo';
 }
 async function urlToDataUrl(u){ const r=await fetch(u); const b=await r.blob(); return await new Promise((res,rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=rej; fr.readAsDataURL(b); }); }
