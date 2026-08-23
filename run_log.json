@@ -1,9 +1,7 @@
 {
   "indexTrack": {
-    "lastStart": "2026-08-22T03:28:38.272Z",
-    "lastEnd": "2026-08-22T03:28:38.285Z",
-    "lastStatus": "ok",
-    "note": "manual refresh 2026-08-22 real data (8/21 close)"
+    "lastStart": "2026-08-23T08:30:28.136Z",
+    "lastStatus": "running"
   },
   "stockJudgments": {
     "lastStart": "2026-08-22T01:31:51.497Z",
