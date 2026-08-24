@@ -10,9 +10,11 @@
     "note": "manual refresh 2026-08-22 real data"
   },
   "financeNews": {
-    "lastStart": "2026-08-22T01:31:51.497Z",
-    "lastEnd": "2026-08-22T01:31:51.497Z",
-    "lastStatus": "ok",
-    "note": "manual refresh 2026-08-22 real data"
+    "lastStart": "2026-08-24T07:15:53.858Z",
+    "lastStatus": "running"
+  },
+  "healthNews": {
+    "lastStart": "2026-08-24T07:16:22.643Z",
+    "lastStatus": "running"
   }
 }
