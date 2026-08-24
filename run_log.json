@@ -5,7 +5,9 @@
   },
   "stockJudgments": {
     "lastStart": "2026-08-24T07:27:49.452Z",
-    "lastStatus": "running"
+    "lastEnd": "2026-08-24T07:36:40.049Z",
+    "lastStatus": "ok",
+    "note": ""
   },
   "financeNews": {
     "lastStart": "2026-08-24T07:15:53.858Z",
@@ -17,5 +19,11 @@
     "lastStart": "2026-08-24T07:16:22.643Z",
     "lastStatus": "ok",
     "lastEnd": "2026-08-24T07:34:01.685Z"
+  },
+  "selfheal": {
+    "lastStart": "2026-08-24T08:00:26.920Z",
+    "lastEnd": "2026-08-24T08:01:10.109Z",
+    "lastStatus": "ok",
+    "note": "全14模块新鲜,无陈旧,未改数据未部署"
   }
 }
