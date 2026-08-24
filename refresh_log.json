@@ -1,23 +1,23 @@
 {
-  "checkedAt": "2026-08-23T08:41:44.796Z",
-  "bjToday": "2026-08-23",
+  "checkedAt": "2026-08-24T07:32:17.381Z",
+  "bjToday": "2026-08-24",
   "allFresh": false,
   "stale": [
-    "sideHustle 最新 2026-08-20 (3天前)"
+    "stockJudgments[510300] asOf 2026-08-22 (2天前)",
+    "stockJudgments[600433] asOf 2026-08-22 (2天前)",
+    "stockJudgments[000001] asOf 2026-08-22 (2天前)"
   ],
   "fresh": [
-    "financeNews[市场综述] 2026-08-22",
-    "financeNews[黄金大宗] 2026-08-22",
-    "financeNews[AI科技] 2026-08-22",
-    "financeNews[政策宏观] 2026-08-22",
-    "financeNews[个股公司] 2026-08-22",
-    "financeNews[基金ETF] 2026-08-22",
-    "financeNews[加密货币] 2026-08-22",
-    "healthNews 2026-08-22",
-    "siteVersion 2026-08-23.1640",
-    "stockJudgments[510300] 2026-08-22",
-    "stockJudgments[600433] 2026-08-22",
-    "stockJudgments[000001] 2026-08-22",
-    "indexTrack 12 条 (周末休市，跳过 asOf 检查)"
+    "financeNews[市场综述] 2026-08-24",
+    "financeNews[黄金大宗] 2026-08-24",
+    "financeNews[AI科技] 2026-08-24",
+    "financeNews[政策宏观] 2026-08-24",
+    "financeNews[个股公司] 2026-08-24",
+    "financeNews[基金ETF] 2026-08-24",
+    "financeNews[加密货币] 2026-08-24",
+    "healthNews 2026-08-24",
+    "sideHustle 2026-08-24",
+    "siteVersion 2026-08-24.15:28",
+    "indexTrack 12 条 asOf 新鲜(<=3天)"
   ]
 }
