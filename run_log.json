@@ -9,10 +9,13 @@
   },
   "financeNews": {
     "lastStart": "2026-08-24T07:15:53.858Z",
-    "lastStatus": "running"
+    "lastEnd": "2026-08-24T07:33:07.099Z",
+    "lastStatus": "ok",
+    "note": ""
   },
   "healthNews": {
     "lastStart": "2026-08-24T07:16:22.643Z",
-    "lastStatus": "running"
+    "lastStatus": "ok",
+    "lastEnd": "2026-08-24T07:34:01.685Z"
   }
 }
