@@ -472,6 +472,83 @@
   .dca-summary{background:#ECFEFF;border:1px solid #A5F3FC;border-radius:8px;padding:8px 10px;font-size:13px;color:#0E7490;margin-top:6px;}
   .dca-summary b{color:#0E7490;}
 
+/* === 寸照生成工具(idphoto) === */
+.idp-wrap{max-width:720px;margin:0 auto;}
+.idp-hero{background:linear-gradient(135deg,#3B82F6 0%,#2563EB 50%,#1D4ED8 100%);color:#fff;border-radius:14px;padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;box-shadow:0 4px 14px rgba(37,99,235,.18);}
+.idp-hero .idp-logo{width:54px;height:54px;background:rgba(255,255,255,.18);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.idp-hero .idp-name{font-size:18px;font-weight:700;line-height:1.2;}
+.idp-hero .idp-sub{font-size:12px;opacity:.92;margin-top:3px;line-height:1.5;}
+.idp-hero .idp-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+.idp-hero .idp-tag{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.28);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;}
+.idp-hero .idp-portrait{width:80px;height:100px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;color:#94A3B8;font-size:11px;}
+.idp-hero .idp-portrait img{width:100%;height:100%;object-fit:cover;}
+.idp-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.idp-action{padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s ease;font-family:inherit;}
+.idp-action.primary{background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+.idp-action.primary:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.35);}
+.idp-action.ghost{background:#fff;color:#111827;border:1.5px solid #E5E7EB;}
+.idp-action.ghost:hover{border-color:#2563EB;color:#2563EB;}
+.idp-tips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0 14px;}
+.idp-tip{background:#EFF6FF;color:#1E40AF;font-size:12px;padding:4px 10px;border-radius:14px;}
+.idp-tip.ok::before{content:'✓';color:#10B981;margin-right:3px;font-weight:700;}
+.idp-purple{background:linear-gradient(135deg,#A78BFA 0%,#8B5CF6 100%);color:#fff;border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.idp-purple .idp-fav{cursor:pointer;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.3);color:#fff;padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;font-family:inherit;}
+.idp-purple .idp-share{cursor:pointer;background:#fff;color:#7C3AED;padding:7px 18px;border-radius:10px;font-size:13px;font-weight:700;border:none;font-family:inherit;}
+.idp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+.idp-step{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 10px 12px;text-align:center;position:relative;}
+.idp-step .idp-num{position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:24px;height:24px;background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+.idp-step .idp-icon{font-size:28px;margin:6px 0 4px;}
+.idp-step .idp-st{font-size:13px;font-weight:700;color:#111827;margin-bottom:3px;}
+.idp-step .idp-sd{font-size:11px;color:#6B7280;line-height:1.5;}
+.idp-result{background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;}
+.idp-result-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:6px;}
+.idp-result-hd h3{margin:0;font-size:14px;color:#111827;}
+.idp-row{margin-bottom:10px;}
+.idp-row label{display:block;font-size:12px;color:#374151;margin-bottom:6px;font-weight:600;}
+.idp-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.idp-chip{padding:6px 12px;border:1.5px solid #E5E7EB;background:#fff;border-radius:18px;font-size:12.5px;cursor:pointer;transition:all .15s ease;color:#374151;font-family:inherit;}
+.idp-chip:hover{border-color:#2563EB;color:#2563EB;}
+.idp-chip.on{background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;border-color:transparent;font-weight:700;box-shadow:0 2px 6px rgba(37,99,235,.25);}
+.idp-color{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.idp-color label.swatch{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2.5px solid #fff;box-shadow:0 0 0 1.5px #E5E7EB;transition:all .15s ease;display:inline-block;}
+.idp-color label.swatch:hover{transform:scale(1.1);}
+.idp-color label.swatch.on{box-shadow:0 0 0 2.5px #2563EB;transform:scale(1.08);}
+.idp-color input[type=color]{width:40px;height:32px;border:1px solid var(--border);border-radius:6px;padding:2px;cursor:pointer;background:#fff;}
+.idp-preview{display:flex;justify-content:center;align-items:center;background:#F3F4F6;border-radius:10px;padding:14px;min-height:200px;}
+.idp-preview img{max-width:100%;max-height:280px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:4px;}
+.idp-preview .idp-empty{color:#9CA3AF;font-size:13px;text-align:center;}
+.idp-btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.idp-btn{padding:9px 16px;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease;display:inline-flex;align-items:center;gap:5px;font-family:inherit;}
+.idp-btn.primary{background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;}
+.idp-btn.primary:hover{box-shadow:0 3px 10px rgba(37,99,235,.35);}
+.idp-btn.secondary{background:#fff;color:#374151;border:1.5px solid #E5E7EB;}
+.idp-btn.secondary:hover{border-color:#2563EB;color:#2563EB;}
+.idp-btn:disabled{opacity:.5;cursor:not-allowed;}
+.idp-foot{text-align:center;padding:10px 0 20px;color:#6B7280;font-size:12px;}
+.idp-foot a{color:#2563EB;text-decoration:none;margin:0 4px;cursor:pointer;}
+.idp-foot a:hover{text-decoration:underline;}
+.idp-cam-mask{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:60;flex-direction:column;gap:12px;padding:14px;}
+.idp-cam-mask.show{display:flex;}
+.idp-cam-mask video{width:min(92vw,520px);max-height:70vh;background:#000;border-radius:10px;object-fit:cover;}
+.idp-cam-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.idp-cam-tip{color:#fff;font-size:13px;text-align:center;}
+.idp-fav-list{max-height:50vh;overflow-y:auto;}
+.idp-fav-item{display:flex;align-items:center;gap:10px;padding:8px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;}
+.idp-fav-item img{width:54px;height:54px;object-fit:cover;border-radius:6px;flex-shrink:0;}
+.idp-fav-item .idp-fav-info{flex:1;font-size:12px;color:#374151;min-width:0;}
+.idp-fav-item .idp-fav-info b{display:block;color:#111827;font-size:13px;margin-bottom:2px;}
+.idp-fav-item .idp-fav-info small{color:#9CA3AF;}
+.idp-fav-item button{padding:5px 10px;font-size:12px;border:none;background:#FEE2E2;color:#DC2626;border-radius:6px;cursor:pointer;font-family:inherit;}
+.idp-fav-item button:hover{background:#FCA5A5;}
+.idp-fav-item button.dl{background:#DBEAFE;color:#2563EB;margin-right:4px;}
+.idp-fav-item button.dl:hover{background:#93C5FD;}
+@media(max-width:480px){
+  .idp-actions{grid-template-columns:1fr;}
+  .idp-steps{grid-template-columns:1fr;}
+  .idp-hero{flex-wrap:wrap;}
+  .idp-hero .idp-portrait{width:64px;height:80px;}
+}
+
 </style>
 </head>
 <body>
@@ -751,6 +828,7 @@ const GROUPS = [
   {n:6, title:'📑 通用工具', items:[
     {id:'knowledge-base', label:'知识库笔记'},
     {id:'todo-list', label:'今日待办清单'},
+    {id:'id-photo', label:'智能寸照生成'},
   ]},
 ];
 
@@ -828,6 +906,7 @@ const MODULES = {
     {k:'note',l:'备注',t:'textarea'},
   ]},
   'todo-list':{type:'todo', title:'今日待办清单', key:'wb_todo'},
+  'id-photo':{type:'idPhoto', title:'智能寸照生成', key:'__idphoto', home:true},
 };
 
 const SYNC_KEYS = ['wb_knowledge','wb_account_observe','wb_work_review','wb_product_lib','wb_script_lib','wb_prompt_lib','wb_record_review','wb_side_idea','wb_project_eval','wb_project_test','wb_project_archive','wb_holdings','wb_stock_holdings','wb_rebalance','wb_checkinRecords','wb_body_note','wb_todo','wb_watchlist','wb_custom_modules','wb_group_overrides','wb_group_order'];
@@ -1110,6 +1189,7 @@ function renderPage(page){
   else if(m.type==='checkin') renderCheckin(body);
   else if(m.type==='checkinHistory') renderCheckinHistory(body);
   else if(m.type==='todo') renderTodo(body);
+  else if(m.type==='idPhoto') renderIdPhoto(body);
 }
 
 /* ============== 统一模块配置（系统 + 自定义共用） ============== */
@@ -2883,6 +2963,519 @@ function renderTodo(body){
   });
   if(arr.length){ html += '</div>'; }
   body.innerHTML = html;
+}
+
+/* ============== 寸照生成(idphoto) ============== */
+// 6 种标准证件照尺寸（px @300dpi；1mm≈11.811px）
+const IDP_SIZES = {
+  '1c':  {label:'一寸',   w:295, h:413, mm:'25×35'},
+  '2c':  {label:'二寸',   w:413, h:579, mm:'35×49'},
+  'x1c': {label:'小一寸', w:260, h:378, mm:'22×32'},
+  'x2c': {label:'小二寸', w:390, h:567, mm:'33×48'},
+  'd1c': {label:'大一寸', w:390, h:567, mm:'33×48'},
+  'sfz': {label:'身份证', w:307, h:378, mm:'26×32'},
+};
+const idp = {
+  srcImg: null,
+  resultCanvas: null,
+  size: '1c',
+  color: '#FF0000',
+  customColor: '#FF0000',
+  busy: false,
+  camStream: null,
+  favKey: 'wb_idphoto_fav',
+};
+function idpLoadFav(){ try{ return JSON.parse(localStorage.getItem(idp.favKey)||'[]'); }catch(e){ return []; } }
+function idpSaveFav(arr){ try{ localStorage.setItem(idp.favKey, JSON.stringify(arr)); }catch(e){ toast('本地存储写入失败'); } }
+
+function renderIdPhoto(body){
+  const chips = Object.entries(IDP_SIZES).map(([k,v])=>`<span class="idp-chip${idp.size===k?' on':''}" data-size="${k}">${v.label} (${v.mm}mm)</span>`).join('');
+  body.innerHTML = `
+    <div class="idp-wrap">
+      <div class="idp-hero">
+        <div class="idp-logo">🪪</div>
+        <div style="flex:1;min-width:0;">
+          <div class="idp-name">智能寸照生成</div>
+          <div class="idp-sub">手机/电脑一键生成标准证件照 · 纯本地处理 · 零上传</div>
+          <div class="idp-tags">
+            <span class="idp-tag">✂ 智能裁剪</span>
+            <span class="idp-tag">🎨 红蓝白底</span>
+            <span class="idp-tag">⚡ 秒存下载</span>
+            <span class="idp-tag">🔒 零隐私风险</span>
+          </div>
+        </div>
+        <div class="idp-portrait" id="idpHeroPrev">预览</div>
+      </div>
+
+      <div class="idp-actions">
+        <button class="idp-action primary" data-act="idp-camera">📷 拍照</button>
+        <button class="idp-action ghost" data-act="idp-album">🖼️ 从相册选择</button>
+      </div>
+
+      <div class="idp-tips">
+        <span class="idp-tip ok">正脸平视</span>
+        <span class="idp-tip ok">双耳入镜</span>
+        <span class="idp-tip ok">单人脸</span>
+        <span class="idp-tip ok">不戴帽/不遮挡</span>
+        <span class="idp-tip ok">双眼睁开</span>
+        <span class="idp-tip ok">身体端正</span>
+        <span class="idp-tip ok">双肩放平</span>
+      </div>
+
+      <div class="idp-purple">
+        <button class="idp-fav" data-act="idp-openFav">⭐ 我的收藏</button>
+        <button class="idp-share" data-act="idp-share">↗ 转发分享</button>
+      </div>
+
+      <div class="idp-steps">
+        <div class="idp-step"><span class="idp-num">1</span><div class="idp-icon">📷</div><div class="idp-st">拍照/选图</div><div class="idp-sd">正脸·双肩水平·光线均匀</div></div>
+        <div class="idp-step"><span class="idp-num">2</span><div class="idp-icon">✨</div><div class="idp-st">智能抠图</div><div class="idp-sd">自动去背景·智能构图</div></div>
+        <div class="idp-step"><span class="idp-num">3</span><div class="idp-icon">💾</div><div class="idp-st">换底下载</div><div class="idp-sd">红/蓝/白/自定义·存到本地</div></div>
+      </div>
+
+      <div class="idp-result">
+        <div class="idp-result-hd">
+          <h3>🪄 智能处理</h3>
+          <span style="font-size:12px;color:#6B7280;">本地 Canvas 抠图，零上传</span>
+        </div>
+
+        <div class="idp-row">
+          <label>📐 证件照尺寸</label>
+          <div class="idp-chips" id="idpSizeChips">${chips}</div>
+        </div>
+
+        <div class="idp-row">
+          <label>🎨 背景颜色</label>
+          <div class="idp-color" id="idpColorRow">
+            <label class="swatch on" data-color="#FF0000" style="background:#FF0000" title="红"></label>
+            <label class="swatch" data-color="#0066CC" style="background:#0066CC" title="蓝"></label>
+            <label class="swatch" data-color="#FFFFFF" style="background:#FFFFFF" title="白"></label>
+            <input type="color" id="idpCustomColor" value="${idp.customColor}" title="自定义">
+            <span style="font-size:12px;color:#6B7280;">点击色块或选自定义</span>
+          </div>
+        </div>
+
+        <div class="idp-preview" id="idpPreview">
+          <div class="idp-empty">👆 请先拍照或从相册选择一张照片</div>
+        </div>
+
+        <div class="idp-btns">
+          <button class="idp-btn primary" data-act="idp-process" id="idpProcBtn" disabled>✨ 一键生成</button>
+          <button class="idp-btn secondary" data-act="idp-resample" id="idpResBtn" disabled>🎯 重新采背景</button>
+          <button class="idp-btn primary" data-act="idp-download" id="idpDlBtn" disabled>💾 下载 PNG</button>
+          <button class="idp-btn secondary" data-act="idp-fav" id="idpFavBtn" disabled>⭐ 收藏</button>
+          <button class="idp-btn secondary" data-act="idp-reset">🔄 重置</button>
+        </div>
+      </div>
+
+      <div class="idp-foot">
+        <a data-act="idp-privacy">《隐私政策》</a> · <a data-act="idp-help">《使用说明》</a>
+        <div style="margin-top:6px;">© 智能寸照生成 · 纯前端 · 数据不出浏览器</div>
+      </div>
+
+      <input type="file" id="idpFileIn" accept="image/*" style="display:none">
+    </div>
+
+    <div class="idp-cam-mask" id="idpCamMask">
+      <div class="idp-cam-tip">📷 请正脸平视，双肩放平，光线均匀</div>
+      <video id="idpVideo" autoplay playsinline muted></video>
+      <div class="idp-cam-btns">
+        <button class="idp-btn primary" data-act="idp-shot">📸 拍摄</button>
+        <button class="idp-btn secondary" data-act="idp-camCancel">取消</button>
+      </div>
+    </div>
+  `;
+  idpBindEvents();
+  const m = $('idpCamMask'); if(m) m.classList.remove('show');
+}
+
+function idpBindEvents(){
+  const w = $('page-id-photo'); if(!w) return;
+  w.onclick = function(e){
+    const t = e.target.closest('[data-act]');
+    if(!t) return;
+    const a = t.dataset.act;
+    if(a==='idp-camera') idpOpenCamera();
+    else if(a==='idp-album') { const fi = $('idpFileIn'); if(fi) fi.click(); }
+    else if(a==='idp-shot') idpShot();
+    else if(a==='idp-camCancel') idpCloseCamera();
+    else if(a==='idp-process') idpProcess(false);
+    else if(a==='idp-resample') idpProcess(true);
+    else if(a==='idp-download') idpDownload();
+    else if(a==='idp-fav') idpFav();
+    else if(a==='idp-openFav') idpOpenFav();
+    else if(a==='idp-share') idpShare();
+    else if(a==='idp-reset') idpReset();
+    else if(a==='idp-privacy') idpShowPrivacy();
+    else if(a==='idp-help') idpShowHelp();
+  };
+  w.querySelectorAll('#idpSizeChips .idp-chip').forEach(c=>{
+    c.onclick = ()=>{
+      w.querySelectorAll('#idpSizeChips .idp-chip').forEach(x=>x.classList.remove('on'));
+      c.classList.add('on');
+      idp.size = c.dataset.size;
+      if(idp.srcImg) idpProcess(false);
+    };
+  });
+  w.querySelectorAll('#idpColorRow .swatch').forEach(s=>{
+    s.onclick = ()=>{
+      w.querySelectorAll('#idpColorRow .swatch').forEach(x=>x.classList.remove('on'));
+      s.classList.add('on');
+      idp.color = s.dataset.color;
+      if(idp.srcImg) idpProcess(false);
+    };
+  });
+  const cc = $('idpCustomColor');
+  if(cc) cc.oninput = ()=>{
+    w.querySelectorAll('#idpColorRow .swatch').forEach(x=>x.classList.remove('on'));
+    idp.color = cc.value;
+    idp.customColor = cc.value;
+    if(idp.srcImg) idpProcess(false);
+  };
+  const fi = $('idpFileIn');
+  if(fi) fi.onchange = (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(f) idpLoadFile(f);
+    e.target.value = '';
+  };
+}
+
+function idpOpenCamera(){
+  if(idp.busy){ toast('正在处理中…'); return; }
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    toast('当前浏览器不支持摄像头，请用「从相册选择」');
+    return;
+  }
+  const mask = $('idpCamMask'); mask.classList.add('show');
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:1280}}, audio:false})
+    .then(stream=>{
+      idp.camStream = stream;
+      const v = $('idpVideo');
+      v.srcObject = stream;
+      v.play().catch(()=>{});
+    })
+    .catch(err=>{
+      const m = $('idpCamMask'); if(m) m.classList.remove('show');
+      const name = err && err.name;
+      if(name==='NotAllowedError' || name==='PermissionDeniedError') toast('请允许浏览器使用摄像头权限');
+      else if(name==='NotFoundError' || name==='OverconstrainedError') toast('未检测到摄像头，请用「从相册选择」');
+      else toast('摄像头启动失败：'+(err && err.message || err));
+    });
+}
+
+function idpCloseCamera(){
+  const mask = $('idpCamMask'); if(mask) mask.classList.remove('show');
+  if(idp.camStream){ try{ idp.camStream.getTracks().forEach(t=>t.stop()); }catch(e){} idp.camStream = null; }
+  const v = $('idpVideo'); if(v) v.srcObject = null;
+}
+
+function idpShot(){
+  if(!idp.camStream){ toast('摄像头未就绪'); return; }
+  const v = $('idpVideo');
+  if(!v || !v.videoWidth){ toast('视频未就绪，请稍候'); return; }
+  const w = v.videoWidth, h = v.videoHeight;
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d').drawImage(v, 0, 0, w, h);
+  idpCloseCamera();
+  const img = new Image();
+  img.onload = ()=>{ idpSetSrc(img); };
+  img.onerror = ()=>{ toast('拍照解析失败'); };
+  img.src = c.toDataURL('image/png');
+}
+
+function idpLoadFile(f){
+  if(idp.busy){ toast('正在处理中…'); return; }
+  if(!f.type || !/^image\//.test(f.type)){ toast('请选择图片文件'); return; }
+  if(f.size > 20*1024*1024){ toast('图片超过 20MB，请压缩后再试'); return; }
+  const rd = new FileReader();
+  rd.onload = ()=>{
+    const img = new Image();
+    img.onload = ()=>{ idpSetSrc(img); };
+    img.onerror = ()=>{ toast('图片解析失败，可能格式不支持'); };
+    img.src = rd.result;
+  };
+  rd.onerror = ()=>{ toast('文件读取失败'); };
+  rd.readAsDataURL(f);
+}
+
+function idpSetSrc(img){
+  idp.srcImg = img;
+  $('idpProcBtn').disabled = false;
+  $('idpResBtn').disabled = false;
+  const hp = $('idpHeroPrev');
+  if(hp){ hp.textContent = ''; const pimg = new Image(); pimg.src = img.src; pimg.style.cssText='width:100%;height:100%;object-fit:cover;'; hp.appendChild(pimg); }
+  toast('图片已加载，正在生成…');
+  idpProcess(false);
+}
+
+function idpProcess(resample){
+  if(!idp.srcImg){ toast('请先选择照片'); return; }
+  if(idp.busy) return;
+  idp.busy = true;
+  try{
+    const img = idp.srcImg;
+    const sw = img.naturalWidth || img.width || 0;
+    const sh = img.naturalHeight || img.height || 0;
+    if(!sw || !sh){ toast('图片尺寸异常'); idp.busy=false; return; }
+    const size = IDP_SIZES[idp.size];
+    const targetRatio = size.w / size.h;
+    const srcRatio = sw / sh;
+    let cropW, cropH, cropX, cropY;
+    if(srcRatio > targetRatio){
+      cropH = sh; cropW = Math.round(sh * targetRatio);
+      cropX = Math.round((sw - cropW) / 2); cropY = 0;
+    } else {
+      cropW = sw; cropH = Math.round(sw / targetRatio);
+      cropX = 0; cropY = Math.round((sh - cropH) / 2);
+    }
+    if(cropW <= 0 || cropH <= 0){ toast('裁剪参数异常'); idp.busy=false; return; }
+    const cropC = document.createElement('canvas');
+    cropC.width = cropW; cropC.height = cropH;
+    const cctx = cropC.getContext('2d');
+    cctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+    const bg = idpSampleBg(cropC, resample);
+    const imgData = cctx.getImageData(0, 0, cropW, cropH);
+    const d = imgData.data;
+    const tLow = 36, tHigh = 86;
+    const bR = bg[0], bG = bg[1], bB = bg[2];
+    for(let i=0;i<d.length;i+=4){
+      const r=d[i], g=d[i+1], b=d[i+2];
+      const dr=r-bR, dg=g-bG, db=b-bB;
+      const dist = Math.sqrt(0.30*dr*dr + 0.59*dg*dg + 0.11*db*db);
+      let a;
+      if(dist <= tLow) a = 0;
+      else if(dist >= tHigh) a = 255;
+      else a = Math.round((dist - tLow) / (tHigh - tLow) * 255);
+      d[i+3] = a;
+    }
+    cctx.putImageData(imgData, 0, 0);
+    const out = document.createElement('canvas');
+    out.width = size.w; out.height = size.h;
+    const octx = out.getContext('2d');
+    octx.fillStyle = idp.color;
+    octx.fillRect(0, 0, size.w, size.h);
+    const targetImgH = Math.round(size.h * 0.82);
+    const targetImgW = Math.round(targetImgH * cropW / cropH);
+    const dx = Math.round((size.w - targetImgW) / 2);
+    const dy = Math.round(size.h * 0.06);
+    octx.drawImage(cropC, dx, dy, targetImgW, targetImgH);
+    idp.resultCanvas = out;
+    const pv = $('idpPreview');
+    if(pv){
+      pv.innerHTML = '';
+      const show = new Image();
+      show.src = out.toDataURL('image/png');
+      show.style.cssText = 'max-width:100%;max-height:280px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:4px;';
+      pv.appendChild(show);
+    }
+    $('idpDlBtn').disabled = false;
+    $('idpFavBtn').disabled = false;
+  } catch(e){
+    console.error('[idphoto]', e);
+    toast('生成失败：'+(e && e.message || e));
+  } finally {
+    idp.busy = false;
+  }
+}
+
+function idpSampleBg(canvas, resample){
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  const N = 8;
+  const samples = resample ? [
+    ctx.getImageData(Math.floor(w/2)-4, 0, 8, 8),
+    ctx.getImageData(Math.floor(w/2)-4, h-8, 8, 8),
+    ctx.getImageData(0, Math.floor(h/2)-4, 8, 8),
+    ctx.getImageData(w-8, Math.floor(h/2)-4, 8, 8),
+  ] : [
+    ctx.getImageData(0, 0, N, N),
+    ctx.getImageData(w-N, 0, N, N),
+    ctx.getImageData(0, h-N, N, N),
+    ctx.getImageData(w-N, h-N, N, N),
+  ];
+  let r=0,g=0,b=0,cnt=0;
+  for(const s of samples){
+    for(let i=0;i<s.data.length;i+=4){
+      if(s.data[i+3] === 0) continue;
+      r += s.data[i]; g += s.data[i+1]; b += s.data[i+2]; cnt++;
+    }
+  }
+  if(cnt === 0) return [255,255,255];
+  return [Math.round(r/cnt), Math.round(g/cnt), Math.round(b/cnt)];
+}
+
+function idpDownload(){
+  if(!idp.resultCanvas){ toast('请先生成'); return; }
+  try{
+    const size = IDP_SIZES[idp.size];
+    const fname = `寸照_${size.label}_${idp.color.replace('#','')}_${Date.now()}.png`;
+    idp.resultCanvas.toBlob(blob=>{
+      if(!blob){ toast('生成失败'); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = fname; document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+      toast('已下载 ' + fname);
+    }, 'image/png');
+  } catch(e){
+    toast('下载失败：'+e.message);
+  }
+}
+
+function idpFav(){
+  if(!idp.resultCanvas){ toast('请先生成'); return; }
+  try{
+    const arr = idpLoadFav();
+    const size = IDP_SIZES[idp.size];
+    arr.unshift({ time:Date.now(), label:size.label, color:idp.color, data:idp.resultCanvas.toDataURL('image/png') });
+    if(arr.length > 12) arr.length = 12;
+    idpSaveFav(arr);
+    toast('已收藏到本地');
+  } catch(e){
+    toast('收藏失败：'+e.message);
+  }
+}
+
+function idpOpenFav(){
+  const arr = idpLoadFav();
+  let body = '<div id="idpFavList" class="idp-fav-list">';
+  if(arr.length === 0){
+    body += '<div style="text-align:center;padding:30px;color:#9CA3AF;font-size:13px;">还没有收藏，先去生成一张吧～</div>';
+  } else {
+    arr.forEach((it, idx)=>{
+      const d = new Date(it.time);
+      const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      body += `<div class="idp-fav-item"><img src="${it.data}" alt=""><div class="idp-fav-info"><b>${esc(it.label)} · 底色 ${esc(it.color)}</b><small>${ds}</small></div><button class="dl" data-fav-dl="${idx}">下载</button><button data-fav-del="${idx}">删除</button></div>`;
+    });
+  }
+  body += '</div>';
+  idpOpenModal('⭐ 我的收藏', body, [{label:'关闭', cls:'secondary', on:()=>idpCloseModal()}]);
+  const root = $('idpFavList');
+  if(root){
+    root.onclick = (e)=>{
+      const dl = e.target.closest('[data-fav-dl]');
+      const del = e.target.closest('[data-fav-del]');
+      if(dl){
+        const i = Number(dl.dataset.favDl);
+        const arr2 = idpLoadFav();
+        const it = arr2[i]; if(!it) return;
+        const a = document.createElement('a');
+        a.href = it.data;
+        a.download = `收藏_${it.label}_${it.color.replace('#','')}_${it.time}.png`;
+        document.body.appendChild(a); a.click(); a.remove();
+        toast('已下载');
+      } else if(del){
+        if(!confirm('确定删除这条收藏？')) return;
+        const arr2 = idpLoadFav();
+        arr2.splice(Number(del.dataset.favDel), 1);
+        idpSaveFav(arr2);
+        idpOpenFav();
+      }
+    };
+  }
+}
+
+function idpShare(){
+  if(!idp.resultCanvas){ toast('请先生成'); return; }
+  const size = IDP_SIZES[idp.size];
+  const text = `我刚用「智能寸照生成」做了张 ${size.label}（${size.mm}mm）证件照，底色 ${idp.color}。纯本地处理，零隐私风险。`;
+  if(navigator.share){
+    idp.resultCanvas.toBlob(blob=>{
+      if(!blob){ toast('分享失败'); return; }
+      const file = new File([blob], `寸照_${size.label}.png`, {type:'image/png'});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({title:'智能寸照生成', text, files:[file]}).catch(()=>{});
+      } else {
+        navigator.share({title:'智能寸照生成', text}).catch(()=>{});
+      }
+    }, 'image/png');
+  } else if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('已复制分享文案')).catch(()=>toast(text));
+  } else {
+    toast(text);
+  }
+}
+
+function idpReset(){
+  if(idp.busy) return;
+  idp.srcImg = null;
+  idp.resultCanvas = null;
+  const pv = $('idpPreview');
+  if(pv) pv.innerHTML = '<div class="idp-empty">👆 请先拍照或从相册选择一张照片</div>';
+  const hp = $('idpHeroPrev');
+  if(hp) hp.textContent = '预览';
+  $('idpProcBtn').disabled = true;
+  $('idpResBtn').disabled = true;
+  $('idpDlBtn').disabled = true;
+  $('idpFavBtn').disabled = true;
+  toast('已重置');
+}
+
+function idpShowPrivacy(){
+  const html = `<div style="font-size:13px;line-height:1.7;color:#374151;">
+    <p><b>🔒 零上传、零隐私风险</b></p>
+    <p>本工具全部处理在您的浏览器本地完成，您的照片<strong>不会上传到任何服务器</strong>。</p>
+    <p>具体包括：</p>
+    <ul style="margin:6px 0 10px 20px;">
+      <li>拍照/选图：仅访问本地摄像头或本地文件</li>
+      <li>智能抠图：使用浏览器 Canvas API，零网络请求</li>
+      <li>换底/裁剪：本地 Canvas 合成</li>
+      <li>下载：浏览器本地下载到您的设备</li>
+      <li>收藏：仅保存到本机 localStorage，不联网同步</li>
+    </ul>
+    <p>本工具<strong>不调用任何云端 AI 服务</strong>（不调图谱、不调第三方抠图 API），您的证件照永远不出浏览器。</p>
+    <p style="color:#6B7280;font-size:12px;margin-top:10px;">如有任何疑问，可在「设置」页查看本工具源码或联系开发者。</p>
+  </div>`;
+  idpOpenModal('🔒 隐私政策', html, [{label:'我知道了', cls:'primary', on:()=>idpCloseModal()}]);
+}
+
+function idpShowHelp(){
+  const html = `<div style="font-size:13px;line-height:1.7;color:#374151;">
+    <p><b>📖 三步做好寸照</b></p>
+    <ol style="margin:6px 0 10px 20px;">
+      <li><b>拍照或选图</b>：在纯色背景（白墙/浅色墙）前正脸拍摄，光线均匀，双肩放平。</li>
+      <li><b>选尺寸和底色</b>：选证件照规格（一寸/二寸/护照等），选底色（红/蓝/白/自定义）。</li>
+      <li><b>下载或收藏</b>：满意后点「下载 PNG」保存到本地，或「收藏」存到本机。</li>
+    </ol>
+    <p><b>💡 拍照建议</b></p>
+    <ul style="margin:6px 0 10px 20px;">
+      <li>正脸平视、双耳入镜、双眼睁开</li>
+      <li>不戴帽、不遮挡眉眼</li>
+      <li>身体端正、双肩放平</li>
+      <li>纯色背景（白墙最佳），便于自动抠图</li>
+    </ul>
+    <p><b>🎨 关于自动抠图</b></p>
+    <p>本工具采用 Canvas 颜色距离算法自动去除纯色背景。<strong>纯背景照片效果最佳</strong>；复杂背景下可点「重新采背景」让工具用四边中点采样。</p>
+    <p><b>🔄 重新采背景</b></p>
+    <p>工具默认从图片四角采样背景色。若您的主体在边缘导致采样不准，点此按钮可改用四边中点采样。</p>
+  </div>`;
+  idpOpenModal('📖 使用说明', html, [{label:'我知道了', cls:'primary', on:()=>idpCloseModal()}]);
+}
+
+function idpOpenModal(title, contentHtml, actions){
+  let mask = $('idpModalMask');
+  if(!mask){
+    mask = document.createElement('div');
+    mask.id = 'idpModalMask'; mask.className = 'modal-mask';
+    mask.innerHTML = '<div class="modal" id="idpModalInner"></div>';
+    document.body.appendChild(mask);
+  }
+  const inner = $('idpModalInner');
+  inner.innerHTML = '<h3>'+esc(title)+'</h3>' + contentHtml + '<div class="modal-actions" id="idpModalActions"></div>';
+  const a = $('idpModalActions');
+  actions.forEach(act=>{
+    const b = document.createElement('button');
+    b.className = 'pill ' + (act.cls||'');
+    b.textContent = act.label;
+    b.onclick = act.on;
+    a.appendChild(b);
+  });
+  mask.classList.add('show');
+}
+function idpCloseModal(){
+  const m = $('idpModalMask'); if(m) m.classList.remove('show');
 }
 
 /* ============== 表单弹窗 ============== */
