@@ -1,12 +1,8 @@
 {
-  "checkedAt": "2026-08-24T07:32:17.381Z",
+  "checkedAt": "2026-08-24T08:00:32.033Z",
   "bjToday": "2026-08-24",
-  "allFresh": false,
-  "stale": [
-    "stockJudgments[510300] asOf 2026-08-22 (2天前)",
-    "stockJudgments[600433] asOf 2026-08-22 (2天前)",
-    "stockJudgments[000001] asOf 2026-08-22 (2天前)"
-  ],
+  "allFresh": true,
+  "stale": [],
   "fresh": [
     "financeNews[市场综述] 2026-08-24",
     "financeNews[黄金大宗] 2026-08-24",
@@ -17,7 +13,10 @@
     "financeNews[加密货币] 2026-08-24",
     "healthNews 2026-08-24",
     "sideHustle 2026-08-24",
-    "siteVersion 2026-08-24.15:28",
+    "siteVersion 2026-08-24.1532",
+    "stockJudgments[510300] 2026-08-24",
+    "stockJudgments[600433] 2026-08-24",
+    "stockJudgments[000001] 2026-08-24",
     "indexTrack 12 条 asOf 新鲜(<=3天)"
   ]
 }
