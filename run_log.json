@@ -1,7 +1,9 @@
 {
   "indexTrack": {
     "lastStart": "2026-08-25T00:34:59.978Z",
-    "lastStatus": "running"
+    "lastEnd": "2026-08-25T00:46:12.841Z",
+    "lastStatus": "ok",
+    "note": ""
   },
   "stockJudgments": {
     "lastStart": "2026-08-24T07:27:49.452Z",
