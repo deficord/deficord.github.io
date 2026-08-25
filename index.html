@@ -1850,7 +1850,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>'+headBtns+'</div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频脚本库：每周一自动刷新（中视频 60S+ 口播母版）。每条都是「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率中视频。内容仅作创作参考。</p>';
+      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。每条都是「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率中视频。内容仅作创作参考。</p>';
       html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
             + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#fff0f3;color:#e01030;border:1px solid #ffd0d8;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
             + '<a href="./xvideo.html" target="_blank" rel="noopener" style="display:inline-block;background:#eef3ff;color:#3a6df0;border:1px solid #cdddff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">🎬 AI 视频生成器 →</a>'
@@ -2064,7 +2064,7 @@ function syncIndexTrackFromRemote(){
 }
 // 当 data.json 的 indexTrack 规范列表有变动（重排/改名/新增指数）时，按版本号把本地 wb_index_track 重播种一次，
 // 让老用户也拿到新顺序与新指数（仅执行一次，不覆盖用户之后的手动编辑）
-const IDX_SEED_VER = 14;
+const IDX_SEED_VER = 15;
 function migrateIndexTrack(){
   let v = 0;
   try{ v = Number(localStorage.getItem('wb_index_track_ver')||'0'); }catch(e){}
@@ -3825,7 +3825,7 @@ async function loadRemoteData(){
     cleanupSeedHoldings();
     $('demoBanner').style.display='none';
     renderCurrent();
-    toast('已是最新版本。每日 18:30 自动刷新理财新知、19:00 刷新健康新知，每周一刷新题库；想立即出全新内容，请在对话发「刷新」让 AI 重新抓取。');
+    toast('已是最新版');
   }catch(e){
     $('demoBanner').style.display='block';
     renderCurrent();
@@ -4317,7 +4317,7 @@ function bindEvents(){
       if(act==='cmAdd'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ cfg.items=cfg.items||[]; cfg.items.push({title:'',text:''}); saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } return; }
       if(act==='cmDel'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ cfg.items.splice(Number(f.dataset.idx),1); saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } return; }
       if(act==='cmEdit'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ const idx=Number(f.dataset.idx); const it=cfg.items[idx]||{}; const t=prompt('标题', it.title||''); if(t!==null){ const c=prompt('内容', it.text||''); it.title=t; it.text=c; cfg.items[idx]=it; saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } } return; }
-      if(act==='cmAirefresh'){ loadRemoteData(); toast('已请求刷新，AI 将按配置抓取'); return; }
+      if(act==='cmAirefresh'){ loadRemoteData(); toast('已刷新（拉取最新部署内容）'); return; }
       if(act==='refreshQuote'){ refreshQuotes(f.dataset.page||currentPage); return; }
       if(act==='full'){ showFull(page, idx); return; }
       if(act==='mod-tab'){ modTab[f.dataset.page]=f.dataset.tab; renderCurrent(); return; }
@@ -4333,7 +4333,7 @@ function bindEvents(){
       if(act==='stock-import'){ const t=$('stockImportText'); const parsed=parseImport(t?t.value:''); const _sf=currentStockFilter(); parsed.forEach(p=>{ if(!p.type) p.type=(_sf==='fund'?'fund':(_sf==='stock'?'stock':(isFundCode(p.code)?'fund':'stock'))); }); const list=loadWatch(); const existing=new Set(list.map(x=>normCodeStr(x.code))); let added=0; parsed.forEach(p=>{ if(!existing.has(normCodeStr(p.code))){ list.push(p); existing.add(normCodeStr(p.code)); added++; } }); if(added){ saveWatch(list); } const prev=$('stockImportPreview'); if(prev){ prev.innerHTML='解析到 '+parsed.length+' 条，新增 '+added+' 条（已存在自动跳过）。'; } toast('已导入 '+added+' 只'); renderCurrent(); return; }
       if(act==='stock-clear'){ confirmDialog('确定清空所有自选？此操作不可恢复。', '清空', '取消').then(ok=>{ if(ok){ saveWatch([]); stockQuotes={}; stockCompareSel=[]; renderCurrent(); toast('已清空'); } }); return; }
       if(act==='stock-del'){ const code=f.dataset.code; confirmDialog('确定删除「'+code+'」？', '删除', '取消').then(ok=>{ if(ok){ saveWatch(loadWatch().filter(x=>x.code!==code)); delete stockQuotes[normCodeStr(code)]; renderCurrent(); toast('已删除'); } }); return; }
-      if(act==='judge-request'){ const code=f.dataset.code; const title='研判申请 '+code; const body='请为股票/ETF 代码 '+code+' 生成 AI 研判（💡综合判断 + 📝个人判断，含评级/置信/免责/来源）。\n\n本 issue 由 GLUCK 工作台「申请研判」按钮创建，每日 17:00 自动化会读取并生成研判后自动关闭。'; const url='https://github.com/deficord/deficord.github.io/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body); try{ window.open(url,'_blank'); }catch(e){} toast('已打开申请页（'+code+'）· 点 Submit 提交，次日 17:00 自动生成研判'); return; }
+      if(act==='judge-request'){ const code=f.dataset.code; const title='研判申请 '+code; const body='请为股票/ETF 代码 '+code+' 生成 AI 研判（💡综合判断 + 📝个人判断，含评级/置信/免责/来源）。\n\n本 issue 由 GLUCK 工作台「申请研判」按钮创建；自动化已暂停，请在对话中让小诺运行「个股AI研判」刷新后即可生成研判并关闭本 issue。'; const url='https://github.com/deficord/deficord.github.io/issues/new?title='+encodeURIComponent(title)+'&body='+encodeURIComponent(body); try{ window.open(url,'_blank'); }catch(e){} toast('已打开申请页（'+code+'）· 点 Submit 提交，再让小诺运行研判刷新生成'); return; }
       if(act==='stock-manual'){ const code=f.dataset.code; const cur=loadWatch().find(x=>x.code===code)||{}; const base=''+( (cur.manual&&cur.manual.price!=null)?cur.manual.price:'') +( (cur.manual&&cur.manual.pe!=null)?','+cur.manual.pe:'') +( (cur.manual&&cur.manual.pb!=null)?','+cur.manual.pb:''); const input=prompt('手动覆盖（留空=用实时行情）：价格,PE,PB', base); if(input===null) return; const parts=input.split(',').map(s=>s.trim()); const man={}; if(parts[0]!=='') man.price=Number(parts[0]); if(parts[1]!=='') man.pe=Number(parts[1]); if(parts[2]!=='') man.pb=Number(parts[2]); const list=loadWatch(); const it=list.find(x=>x.code===code); if(it){ it.manual=man; saveWatch(list); renderCurrent(); toast('已保存手动覆盖'); } return; }
       if(act==='stock-cmp'){ const code=normCodeStr(f.dataset.code); if(stockCompareSel.length===0){ filteredWatch(currentStockFilter()).forEach(it=>{ const c=normCodeStr(it.code); if(c!==code) stockCompareSel.push(c); }); } else { const i=stockCompareSel.indexOf(code); if(f.checked){ if(i<0) stockCompareSel.push(code); } else { if(i>=0) stockCompareSel.splice(i,1); } } renderCurrent(); return; }
       if(act==='stkUp'){ const k=f.dataset.k; const box=f.dataset.box||'stockTabsEditor'; const a=loadStockTabs(); const i=a.findIndex(x=>x.k===k); if(i>0){ const t=a[i]; a[i]=a[i-1]; a[i-1]=t; saveStockTabs(a); } renderStockTabsEditor(box); return; }
