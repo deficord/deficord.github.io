@@ -3017,6 +3017,7 @@ const IDP_SIZES = {
 const idp = {
   srcImg: null,
   resultCanvas: null,
+  cut: null,
   size: '1c',
   color: '#FF0000',
   customColor: '#FF0000',
@@ -3111,6 +3112,7 @@ function renderIdPhoto(body){
           <button class="idp-btn secondary" data-act="idp-resample" id="idpResBtn" disabled>🎯 重新采背景</button>
           <button class="idp-btn primary" data-act="idp-download" id="idpDlBtn" disabled>💾 下载 PNG</button>
           <button class="idp-btn secondary" data-act="idp-fav" id="idpFavBtn" disabled>⭐ 收藏</button>
+          <button class="idp-btn secondary" data-act="idp-export-cut" id="idpCutBtn" disabled>🧩 导出透明人像</button>
           <button class="idp-btn secondary" data-act="idp-reset">🔄 重置</button>
         </div>
       </div>
@@ -3150,6 +3152,7 @@ function idpBindEvents(){
     else if(a==='idp-resample') idpProcess(true);
     else if(a==='idp-download') idpDownload();
     else if(a==='idp-fav') idpFav();
+    else if(a==='idp-export-cut') idpExportCut();
     else if(a==='idp-openFav') idpOpenFav();
     else if(a==='idp-share') idpShare();
     else if(a==='idp-reset') idpReset();
@@ -3161,7 +3164,7 @@ function idpBindEvents(){
       w.querySelectorAll('#idpSizeChips .idp-chip').forEach(x=>x.classList.remove('on'));
       c.classList.add('on');
       idp.size = c.dataset.size;
-      if(idp.srcImg) idpProcess(false);
+      if(idp.srcImg) idpRecompose();
     };
   });
   w.querySelectorAll('#idpColorRow .swatch').forEach(s=>{
@@ -3169,7 +3172,7 @@ function idpBindEvents(){
       w.querySelectorAll('#idpColorRow .swatch').forEach(x=>x.classList.remove('on'));
       s.classList.add('on');
       idp.color = s.dataset.color;
-      if(idp.srcImg) idpProcess(false);
+      if(idp.srcImg) idpRecompose();
     };
   });
   const cc = $('idpCustomColor');
@@ -3177,7 +3180,7 @@ function idpBindEvents(){
     w.querySelectorAll('#idpColorRow .swatch').forEach(x=>x.classList.remove('on'));
     idp.color = cc.value;
     idp.customColor = cc.value;
-    if(idp.srcImg) idpProcess(false);
+    if(idp.srcImg) idpRecompose();
   };
   const fi = $('idpFileIn');
   if(fi) fi.onchange = (e)=>{
@@ -3248,6 +3251,7 @@ function idpLoadFile(f){
 
 function idpSetSrc(img){
   idp.srcImg = img;
+  idp.cut = null;
   $('idpProcBtn').disabled = false;
   $('idpResBtn').disabled = false;
   const hp = $('idpHeroPrev');
@@ -3256,68 +3260,88 @@ function idpSetSrc(img){
   idpProcess(false);
 }
 
+// ① 抠图：把背景变透明，缓存透明人像 canvas 到 idp.cut（不填底色）
+function idpCut(resample){
+  if(!idp.srcImg){ toast('请先选择照片'); return false; }
+  const img = idp.srcImg;
+  const sw = img.naturalWidth || img.width || 0;
+  const sh = img.naturalHeight || img.height || 0;
+  if(!sw || !sh){ toast('图片尺寸异常'); return false; }
+  const size = IDP_SIZES[idp.size];
+  const targetRatio = size.w / size.h;
+  const srcRatio = sw / sh;
+  let cropW, cropH, cropX, cropY;
+  if(srcRatio > targetRatio){
+    cropH = sh; cropW = Math.round(sh * targetRatio);
+    cropX = Math.round((sw - cropW) / 2); cropY = 0;
+  } else {
+    cropW = sw; cropH = Math.round(sw / targetRatio);
+    cropX = 0; cropY = Math.round((sh - cropH) / 2);
+  }
+  if(cropW <= 0 || cropH <= 0){ toast('裁剪参数异常'); return false; }
+  const cropC = document.createElement('canvas');
+  cropC.width = cropW; cropC.height = cropH;
+  const cctx = cropC.getContext('2d');
+  cctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+  const bg = idpSampleBg(cropC, resample);
+  const imgData = cctx.getImageData(0, 0, cropW, cropH);
+  const d = imgData.data;
+  const tLow = 36, tHigh = 86;
+  const bR = bg[0], bG = bg[1], bB = bg[2];
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i], g=d[i+1], b=d[i+2];
+    const dr=r-bR, dg=g-bG, db=b-bB;
+    const dist = Math.sqrt(0.30*dr*dr + 0.59*dg*dg + 0.11*db*db);
+    d[i+3] = dist <= tLow ? 0 : dist >= tHigh ? 255 : Math.round((dist - tLow) / (tHigh - tLow) * 255);
+  }
+  cctx.putImageData(imgData, 0, 0);
+  idp.cut = cropC;
+  return true;
+}
+
+// ② 合成：用缓存的透明人像 idp.cut 重填底色 + 重绘到目标尺寸（换色/换尺寸只跑这个，不重抠）
+function idpCompose(){
+  if(!idp.cut){ if(!idpCut(false)) return false; }
+  const cut = idp.cut, cw = cut.width, ch = cut.height;
+  const size = IDP_SIZES[idp.size];
+  const out = document.createElement('canvas');
+  out.width = size.w; out.height = size.h;
+  const octx = out.getContext('2d');
+  octx.fillStyle = idp.color;
+  octx.fillRect(0, 0, size.w, size.h);
+  const targetImgH = Math.round(size.h * 0.82);
+  const targetImgW = Math.round(targetImgH * cw / ch);
+  const dx = Math.round((size.w - targetImgW) / 2);
+  const dy = Math.round(size.h * 0.06);
+  octx.drawImage(cut, dx, dy, targetImgW, targetImgH);
+  idp.resultCanvas = out;
+  const pv = $('idpPreview');
+  if(pv){
+    pv.innerHTML = '';
+    const show = new Image();
+    show.src = out.toDataURL('image/png');
+    show.style.cssText = 'max-width:100%;max-height:280px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:4px;';
+    pv.appendChild(show);
+  }
+  $('idpDlBtn').disabled = false;
+  $('idpFavBtn').disabled = false;
+  $('idpCutBtn').disabled = false;
+  return true;
+}
+
+// 换色/换尺寸时用：有缓存就只合成，否则先抠
+function idpRecompose(){
+  if(idp.cut) idpCompose();
+  else idpProcess(false);
+}
+
+// 兼容旧调用：idpProcess(resample) = 抠图（必要时重抠）+ 合成
 function idpProcess(resample){
-  if(!idp.srcImg){ toast('请先选择照片'); return; }
   if(idp.busy) return;
   idp.busy = true;
   try{
-    const img = idp.srcImg;
-    const sw = img.naturalWidth || img.width || 0;
-    const sh = img.naturalHeight || img.height || 0;
-    if(!sw || !sh){ toast('图片尺寸异常'); idp.busy=false; return; }
-    const size = IDP_SIZES[idp.size];
-    const targetRatio = size.w / size.h;
-    const srcRatio = sw / sh;
-    let cropW, cropH, cropX, cropY;
-    if(srcRatio > targetRatio){
-      cropH = sh; cropW = Math.round(sh * targetRatio);
-      cropX = Math.round((sw - cropW) / 2); cropY = 0;
-    } else {
-      cropW = sw; cropH = Math.round(sw / targetRatio);
-      cropX = 0; cropY = Math.round((sh - cropH) / 2);
-    }
-    if(cropW <= 0 || cropH <= 0){ toast('裁剪参数异常'); idp.busy=false; return; }
-    const cropC = document.createElement('canvas');
-    cropC.width = cropW; cropC.height = cropH;
-    const cctx = cropC.getContext('2d');
-    cctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-    const bg = idpSampleBg(cropC, resample);
-    const imgData = cctx.getImageData(0, 0, cropW, cropH);
-    const d = imgData.data;
-    const tLow = 36, tHigh = 86;
-    const bR = bg[0], bG = bg[1], bB = bg[2];
-    for(let i=0;i<d.length;i+=4){
-      const r=d[i], g=d[i+1], b=d[i+2];
-      const dr=r-bR, dg=g-bG, db=b-bB;
-      const dist = Math.sqrt(0.30*dr*dr + 0.59*dg*dg + 0.11*db*db);
-      let a;
-      if(dist <= tLow) a = 0;
-      else if(dist >= tHigh) a = 255;
-      else a = Math.round((dist - tLow) / (tHigh - tLow) * 255);
-      d[i+3] = a;
-    }
-    cctx.putImageData(imgData, 0, 0);
-    const out = document.createElement('canvas');
-    out.width = size.w; out.height = size.h;
-    const octx = out.getContext('2d');
-    octx.fillStyle = idp.color;
-    octx.fillRect(0, 0, size.w, size.h);
-    const targetImgH = Math.round(size.h * 0.82);
-    const targetImgW = Math.round(targetImgH * cropW / cropH);
-    const dx = Math.round((size.w - targetImgW) / 2);
-    const dy = Math.round(size.h * 0.06);
-    octx.drawImage(cropC, dx, dy, targetImgW, targetImgH);
-    idp.resultCanvas = out;
-    const pv = $('idpPreview');
-    if(pv){
-      pv.innerHTML = '';
-      const show = new Image();
-      show.src = out.toDataURL('image/png');
-      show.style.cssText = 'max-width:100%;max-height:280px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:4px;';
-      pv.appendChild(show);
-    }
-    $('idpDlBtn').disabled = false;
-    $('idpFavBtn').disabled = false;
+    if(!idpCut(resample)){ idp.busy = false; return; }
+    idpCompose();
   } catch(e){
     console.error('[idphoto]', e);
     toast('生成失败：'+(e && e.message || e));
@@ -3368,6 +3392,23 @@ function idpDownload(){
     }, 'image/png');
   } catch(e){
     toast('下载失败：'+e.message);
+  }
+}
+
+function idpExportCut(){
+  if(!idp.cut){ toast('请先生成'); return; }
+  try{
+    idp.cut.toBlob(blob=>{
+      if(!blob){ toast('生成失败'); return; }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `人像_透明_${Date.now()}.png`; document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 0);
+      toast('已导出透明人像 PNG');
+    }, 'image/png');
+  } catch(e){
+    toast('导出失败：'+e.message);
   }
 }
 
@@ -3449,6 +3490,7 @@ function idpReset(){
   if(idp.busy) return;
   idp.srcImg = null;
   idp.resultCanvas = null;
+  idp.cut = null;
   const pv = $('idpPreview');
   if(pv) pv.innerHTML = '<div class="idp-empty">👆 请先拍照或从相册选择一张照片</div>';
   const hp = $('idpHeroPrev');
