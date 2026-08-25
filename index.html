@@ -530,6 +530,16 @@
 .idp-btn.secondary{background:#fff;color:#374151;border:1.5px solid #E5E7EB;}
 .idp-btn.secondary:hover{border-color:#2563EB;color:#2563EB;}
 .idp-btn:disabled{opacity:.5;cursor:not-allowed;}
+/* AI 按钮：紫色渐变突出显示，是推荐的首选 */
+.idp-btn.ai-primary{background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;box-shadow:0 3px 10px rgba(124,58,237,.3);font-weight:700;padding:12px 22px;font-size:15px;}
+.idp-btn.ai-primary:hover{box-shadow:0 5px 16px rgba(124,58,237,.45);transform:translateY(-1px);}
+.idp-btn.ai-primary:disabled{background:linear-gradient(135deg,#C4B5FD,#A78BFA);box-shadow:none;transform:none;}
+/* "推荐" 黄色徽标 */
+.idp-recommend{display:inline-block;background:#FCD34D;color:#7C2D12;font-size:10px;font-weight:800;padding:2px 7px;border-radius:8px;margin-left:6px;vertical-align:2px;line-height:1.4;box-shadow:0 1px 3px rgba(0,0,0,.15);letter-spacing:.5px;}
+/* 颜色法结果下方的 AI 引导提示 */
+.idp-ai-hint{margin-top:12px;padding:10px 14px;background:linear-gradient(135deg,#FEF3C7,#FDE68A);border:1.5px dashed #F59E0B;border-radius:10px;font-size:12.5px;color:#92400E;display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;}
+.idp-ai-hint .idp-ai-hint-btn{background:linear-gradient(135deg,#8B5CF6,#7C3AED);color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(124,58,237,.3);}
+.idp-ai-hint .idp-ai-hint-btn:hover{box-shadow:0 3px 10px rgba(124,58,237,.45);}
 .idp-foot{text-align:center;padding:12px 0 22px;color:#6B7280;font-size:13px;}
 .idp-foot a{color:#2563EB;text-decoration:none;margin:0 4px;cursor:pointer;}
 .idp-foot a:hover{text-decoration:underline;}
@@ -3108,12 +3118,12 @@ function renderIdPhoto(body){
         </div>
 
         <div class="idp-btns">
-          <button class="idp-btn primary" data-act="idp-process" id="idpProcBtn" disabled>✨ 一键生成</button>
+          <button class="idp-btn ai-primary" data-act="idp-air" id="idpAiBtn" disabled>🤖 AI 精准抠图<span class="idp-recommend">推荐</span></button>
+          <button class="idp-btn secondary" data-act="idp-process" id="idpProcBtn" disabled>⚡ 快速生成（颜色法）</button>
           <button class="idp-btn secondary" data-act="idp-resample" id="idpResBtn" disabled>🎯 重新采背景</button>
           <button class="idp-btn primary" data-act="idp-download" id="idpDlBtn" disabled>💾 下载 PNG</button>
           <button class="idp-btn secondary" data-act="idp-fav" id="idpFavBtn" disabled>⭐ 收藏</button>
           <button class="idp-btn secondary" data-act="idp-export-cut" id="idpCutBtn" disabled>🧩 导出透明人像</button>
-          <button class="idp-btn primary" data-act="idp-air" id="idpAiBtn" disabled>🤖 AI 精准抠图</button>
           <button class="idp-btn secondary" data-act="idp-reset">🔄 重置</button>
         </div>
       </div>
@@ -3254,6 +3264,7 @@ function idpLoadFile(f){
 function idpSetSrc(img){
   idp.srcImg = img;
   idp.cut = null;
+  idp.cutSource = null;
   $('idpProcBtn').disabled = false;
   $('idpResBtn').disabled = false;
   $('idpAiBtn').disabled = false;
@@ -3261,6 +3272,10 @@ function idpSetSrc(img){
   if(hp){ hp.textContent = ''; const pimg = new Image(); pimg.src = img.src; pimg.style.cssText='width:100%;height:100%;object-fit:cover;'; hp.appendChild(pimg); }
   toast('图片已加载，正在生成…');
   idpProcess(false);
+  // 3 秒后提示：颜色法效果不理想时可升级到 AI（避免遮挡首屏结果）
+  setTimeout(()=>{
+    if(idp.cutSource === 'color') toast('💡 衣服/复杂背景下颜色法容易出错 → 点上方「🤖 AI 精准抠图」获取更好效果（首次约下载 100MB）');
+  }, 3000);
 }
 
 // ① 抠图：从四边 flood-fill 出真正连通的背景区域
@@ -3374,6 +3389,7 @@ function idpCut(resample){
   }
   cctx.putImageData(imgData, 0, 0);
   idp.cut = cropC;
+  idp.cutSource = 'color';
   return true;
 }
 
@@ -3400,6 +3416,21 @@ function idpCompose(){
     show.src = out.toDataURL('image/png');
     show.style.cssText = 'max-width:100%;max-height:280px;box-shadow:0 4px 14px rgba(0,0,0,.12);border-radius:4px;';
     pv.appendChild(show);
+    // 颜色法结果时，在预览下方加一条"升级到 AI"的引导提示
+    if(idp.cutSource === 'color'){
+      const hint = document.createElement('div');
+      hint.className = 'idp-ai-hint';
+      const msg = document.createElement('span');
+      msg.innerHTML = '💡 当前是<b>颜色法</b>结果，衣服/复杂背景容易出错';
+      hint.appendChild(msg);
+      const btn = document.createElement('button');
+      btn.className = 'idp-ai-hint-btn';
+      btn.type = 'button';
+      btn.textContent = '🚀 用 AI 重新抠图';
+      btn.onclick = ()=>{ if(!idp.busy) idpAI(); };
+      hint.appendChild(btn);
+      pv.appendChild(hint);
+    }
   }
   $('idpDlBtn').disabled = false;
   $('idpFavBtn').disabled = false;
@@ -3459,6 +3490,7 @@ async function idpAI(){
     c.getContext('2d').drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
     idp.cut = c;
+    idp.cutSource = 'ai';
     idpCompose();
     toast('✅ AI 抠图完成');
   } catch(e){
