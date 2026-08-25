@@ -3261,8 +3261,9 @@ function idpSetSrc(img){
 }
 
 // ① 抠图：从四边 flood-fill 出真正连通的背景区域
-//    解决原算法的"独立像素"误判——颜色像背景但被脸/衣服包裹的内部孤岛
-//    （如嘴唇、面颊反光、衬衫反光、深色阴影）不会被错误抠掉
+//    两层保护：
+//      A) 肤色保护 —— 用 YCbCr 判据锁定皮肤像素，绝不误抠（解决"脸变背景"）
+//      B) 内部孤岛保护 —— flood-fill 只抠"连通到四边"的区域（解决嘴唇/反光误抠）
 function idpCut(resample){
   if(!idp.srcImg){ toast('请先选择照片'); return false; }
   const img = idp.srcImg;
@@ -3290,11 +3291,24 @@ function idpCut(resample){
   const imgData = cctx.getImageData(0, 0, cropW, cropH);
   const d = imgData.data;
   const n = cropW * cropH;
+  // A) 预先标记"肤色"像素：真 YCbCr 判据（区别于纯 RGB，能分辨红/暖背景与皮肤）
+  //    经典规则：Y∈[80,235] 且 Cb∈[77,127] 且 Cr∈[133,173]
+  const isSkin = new Uint8Array(n);
+  for(let i=0, p=0; i<d.length; i+=4, p++){
+    const r=d[i], g=d[i+1], b=d[i+2];
+    const Y  = 0.299*r + 0.587*g + 0.114*b;
+    const Cb = -0.169*r - 0.331*g + 0.5*b + 128;
+    const Cr = 0.5*r - 0.419*g - 0.081*b + 128;
+    isSkin[p] = (Y>=80 && Y<=235 && Cb>=77 && Cb<=127 && Cr>=133 && Cr<=173) ? 1 : 0;
+  }
   // 1) 边缘 flood-fill：只有"和背景色相似 且 真的连通到四边"的像素才算背景
+  //    肤色像素 nearBg 直接返回 false —— 即使连通也绝不扩展过去
   const isBg = new Uint8Array(n);
   const stack = [];
-  const tol2 = 58 * 58;   // 色差阈值（平方，免开根）
+  const tol2 = 60 * 60;   // 色差阈值（平方，免开根）
   function nearBg(i){
+    const p = i >> 2;
+    if(isSkin[p]) return false;          // 肤色保护：皮肤绝不抠
     const r=d[i], g=d[i+1], b=d[i+2];
     const dr=r-bR, dg=g-bG, db=b-bB;
     return 0.30*dr*dr + 0.59*dg*dg + 0.11*db*db <= tol2;
@@ -3316,7 +3330,7 @@ function idpCut(resample){
   while(stack.length){
     const idx = stack.pop();
     const i = idx*4;
-    if(!nearBg(i)) continue;          // 当前像素离背景太远，停止向四周扩张
+    if(!nearBg(i)) continue;          // 当前像素离背景太远（或肤色），停止向四周扩张
     const x = idx % cropW, y = (idx - x) / cropW;
     if(x > 0)            { const ni = idx-1;     if(!isBg[ni]){ isBg[ni] = 1; stack.push(ni); } }
     if(x < cropW-1)      { const ni = idx+1;     if(!isBg[ni]){ isBg[ni] = 1; stack.push(ni); } }
@@ -3327,8 +3341,7 @@ function idpCut(resample){
   for(let i=0, p=0; i<d.length; i+=4, p++){
     d[i+3] = isBg[p] ? 0 : 255;
   }
-  // 3) 边缘羽化：紧邻背景的非背景像素，按 8 邻域 bg 比例做部分透明
-  //    关键作用：让头发的硬边变自然，过渡到新底色（避免锯齿/色块感）
+  // 3) 边缘羽化：仅对 8 邻域中 ≥6 个 bg 的边界像素做部分透明（更保守，防衣服/脸边缘漏抠）
   for(let y=0; y<cropH; y++){
     for(let x=0; x<cropW; x++){
       const p = y*cropW + x;
@@ -3342,10 +3355,10 @@ function idpCut(resample){
           if(isBg[ny*cropW+nx]) nb++;
         }
       }
-      if(nb >= 4){  // 至少半数邻居是 bg → 这是边界像素，做软化
+      if(nb >= 6){  // 至少 6/8 邻居是 bg → 真是边界，做软化
         const i = p*4;
         const mix = nb / 8;
-        d[i+3] = Math.round(255 * (1 - mix * 0.55));
+        d[i+3] = Math.round(255 * (1 - mix * 0.45));
       }
     }
   }
