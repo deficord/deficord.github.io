@@ -3113,6 +3113,7 @@ function renderIdPhoto(body){
           <button class="idp-btn primary" data-act="idp-download" id="idpDlBtn" disabled>💾 下载 PNG</button>
           <button class="idp-btn secondary" data-act="idp-fav" id="idpFavBtn" disabled>⭐ 收藏</button>
           <button class="idp-btn secondary" data-act="idp-export-cut" id="idpCutBtn" disabled>🧩 导出透明人像</button>
+          <button class="idp-btn primary" data-act="idp-air" id="idpAiBtn" disabled>🤖 AI 精准抠图</button>
           <button class="idp-btn secondary" data-act="idp-reset">🔄 重置</button>
         </div>
       </div>
@@ -3153,6 +3154,7 @@ function idpBindEvents(){
     else if(a==='idp-download') idpDownload();
     else if(a==='idp-fav') idpFav();
     else if(a==='idp-export-cut') idpExportCut();
+    else if(a==='idp-air') idpAI();
     else if(a==='idp-openFav') idpOpenFav();
     else if(a==='idp-share') idpShare();
     else if(a==='idp-reset') idpReset();
@@ -3254,6 +3256,7 @@ function idpSetSrc(img){
   idp.cut = null;
   $('idpProcBtn').disabled = false;
   $('idpResBtn').disabled = false;
+  $('idpAiBtn').disabled = false;
   const hp = $('idpHeroPrev');
   if(hp){ hp.textContent = ''; const pimg = new Image(); pimg.src = img.src; pimg.style.cssText='width:100%;height:100%;object-fit:cover;'; hp.appendChild(pimg); }
   toast('图片已加载，正在生成…');
@@ -3264,12 +3267,12 @@ function idpSetSrc(img){
 //    两层保护：
 //      A) 肤色保护 —— 用 YCbCr 判据锁定皮肤像素，绝不误抠（解决"脸变背景"）
 //      B) 内部孤岛保护 —— flood-fill 只抠"连通到四边"的区域（解决嘴唇/反光误抠）
-function idpCut(resample){
-  if(!idp.srcImg){ toast('请先选择照片'); return false; }
+// 按目标尺寸比例裁剪源图为 cropC（正脸居中），供颜色抠图与 AI 抠图复用
+function idpCropCanvas(){
   const img = idp.srcImg;
   const sw = img.naturalWidth || img.width || 0;
   const sh = img.naturalHeight || img.height || 0;
-  if(!sw || !sh){ toast('图片尺寸异常'); return false; }
+  if(!sw || !sh){ toast('图片尺寸异常'); return null; }
   const size = IDP_SIZES[idp.size];
   const targetRatio = size.w / size.h;
   const srcRatio = sw / sh;
@@ -3281,11 +3284,18 @@ function idpCut(resample){
     cropW = sw; cropH = Math.round(sw / targetRatio);
     cropX = 0; cropY = Math.round((sh - cropH) / 2);
   }
-  if(cropW <= 0 || cropH <= 0){ toast('裁剪参数异常'); return false; }
+  if(cropW <= 0 || cropH <= 0){ toast('裁剪参数异常'); return null; }
   const cropC = document.createElement('canvas');
   cropC.width = cropW; cropC.height = cropH;
+  cropC.getContext('2d').drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+  return cropC;
+}
+function idpCut(resample){
+  if(!idp.srcImg){ toast('请先选择照片'); return false; }
+  const cropC = idpCropCanvas();
+  if(!cropC) return false;
+  const cropW = cropC.width, cropH = cropC.height;
   const cctx = cropC.getContext('2d');
-  cctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
   const bg = idpSampleBg(cropC, resample);
   const bR = bg[0], bG = bg[1], bB = bg[2];
   const imgData = cctx.getImageData(0, 0, cropW, cropH);
@@ -3415,6 +3425,49 @@ function idpProcess(resample){
     toast('生成失败：'+(e && e.message || e));
   } finally {
     idp.busy = false;
+  }
+}
+
+// AI 精准抠图：懒加载浏览器本地自托管的 @imgly/background-removal，
+// 只把"裁剪后"的图送去做语义抠透明，结果存 idp.cut 复用现有换底色/换尺寸流程。
+// 全程浏览器内运行，零上传；因 GitHub Pages 无 COOP/COEP，库自动选 jsep wasm（不需 SharedArrayBuffer）。
+async function idpAI(){
+  if(!idp.srcImg){ toast('请先选择照片'); return; }
+  if(idp.busy) return;
+  idp.busy = true;
+  const btn = $('idpAiBtn');
+  const oldTxt = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '🤖 AI 抠图中…';
+  try{
+    const cropC = idpCropCanvas();
+    if(!cropC) throw new Error('裁剪失败');
+    toast('首次加载 AI 模型，请稍候（约需下载几十 MB）…');
+    const mod = await import('https://deficord.github.io/idphoto_models/dist/index.js');
+    const removeBackground = mod.removeBackground || mod.default;
+    if(typeof removeBackground !== 'function') throw new Error('AI 模块加载异常');
+    const inBlob = await new Promise(res => cropC.toBlob(res, 'image/png'));
+    const outBlob = await removeBackground(inBlob, {
+      publicPath: 'https://deficord.github.io/idphoto_models/dist/',
+      model: 'isnet_fp16'
+    });
+    const url = URL.createObjectURL(outBlob);
+    const img = new Image();
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+    const c = document.createElement('canvas');
+    c.width = img.naturalWidth; c.height = img.naturalHeight;
+    c.getContext('2d').drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    idp.cut = c;
+    idpCompose();
+    toast('✅ AI 抠图完成');
+  } catch(e){
+    console.error('[idphoto-ai]', e);
+    toast('AI 抠图失败：' + (e && e.message || e));
+  } finally {
+    idp.busy = false;
+    btn.disabled = false;
+    btn.textContent = oldTxt;
   }
 }
 
