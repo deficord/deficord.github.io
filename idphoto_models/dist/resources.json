@@ -1,1 +1,44 @@
-{"/onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm":{"chunks":[{"hash":"onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm","name":"onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm","offsets":[0,23013109]}]},"/onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs":{"chunks":[{"hash":"onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs","name":"onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs","offsets":[0,49241]}]},"/models/isnet_fp16":{"chunks":[{"hash":"models/isnet_fp16","name":"models/isnet_fp16","offsets":[0,88152708]}]}}
+{
+  "/onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm": {
+    "size": 23013109,
+    "mime": "application/wasm",
+    "chunks": [
+      {
+        "hash": "d7de09721a4bbc4f3c8a8b8824da82475189bda7ebcfd9ac83e5b162a7d7d479",
+        "name": "onnxruntime-web/ort-wasm-simd-threaded.jsep.wasm",
+        "offsets": [
+          0,
+          23013109
+        ]
+      }
+    ]
+  },
+  "/onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs": {
+    "size": 49241,
+    "mime": "text/javascript",
+    "chunks": [
+      {
+        "hash": "2004e7fc76dd246901aaec08a7268cfb9832dcafa9e5a889b7f23f990ffe16ab",
+        "name": "onnxruntime-web/ort-wasm-simd-threaded.jsep.mjs",
+        "offsets": [
+          0,
+          49241
+        ]
+      }
+    ]
+  },
+  "/models/isnet_fp16": {
+    "size": 88152708,
+    "mime": "application/octet-stream",
+    "chunks": [
+      {
+        "hash": "2eb4b5dda7ec41c617e59706e5aafa1f978c9a5f983d2518d9f0ae4d6eb04f20",
+        "name": "models/isnet_fp16",
+        "offsets": [
+          0,
+          88152708
+        ]
+      }
+    ]
+  }
+}
