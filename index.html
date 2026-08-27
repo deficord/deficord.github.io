@@ -5057,15 +5057,25 @@ function vdSample(it){
 }
 function vdEscXml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
 function vdSpeakWeb(it, text){
-  if(!('speechSynthesis' in window)){ toast('当前浏览器不支持语音合成'); return; }
+  if(!('speechSynthesis' in window)){ toast('当前浏览器不支持语音合成（微信/部分国产浏览器已阉割）。可换 Safari/Chrome，或⚙设置配置云端 TTS 出声'); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
   const useText=(text&&text.trim())?text.trim():'';
-  const u=new SpeechSynthesisUtterance(useText||vdSample(it));
-  const vs=speechSynthesis.getVoices();
-  const zh=vs.find(v=>/^(zh|cmn)/i.test(v.lang)) || vs.find(v=>/zh|chinese/i.test(v.lang));
-  if(zh){ u.voice=zh; u.lang=zh.lang; } else { u.lang='zh-CN'; }
-  u.rate=1; u.pitch=1;
-  speechSynthesis.speak(u);
+  const say=()=>{
+    const u=new SpeechSynthesisUtterance(useText||vdSample(it));
+    const vs=speechSynthesis.getVoices();
+    const zh=vs.find(v=>/^(zh|cmn)/i.test(v.lang)) || vs.find(v=>/zh|chinese/i.test(v.lang));
+    if(zh){ u.voice=zh; u.lang=zh.lang; } else { u.lang='zh-CN'; }
+    u.rate=1; u.pitch=1;
+    speechSynthesis.speak(u);
+  };
+  // iOS Safari: 语音列表异步加载，首次 getVoices() 为空，需监听 voiceschanged 再播，否则点了没声音
+  const vs0=speechSynthesis.getVoices();
+  if(vs0 && vs0.length){ say(); }
+  else {
+    let done=false;
+    speechSynthesis.onvoiceschanged=()=>{ if(done) return; done=true; say(); };
+    setTimeout(()=>{ if(!done){ done=true; say(); } },400);
+  }
   toast(useText?('🔊 浏览器免费声线朗读《文案》· '+it.n):('🔊 浏览器免费声线试听：'+it.n+'（同名占位，非平台原声）'));
 }
 async function vdSpeakAzure(it, tts, text){
@@ -5098,11 +5108,18 @@ async function vdSpeakProxy(it, tts, text){
 }
 function vdSpeak(it, text){
   const tts=loadData(VD_TTS_KEY, null);
-  if(tts && tts.vendor==='azure' && tts.key && tts.region){ vdSpeakAzure(it, tts, text); }
-  else if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly') && tts.proxy){ vdSpeakProxy(it, tts, text); }
-  else {
-    if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly') && !tts.proxy){ toast('火山/讯飞 TTS 需配置代理地址（⚙设置）'); }
-    vdSpeakWeb(it, text);
+  const cloudAzure = tts && tts.vendor==='azure' && tts.key && tts.region;
+  const cloudProxy = tts && (tts.vendor==='volcano'||tts.vendor==='ifly') && tts.proxy;
+  // 已配置云端 TTS（不依赖浏览器引擎）→ 手机端也能出高清声线，优先走云端
+  if(cloudAzure){ vdSpeakAzure(it, tts, text); return; }
+  if(cloudProxy){ vdSpeakProxy(it, tts, text); return; }
+  // 未配云端 → 尝试浏览器免费声线
+  if('speechSynthesis' in window){ vdSpeakWeb(it, text); return; }
+  // 浏览器不支持且无可用的云端：给出明确引导，不再静默
+  if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly')){
+    toast('当前浏览器不支持语音合成；请在⚙设置填入代理地址，即可用云端高清声线');
+  } else {
+    toast('当前浏览器不支持语音合成；可换 Safari/Chrome，或在⚙设置配置 Azure/代理云端声线');
   }
 }
 function vdFilter(){
