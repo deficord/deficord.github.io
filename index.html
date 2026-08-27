@@ -5080,7 +5080,8 @@ function vdSpeakWeb(it, text){
 }
 async function vdSpeakAzure(it, tts, text){
   try{
-    const voice=tts.voice||'zh-CN-XiaoxiaoNeural';
+    const AZ={ '女':'zh-CN-XiaoxiaoNeural', '男':'zh-CN-YunxiNeural', '童':'zh-CN-XiaomengNeural' };
+    const voice=(tts.voice && tts.voice.trim()) ? tts.voice : (AZ[it.g]||'zh-CN-YunyangNeural');
     const url='https://'+tts.region+'.tts.speech.microsoft.com/cognitiveservices/v1';
     const t=(text&&text.trim())?text.trim():vdSample(it);
     const ssml="<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'><voice xml:lang='zh-CN' name='"+voice+"'>"+vdEscXml(t)+"</voice></speak>";
@@ -5096,9 +5097,10 @@ async function vdSpeakAzure(it, tts, text){
 async function vdSpeakProxy(it, tts, text){
   const proxy=(tts.proxy||'').trim();
   if(!proxy){ toast('火山/讯飞需先配置代理地址（⚙设置里填 Worker 地址）'); vdSpeakWeb(it, text); return; }
-  const vendor=tts.vendor, voice=tts.proxyVoice||it.n;
+  const vendor=tts.vendor;
+  const voice=tts.proxyVoice||it.n||'';
   try{
-    const r=await fetch(proxy+'/tts?vendor='+vendor+'&voice='+encodeURIComponent(voice),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:(text&&text.trim())?text.trim():vdSample(it)})});
+    const r=await fetch(proxy+'/tts?vendor='+vendor+'&voice='+encodeURIComponent(voice)+'&g='+encodeURIComponent(it.g||'')+'&s='+encodeURIComponent(it.s||''),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:(text&&text.trim())?text.trim():vdSample(it)})});
     if(!r.ok){ toast('代理返回 '+r.status+'，改用浏览器免费声线'); vdSpeakWeb(it, text); return; }
     const buf=await r.arrayBuffer();
     const blob=new Blob([buf],{type:r.headers.get('content-type')||'audio/mpeg'});
