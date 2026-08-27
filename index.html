@@ -592,6 +592,20 @@
 .vd-favbtn.on{background:#FEF3C7;color:#92400E;border-color:#F59E0B;}
 .vd-cmpbtn.on{background:#EDE9FE;color:#5B21B6;border-color:#8B5CF6;}
 .vd-empty{grid-column:1/-1;text-align:center;color:#9CA3AF;padding:40px 0;font-size:14px;}
+.vd-synth{background:#F8FAFC;border:1.5px solid #E5E7EB;border-radius:14px;padding:14px 16px;margin:14px 0;}
+.vd-synth-hd{font-size:14px;font-weight:800;color:#111827;margin-bottom:10px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.vd-synth-sub{font-size:11.5px;font-weight:500;color:#6B7280;}
+.vd-text{width:100%;min-height:96px;resize:vertical;padding:12px 14px;border:1.5px solid #E5E7EB;border-radius:12px;font-size:14px;font-family:inherit;line-height:1.6;outline:none;box-sizing:border-box;}
+.vd-text:focus{border-color:#2563EB;}
+.vd-synth-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap;}
+.vd-sel{font-size:12.5px;color:#475569;}
+.vd-sel b{color:#2563EB;}
+.vd-sel-hint{color:#9CA3AF;font-weight:400;}
+.vd-synth-btn{background:linear-gradient(135deg,#3B82F6,#2563EB);color:#fff;border:none;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.vd-synth-btn:hover{filter:brightness(1.05);}
+.vd-card.sel{border-color:#2563EB;box-shadow:0 0 0 2px rgba(37,99,235,.18);}
+.vd-pending-tag{display:inline-block;font-size:11px;color:#059669;background:#ECFDF5;border:1px solid #A7F3D0;border-radius:8px;padding:1px 8px;margin-left:8px;}
+.op-dub-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
 .vd-note{margin-top:16px;font-size:11.5px;color:#9CA3AF;line-height:1.7;text-align:center;}
 .vd-modal-mask{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:9999;padding:20px;}
 .vd-modal-mask.show{display:flex;}
@@ -1998,6 +2012,10 @@ function renderAiText(page, body){
         planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'', s15.aiPromptCn||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
         planHtml += '</details>';
+        planHtml += '<div class="op-dub-row">'
+          +'<button class="pill secondary op-dub" data-act="op-dub" data-idx="'+i+'" data-part="s50">🔊 配音（口播母版）</button>'
+          +'<button class="pill secondary op-dub" data-act="op-dub" data-idx="'+i+'" data-part="all">🔊 配音全文</button>'
+        +'</div>';
       }
       html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
@@ -2031,6 +2049,17 @@ function renderAiText(page, body){
         const blk=b.closest('.op-pb'); if(!blk) return;
         const p=blk.querySelector('.op-prompt-cn'); if(!p) return;
         copyText(p.innerText); b.textContent='已复制✓'; setTimeout(()=>b.textContent='复制中文',1500);
+      });
+    });
+    body.querySelectorAll('.op-dub').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const idx=+b.dataset.idx, part=b.dataset.part;
+        const it=(arr0[idx])||{};
+        const txt = part==='s50' ? ((it.short50&&typeof it.short50==='object'&&it.short50.text)||'') : (it.content||'');
+        if(!txt){ toast('这条暂无可配音的文案'); return; }
+        const suggested = (it.cat==='健身'||it.cat==='知识科普类'||it.cat==='发布运营')?'解说':((it.cat==='高情商恋爱关系'||it.cat==='家庭教育'||it.cat==='职场高情商')?'情感':(it.cat==='搞笑类'?'搞笑':'解说'));
+        saveData('wb_voicedub_pending', {text:String(txt), style:suggested});
+        navigate('voice-dub');
       });
     });
   }
@@ -4868,6 +4897,7 @@ function bindEvents(){
 /* ============== 短视频 AI 配音 (voice-dub) ============== */
 const VD_FAV_KEY='wb_voicedub_fav', VD_TTS_KEY='wb_voicedub_tts';
 let vdState={p:'全部',g:'全部',s:'全部',d:'全部',q:''};
+let vdSel=null;
 let vdCompare=[];
 /* 数据来自公开网络整理（FlowPix 实测、必剪语音列表社区整理、各平台官网/帮助文档等），非官方完整列表，仅供检索参考 */
 const VOICE_DUB=[
@@ -5026,37 +5056,53 @@ function vdSample(it){
   return '这条视频带你三分钟看懂一个知识点，记得点赞关注。';
 }
 function vdEscXml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
-function vdSpeakWeb(it){
+function vdSpeakWeb(it, text){
   if(!('speechSynthesis' in window)){ toast('当前浏览器不支持语音合成'); return; }
   try{ speechSynthesis.cancel(); }catch(e){}
-  const u=new SpeechSynthesisUtterance(vdSample(it));
+  const useText=(text&&text.trim())?text.trim():'';
+  const u=new SpeechSynthesisUtterance(useText||vdSample(it));
   const vs=speechSynthesis.getVoices();
   const zh=vs.find(v=>/^(zh|cmn)/i.test(v.lang)) || vs.find(v=>/zh|chinese/i.test(v.lang));
   if(zh){ u.voice=zh; u.lang=zh.lang; } else { u.lang='zh-CN'; }
   u.rate=1; u.pitch=1;
   speechSynthesis.speak(u);
-  toast('🔊 浏览器免费声线试听：'+it.n+'（同名占位，非平台原声）');
+  toast(useText?('🔊 浏览器免费声线朗读《文案》· '+it.n):('🔊 浏览器免费声线试听：'+it.n+'（同名占位，非平台原声）'));
 }
-async function vdSpeakAzure(it, tts){
+async function vdSpeakAzure(it, tts, text){
   try{
     const voice=tts.voice||'zh-CN-XiaoxiaoNeural';
     const url='https://'+tts.region+'.tts.speech.microsoft.com/cognitiveservices/v1';
-    const ssml="<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'><voice xml:lang='zh-CN' name='"+voice+"'>"+vdEscXml(vdSample(it))+"</voice></speak>";
+    const t=(text&&text.trim())?text.trim():vdSample(it);
+    const ssml="<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='zh-CN'><voice xml:lang='zh-CN' name='"+voice+"'>"+vdEscXml(t)+"</voice></speak>";
     const r=await fetch(url,{method:'POST',headers:{'Ocp-Apim-Subscription-Key':tts.key,'Content-Type':'application/ssml+xml','X-Microsoft-OutputFormat':'audio-16khz-32kbitrate-mono-mp3'},body:ssml});
-    if(!r.ok){ toast('Azure TTS 请求失败('+r.status+')，改用浏览器免费声线'); vdSpeakWeb(it); return; }
+    if(!r.ok){ toast('Azure TTS 请求失败('+r.status+')，改用浏览器免费声线'); vdSpeakWeb(it, text); return; }
     const buf=await r.arrayBuffer();
     const blob=new Blob([buf],{type:'audio/mpeg'});
     const aurl=URL.createObjectURL(blob);
     const au=new Audio(aurl); au.play();
-    toast('🔊 Azure 高清声线试听：'+it.n);
-  }catch(e){ toast('Azure TTS 出错('+e.message+')，改用浏览器免费声线'); vdSpeakWeb(it); }
+    toast('🔊 Azure 高清声线：'+it.n);
+  }catch(e){ toast('Azure TTS 出错('+e.message+')，改用浏览器免费声线'); vdSpeakWeb(it, text); }
 }
-function vdSpeak(it){
+async function vdSpeakProxy(it, tts, text){
+  const proxy=(tts.proxy||'').trim();
+  if(!proxy){ toast('火山/讯飞需先配置代理地址（⚙设置里填 Worker 地址）'); vdSpeakWeb(it, text); return; }
+  const vendor=tts.vendor, voice=tts.proxyVoice||it.n;
+  try{
+    const r=await fetch(proxy+'/tts?vendor='+vendor+'&voice='+encodeURIComponent(voice),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:(text&&text.trim())?text.trim():vdSample(it)})});
+    if(!r.ok){ toast('代理返回 '+r.status+'，改用浏览器免费声线'); vdSpeakWeb(it, text); return; }
+    const buf=await r.arrayBuffer();
+    const blob=new Blob([buf],{type:r.headers.get('content-type')||'audio/mpeg'});
+    const aurl=URL.createObjectURL(blob); const au=new Audio(aurl); au.play();
+    toast('🔊 '+(vendor==='volcano'?'火山引擎':'讯飞')+' 高清声线：'+it.n);
+  }catch(e){ toast('代理出错('+e.message+')，改用浏览器免费声线'); vdSpeakWeb(it, text); }
+}
+function vdSpeak(it, text){
   const tts=loadData(VD_TTS_KEY, null);
-  if(tts && tts.vendor==='azure' && tts.key && tts.region){ vdSpeakAzure(it, tts); }
+  if(tts && tts.vendor==='azure' && tts.key && tts.region){ vdSpeakAzure(it, tts, text); }
+  else if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly') && tts.proxy){ vdSpeakProxy(it, tts, text); }
   else {
-    if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly')){ toast('火山/讯飞 TTS 需服务端代理，Web 端暂用浏览器免费声线'); }
-    vdSpeakWeb(it);
+    if(tts && (tts.vendor==='volcano'||tts.vendor==='ifly') && !tts.proxy){ toast('火山/讯飞 TTS 需配置代理地址（⚙设置）'); }
+    vdSpeakWeb(it, text);
   }
 }
 function vdFilter(){
@@ -5081,7 +5127,7 @@ function vdCard(it){
   const tags=[it.g, it.s].filter(x=>x && x!=='中性');
   if(it.d) tags.push('方言·'+it.d);
   const tagHtml=tags.map(x=>'<span class="vd-minitag">'+esc(x)+'</span>').join('');
-  return '<div class="vd-card">'
+  return '<div class="vd-card" data-p="'+esc(it.p)+'" data-n="'+esc(it.n)+'">'
     +'<div class="vd-card-hd"><span class="vd-platform">'+esc(it.p)+'</span><span class="vd-name">'+esc(it.n)+'</span></div>'
     +'<div class="vd-tags">'+tagHtml+'</div>'
     +'<div class="vd-scene">适用：'+(esc(it.scene)||'')+'</div>'
@@ -5112,14 +5158,28 @@ function vdRenderCmpBar(){
     + ' <button class="vd-mini" data-act="vd-clearcmp">清空</button>';
 }
 function vdRender(){ vdRenderGrid(); vdRenderFavBar(); vdRenderCmpBar(); }
+function vdGetText(){ const ta=$('vdText'); return ta?ta.value:''; }
+function vdSetSel(it){
+  vdSel=it;
+  const el=$('vdSelName'); if(el) el.textContent=it?it.n:'未选';
+  document.querySelectorAll('.vd-card.sel').forEach(c=>c.classList.remove('sel'));
+  if(it){ document.querySelectorAll('.vd-card').forEach(c=>{ if(c.dataset.p===it.p && c.dataset.n===it.n) c.classList.add('sel'); }); }
+}
+function vdSynth(){
+  const text=vdGetText().trim();
+  if(!text){ toast('请先在上方框里输入或粘贴要配音的文案'); return; }
+  if(!vdSel){ toast('请先点一个音色的「🔊 试听」来选定声线'); return; }
+  vdSpeak(vdSel, text);
+}
 function vdClick(e){
   const t=e.target.closest('[data-act],[data-vd]'); if(!t) return;
   const act=t.dataset.act;
-  if(act==='vd-play'){ vdSpeak(vdItemFromEl(t)); return; }
+  if(act==='vd-play'){ const it=vdItemFromEl(t); vdSetSel(it); vdSpeak(it); return; }
   if(act==='vd-fav'){ vdFavToggle(vdItemFromEl(t)); return; }
   if(act==='vd-cmp'){ vdCmpToggle(vdItemFromEl(t)); return; }
   if(act==='vd-clearcmp'){ vdCompare=[]; vdRender(); return; }
   if(act==='vd-set'){ vdOpenSettings(); return; }
+  if(act==='vd-synth'){ vdSynth(); return; }
   if(t.dataset.vd){
     const kind=t.dataset.vd, val=t.dataset.v;
     vdState[kind]=val;
@@ -5138,13 +5198,15 @@ function vdOpenSettings(){
     +'<div class="vd-modal-bd">'
       +'<div class="vd-set-row"><label>引擎</label><select id="vdVendor">'
         +'<option value="azure"'+(tts.vendor==='azure'?' selected':'')+'>微软 Azure（Web 直连可用）</option>'
-        +'<option value="volcano"'+(tts.vendor==='volcano'?' selected':'')+'>火山引擎（需服务端代理，暂占位）</option>'
-        +'<option value="ifly"'+(tts.vendor==='ifly'?' selected':'')+'>讯飞（需服务端代理，暂占位）</option>'
+        +'<option value="volcano"'+(tts.vendor==='volcano'?' selected':'')+'>火山引擎（需代理，已支持）</option>'
+        +'<option value="ifly"'+(tts.vendor==='ifly'?' selected':'')+'>讯飞（需代理，已支持）</option>'
       +'</select></div>'
       +'<div class="vd-set-row"><label>Key</label><input id="vdKey" placeholder="API Key / Access Key" value="'+esc(tts.key||'')+'"></div>'
       +'<div class="vd-set-row"><label>Region</label><input id="vdRegion" placeholder="如 eastasia（Azure 必填）" value="'+esc(tts.region||'')+'"></div>'
       +'<div class="vd-set-row"><label>Voice</label><input id="vdVoice" placeholder="如 zh-CN-XiaoxiaoNeural" value="'+esc(tts.voice||'')+'"></div>'
-      +'<div class="vd-set-tip">未配置时试听使用浏览器免费声线（同名占位，非平台原声）。配置 Azure 后试听自动切换高清神经声线。Key 仅存本机 localStorage，不上传服务器。</div>'
+      +'<div class="vd-set-row"><label>代理地址(火山/讯飞)</label><input id="vdProxy" placeholder="https://你的-worker.workers.dev" value="'+esc(tts.proxy||'')+'"></div>'
+      +'<div class="vd-set-row"><label>代理默认音色</label><input id="vdProxyVoice" placeholder="如火山用 zh_male_zhixing" value="'+esc(tts.proxyVoice||'')+'"></div>'
+      +'<div class="vd-set-tip">未配置时试听使用浏览器免费声线（同名占位，非平台原声）。配置 Azure 后试听自动切换高清神经声线；火山/讯飞需部署一个轻量代理（Worker）并在「代理地址」填入，密钥存于代理端不落浏览器。Key/代理地址仅存本机 localStorage，不上传。</div>'
     +'</div>'
     +'<div class="vd-modal-ft"><button class="vd-mini" data-act="vd-set-save">保存</button><button class="vd-mini secondary" data-act="vd-set-close">关闭</button></div>'
   +'</div>';
@@ -5157,9 +5219,11 @@ function vdOpenSettings(){
       const key=$('vdKey').value.trim();
       const region=$('vdRegion').value.trim();
       const voice=$('vdVoice').value.trim();
-      saveData(VD_TTS_KEY, {vendor,key,region,voice});
+      const proxy=$('vdProxy').value.trim();
+      const proxyVoice=$('vdProxyVoice').value.trim();
+      saveData(VD_TTS_KEY, {vendor,key,region,voice,proxy,proxyVoice});
       m.classList.remove('show');
-      toast((vendor==='azure'&&key&&region)?'已启用 Azure 高清声线':'已保存（未填完整则不启用云 TTS）');
+      toast((vendor==='azure'&&key&&region)?'已启用 Azure 高清声线':((vendor!=='azure'&&proxy)?'已启用 '+('volcano'===vendor?'火山':'讯飞')+' 代理声线':'已保存（未填完整则不启用云 TTS）'));
     }
   };
 }
@@ -5175,6 +5239,14 @@ function renderVoiceDub(body){
   body.innerHTML='<div class="vd-wrap">'
     +'<div class="vd-head"><div class="vd-title">🎙️ 短视频 AI 配音</div>'
     +'<div class="vd-sub">各大平台配音音色最全检索 · 点「🔊 试听」可听（默认浏览器免费声线，填云 TTS Key 升级高清）· 支持收藏与并排对比</div></div>'
+    +'<div class="vd-synth">'
+      +'<div class="vd-synth-hd">📝 文案配音 <span class="vd-synth-sub">把任意文案转语音（也可从「运营思路题库」点 🔊配音 自动填入）</span></div>'
+      +'<textarea id="vdText" class="vd-text" placeholder="粘贴或输入要配音的文案…（支持长文案，如题库口播母版）"></textarea>'
+      +'<div class="vd-synth-foot">'
+        +'<span class="vd-sel">当前音色：<b id="vdSelName">未选</b> <span class="vd-sel-hint">（点任意音色卡片的🔊试听来选定）</span></span>'
+        +'<button class="vd-synth-btn" data-act="vd-synth">🔊 合成这段文案</button>'
+      +'</div>'
+    +'</div>'
     +'<div class="vd-toolbar">'
       +'<div class="vd-row"><span class="vd-label">平台</span><div class="vd-tabs" id="vdTabs">'+platTabs+'</div></div>'
       +'<div class="vd-row"><span class="vd-label">性别</span><div class="vd-chips" id="vdGen">'+genChips+'</div></div>'
@@ -5189,6 +5261,18 @@ function renderVoiceDub(body){
   const w=$('page-voice-dub'); if(w) w.onclick=vdClick;
   vdRenderGrid(); vdRenderFavBar(); vdRenderCmpBar();
   const se=$('vdSearch'); if(se) se.oninput=()=>{ vdState.q=se.value.trim(); vdRenderGrid(); };
+  // 运营思路题库一键配音带入的文案
+  try{
+    const pend=loadData('wb_voicedub_pending', null);
+    if(pend && pend.text){
+      const ta=$('vdText'); if(ta) ta.value=pend.text;
+      if(pend.style){ vdState.s=pend.style; const grp=$('vdSty'); if(grp) grp.querySelectorAll('[data-vd="s"]').forEach(x=>x.classList.toggle('on', x.dataset.v===pend.style)); const dr=$('vdDiaRow'); if(dr) dr.style.display=(pend.style==='方言')?'flex':'none'; vdRenderGrid(); }
+      const list=vdFilter();
+      if(list.length) vdSetSel(list[0]);
+      saveData('wb_voicedub_pending', null);
+      setTimeout(()=>{ const t2=$('vdText'); if(t2) t2.scrollIntoView({behavior:'smooth',block:'center'}); }, 80);
+    }
+  }catch(e){}
 }
 
 /* ============== 初始化 ============== */
