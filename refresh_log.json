@@ -1,22 +1,23 @@
 {
-  "checkedAt": "2026-08-25T00:46:07.802Z",
-  "bjToday": "2026-08-25",
-  "allFresh": true,
-  "stale": [],
+  "checkedAt": "2026-08-29T02:52:41.746Z",
+  "bjToday": "2026-08-29",
+  "allFresh": false,
+  "stale": [
+    "financeNews[市场综述] 最新 2026-08-26 (3天前)",
+    "financeNews[黄金大宗] 最新 2026-08-26 (3天前)",
+    "financeNews[AI科技] 最新 2026-08-26 (3天前)",
+    "financeNews[政策宏观] 最新 2026-08-26 (3天前)",
+    "financeNews[个股公司] 最新 2026-08-26 (3天前)",
+    "financeNews[基金ETF] 最新 2026-08-26 (3天前)",
+    "financeNews[加密货币] 最新 2026-08-26 (3天前)",
+    "healthNews 最新 2026-08-24 (5天前)",
+    "sideHustle 最新 2026-08-24 (5天前)",
+    "siteVersion 2026-08-25.0845 (4天前)",
+    "stockJudgments[510300] asOf 2026-08-24 (5天前)",
+    "stockJudgments[600433] asOf 2026-08-24 (5天前)",
+    "stockJudgments[000001] asOf 2026-08-24 (5天前)"
+  ],
   "fresh": [
-    "financeNews[市场综述] 2026-08-24",
-    "financeNews[黄金大宗] 2026-08-24",
-    "financeNews[AI科技] 2026-08-24",
-    "financeNews[政策宏观] 2026-08-24",
-    "financeNews[个股公司] 2026-08-24",
-    "financeNews[基金ETF] 2026-08-24",
-    "financeNews[加密货币] 2026-08-24",
-    "healthNews 2026-08-24",
-    "sideHustle 2026-08-24",
-    "siteVersion 2026-08-25.0845",
-    "stockJudgments[510300] 2026-08-24",
-    "stockJudgments[600433] 2026-08-24",
-    "stockJudgments[000001] 2026-08-24",
-    "indexTrack 12 条 asOf 新鲜(<=3天)"
+    "indexTrack 12 条 (周末休市，跳过 asOf 检查)"
   ]
 }
