@@ -71,9 +71,9 @@ print(r.data)
 PY
 
 <span class="step"># 3. ffmpeg 合成竖屏视频 + 中文字幕（.srt 自行按句切分）</span>
-ffmpeg -y -f lavfi -i "color=c=0x0E1326:s=1080x1920:d=27:r=30" \
+ffmpeg -y -f lavfi -i "gradients=s=1080x1920:c0=0x0E1326:c1=0x223D6B:c2=0x0B1020:x0=0:y0=0:x1=1080:y1=1920:d=27" \
   -i projects/demos/voice.mp3 \
-  -vf "drawtext=fontfile='C\:/Windows/Fonts/simhei.ttf':text='标题':fontcolor=white:fontsize=58:x=(w-text_w)/2:y=150,subtitles='projects/demos/voice.srt':force_style='FontName=SimHei,FontSize=50,PrimaryColour=&HFFFFFF,Outline=3,Bold=1,Alignment=2,MarginV=260'" \
+  -vf "drawtext=fontfile='C\:/Windows/Fonts/simhei.ttf':text='标题':fontcolor=white:fontsize=64:x=(w-text_w)/2:y=130,subtitles='projects/demos/voice.srt':force_style='FontName=SimHei,FontSize=50,PrimaryColour=&HFFFFFF,Outline=3,Bold=1,Alignment=2,MarginV=220'" \
   -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest projects/demos/cn_video.mp4</code></pre>
     <p class="note">完整脚本见 OpenMontage 仓库根目录 <code>render_zh.sh</code>。中文文本会自动路由到 Edge TTS，无需手动指定。</p>
   </div>
