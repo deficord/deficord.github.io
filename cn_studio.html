@@ -5,13 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>中文视频生成器 · OpenMontage 零成本</title>
 <style>
-:root{--bg:#f6f7f9;--panel:#fff;--ink:#1f2329;--sub:#8a9099;--line:#e7e9ee;--green:#15803d;--greenbg:#eafaf0;--greenline:#cdeccd;--blue:#3a6df0;--bluebg:#eef3ff;--blueline:#cdddff;}
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1f2329;--sub:#8a9099;--line:#e7e9ee;--green:#15803d;--greenbg:#eafaf0;--greenline:#cdeccd;--blue:#3a6df0;--bluebg:#eef3ff;--blueline:#cdddff;--amber:#b7791f;--amberbg:#fdf6ec;--amberline:#f0e0c0;}
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
-header{padding:18px 20px 12px;background:var(--panel);border-bottom:1px solid var(--line);}
+header{padding:18px 20px 12px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
 header h1{margin:0;font-size:18px;font-weight:700;}
 header p{margin:4px 0 0;font-size:12px;color:var(--sub);}
-.wrap{max-width:960px;margin:0 auto;padding:18px 20px 48px;}
+.modechip{font-size:11.5px;font-weight:700;padding:4px 12px;border-radius:999px;}
+.mode-local{background:var(--greenbg);color:var(--green);border:1px solid var(--greenline);}
+.mode-cloud{background:var(--amberbg);color:var(--amber);border:1px solid var(--amberline);}
+.wrap{max-width:1040px;margin:0 auto;padding:18px 20px 48px;}
+.grid2{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;}
+@media(max-width:860px){.grid2{grid-template-columns:1fr;}}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;}
 .card h2{margin:0 0 10px;font-size:15px;font-weight:700;}
 .card .desc{margin:0 0 12px;font-size:12.5px;color:var(--sub);line-height:1.75;}
@@ -25,6 +30,8 @@ select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:1
 .btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
 .btn-ghost{background:var(--panel);color:var(--ink);border-color:var(--line);}
 .btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+.btn-amber{background:var(--amber);color:#fff;border-color:var(--amber);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
 pre.code{background:#0e1326;color:#e6edf3;padding:14px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.65;max-height:460px;white-space:pre;}
 .tip{background:var(--bluebg);color:#3a6df0;border:1px solid var(--blueline);padding:10px 14px;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 12px;}
 .caps{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
@@ -32,81 +39,133 @@ pre.code{background:#0e1326;color:#e6edf3;padding:14px;border-radius:10px;overfl
 .back{display:inline-block;margin-top:8px;color:var(--green);font-size:13px;text-decoration:none;font-weight:700;}
 .toast{position:fixed;left:50%;top:24px;transform:translateX(-50%);background:#1f2329;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .25s;z-index:99;pointer-events:none;}
 .toast.show{opacity:1;}
+
+/* 实时预览手机框 */
+.phone{position:relative;width:100%;max-width:260px;margin:0 auto;aspect-ratio:9/16;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.18);background:#0E1326;display:flex;flex-direction:column;justify-content:space-between;}
+.phone .ph-title{position:absolute;top:14px;left:0;right:0;text-align:center;color:#fff;font-size:13px;font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,.6);padding:0 12px;}
+.phone .ph-center{position:absolute;top:50%;left:0;right:0;transform:translateY(-50%);text-align:center;color:rgba(255,255,255,.75);font-size:12px;}
+.phone .ph-cap{position:absolute;left:0;right:0;bottom:0;padding:16px 14px 18px;color:#fff;font-size:13px;line-height:1.6;text-shadow:0 1px 4px rgba(0,0,0,.7);background:linear-gradient(to top,rgba(0,0,0,.55),rgba(0,0,0,0));min-height:64px;word-break:break-word;}
+.phone .ph-cap .hint{display:block;font-size:10.5px;color:rgba(255,255,255,.6);margin-top:4px;}
+.preview-meta{display:flex;flex-direction:column;gap:8px;margin-top:14px;font-size:12.5px;color:var(--sub);}
+.preview-meta b{color:var(--ink);font-weight:600;}
+
+/* 出片进度 */
+#renderCard{display:none;}
+.log{background:#0e1326;color:#cfe3ff;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.7;padding:12px 14px;border-radius:10px;max-height:200px;overflow:auto;white-space:pre-wrap;}
+.log .err{color:#ff9b9b;}
+video.result{width:100%;max-width:300px;border-radius:12px;margin-top:12px;display:block;background:#000;}
+.dlvideo{display:inline-block;margin-top:10px;font-size:12.5px;color:var(--blue);font-weight:700;text-decoration:none;}
 @media(max-width:640px){.row{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
 <header>
-  <h1>🎬 中文视频生成器 · OpenMontage 零成本</h1>
-  <p>文案嵌入 · 音色 / 背景 / 语速自由选择 · 一键生成可在本机运行的脚本</p>
+  <div>
+    <h1>🎬 中文视频生成器 · OpenMontage 零成本</h1>
+    <p>文案嵌入 · 音色 / 背景 / 语速自由选择 · 实时预览 · 一键出片</p>
+  </div>
+  <span id="modeChip" class="modechip">检测中…</span>
 </header>
 <div class="wrap">
 
-  <div class="card">
-    <h2>① 填写文案</h2>
-    <p class="desc">支持中文（建议 50–300 字），可从 GLUCK「运营思路题库」复制选题。用全角句号（。）分句，配音会自动按句停顿。</p>
-    <label for="txt">视频文案</label>
-    <textarea id="txt" placeholder="例如：今天我们来聊聊，如何用零成本方案做一条中文短视频。配音由微软 Edge TTS 免费合成。画面由 ffmpeg 动态背景合成。全程无需任何 API Key。"></textarea>
-  </div>
+  <div class="grid2">
+    <!-- 左：输入 + 样式 + 脚本 -->
+    <div>
+      <div class="card">
+        <h2>① 填写文案</h2>
+        <p class="desc">支持中文（建议 50–300 字），可从 GLUCK「运营思路题库」复制选题。用全角句号（。）分句，配音会自动按句停顿。</p>
+        <label for="txt">视频文案</label>
+        <textarea id="txt" placeholder="例如：今天我们来聊聊，如何用零成本方案做一条中文短视频。配音由微软 Edge TTS 免费合成。画面由 ffmpeg 动态背景合成。全程无需任何 API Key。"></textarea>
+      </div>
 
-  <div class="card">
-    <h2>② 选择样式</h2>
-    <p class="desc">三个下拉自由组合。全部零成本中文优化方案。点「生成」会在下面得到一段可在本机一键运行的 Python 脚本。</p>
-    <div class="row">
-      <div>
-        <label for="voice">配音音色</label>
-        <select id="voice">
-          <option value="zh-CN-XiaoxiaoNeural">女声 · Xiaoxiao（推荐 温柔）</option>
-          <option value="zh-CN-YunxiNeural">男声 · Yunxi（阳光活泼）</option>
-          <option value="zh-CN-YunyangNeural">男声 · Yunyang（新闻腔）</option>
-          <option value="zh-CN-XiaoyiNeural">女声 · Xiaoyi（甜美女声）</option>
-          <option value="zh-CN-YunjianNeural">男声 · Yunjian（体育解说）</option>
-          <option value="zh-CN-YunxiaNeural">女声 · Yunxia（俏皮可爱）</option>
-          <option value="zh-CN-YunzeNeural">男声 · Yunze（沉稳磁性）</option>
-        </select>
+      <div class="card">
+        <h2>② 选择样式</h2>
+        <p class="desc">三个下拉自由组合。本地模式可直接出片；云端模式则生成可本机运行的脚本。</p>
+        <div class="row">
+          <div>
+            <label for="voice">配音音色</label>
+            <select id="voice">
+              <option value="zh-CN-XiaoxiaoNeural">女声 · Xiaoxiao（推荐 温柔）</option>
+              <option value="zh-CN-YunxiNeural">男声 · Yunxi（阳光活泼）</option>
+              <option value="zh-CN-YunyangNeural">男声 · Yunyang（新闻腔）</option>
+              <option value="zh-CN-XiaoyiNeural">女声 · Xiaoyi（甜美女声）</option>
+              <option value="zh-CN-YunjianNeural">男声 · Yunjian（体育解说）</option>
+              <option value="zh-CN-YunxiaNeural">女声 · Yunxia（俏皮可爱）</option>
+              <option value="zh-CN-YunzeNeural">男声 · Yunze（沉稳磁性）</option>
+            </select>
+          </div>
+          <div>
+            <label for="bg">背景风格</label>
+            <select id="bg">
+              <option value="gradient">动态渐变 · 深蓝（推荐）</option>
+              <option value="warm">动态渐变 · 暖橙</option>
+              <option value="solid">纯色 · 深蓝</option>
+              <option value="black">纯色 · 纯黑</option>
+            </select>
+          </div>
+          <div>
+            <label for="rate">语速</label>
+            <select id="rate">
+              <option value="+0%">标准</option>
+              <option value="+5%">稍快</option>
+              <option value="+10%">更快</option>
+              <option value="-5%">稍慢</option>
+            </select>
+          </div>
+        </div>
+        <div class="btns">
+          <button class="btn btn-primary" id="gen">🎬 生成一键脚本</button>
+          <button class="btn btn-ghost" id="copy">📋 复制脚本</button>
+          <button class="btn btn-green" id="dl">💾 下载 .py 脚本</button>
+          <button class="btn btn-ghost" id="tts">🔊 试听</button>
+          <button class="btn btn-amber" id="render">🚀 直接出片</button>
+        </div>
       </div>
-      <div>
-        <label for="bg">背景风格</label>
-        <select id="bg">
-          <option value="gradient">动态渐变 · 深蓝（推荐）</option>
-          <option value="warm">动态渐变 · 暖橙</option>
-          <option value="solid">纯色 · 深蓝</option>
-          <option value="black">纯色 · 纯黑</option>
-        </select>
-      </div>
-      <div>
-        <label for="rate">语速</label>
-        <select id="rate">
-          <option value="+0%">标准</option>
-          <option value="+5%">稍快</option>
-          <option value="+10%">更快</option>
-          <option value="-5%">稍慢</option>
-        </select>
+
+      <div class="card">
+        <h2>③ 生成的脚本</h2>
+        <p class="desc">把脚本保存到本机 OpenMontage 目录下，运行 <code>python make_cn_video.py</code>，即可在 <code>projects/demos/cn_out/</code> 获得 mp3 配音 + 9:16 竖屏 mp4 视频。</p>
+        <pre class="code" id="out">点击「🎬 生成一键脚本」开始…</pre>
+        <div class="caps">
+          <span class="cap">Edge TTS 免费</span>
+          <span class="cap">零 API Key</span>
+          <span class="cap">ffmpeg 合成</span>
+          <span class="cap">中文不乱码</span>
+          <span class="cap">本机一键运行</span>
+        </div>
       </div>
     </div>
-    <div class="btns">
-      <button class="btn btn-primary" id="gen">🎬 生成一键脚本</button>
-      <button class="btn btn-ghost" id="copy">📋 复制脚本</button>
-      <button class="btn btn-green" id="dl">💾 下载 .py 脚本</button>
-    </div>
-  </div>
 
-  <div class="card">
-    <h2>③ 生成的脚本</h2>
-    <p class="desc">把脚本保存到本机 OpenMontage 目录下，运行 <code>python make_cn_video.py</code>，即可在 <code>projects/demos/cn_out/</code> 获得 mp3 配音 + 9:16 竖屏 mp4 视频。</p>
-    <pre class="code" id="out">点击「🎬 生成一键脚本」开始…</pre>
-    <div class="caps">
-      <span class="cap">Edge TTS 免费</span>
-      <span class="cap">零 API Key</span>
-      <span class="cap">ffmpeg 合成</span>
-      <span class="cap">中文不乱码</span>
-      <span class="cap">本机一键运行</span>
+    <!-- 右：实时预览 -->
+    <div>
+      <div class="card">
+        <h2>④ 实时预览</h2>
+        <p class="desc">随输入与选择即时更新，所见即所得（背景/标题为真实渲染样式，文案为配音参考）。</p>
+        <div class="phone" id="phone">
+          <div class="ph-title">OpenMontage · 中文短视频</div>
+          <div class="ph-center" id="phCenter"></div>
+          <div class="ph-cap" id="phCap">在此输入文案后，这里会实时显示预览…<span class="hint">（文案为配音内容；如需烧录字幕见教程页）</span></div>
+        </div>
+        <div class="preview-meta">
+          <div>音色：<b id="mVoice">—</b></div>
+          <div>语速：<b id="mRate">—</b></div>
+          <div>背景：<b id="mBg">—</b></div>
+        </div>
+      </div>
+
+      <div class="card" id="renderCard">
+        <h2>⑤ 出片进度</h2>
+        <p class="desc">本地伴生服务正在渲染，进度实时显示。完成后视频可直接播放与下载。</p>
+        <div class="log" id="log">等待开始…</div>
+        <video class="result" id="video" controls style="display:none;"></video>
+        <a class="dlvideo" id="dlVideo" style="display:none;" download>⬇ 下载成片 mp4</a>
+      </div>
     </div>
   </div>
 
   <div class="card">
     <h2>使用说明</h2>
-    <div class="tip">本页面是<strong>纯前端</strong>，GLUCK 部署在 GitHub Pages 无后端，所以点按钮不是"立即出片"，而是生成<strong>可在本机一键运行的 Python 脚本</strong>，调用本机 OpenMontage + ffmpeg 渲染。全程零成本、零密钥。画面烧录固定品牌标题字幕；如需烧录完整文案字幕，请参考 <a href="./cn_video.html" style="color:var(--blue);font-weight:700;">中文视频示例</a> 的 drawtext 逐段方案。</div>
+    <div class="tip" id="usageTip"></div>
     <a class="back" href="./cn_video.html">← 查看中文视频示例</a>
     <a class="back" href="./index.html" style="margin-left:14px;">← 返回 GLUCK 工作台</a>
   </div>
@@ -141,7 +200,7 @@ if not r.success:
     sys.exit(1)
 
 # 2) 探测配音真实时长
-info = subprocess.check_output([FFMPEG, "-i", VOICE_MP3], stderr=subprocess.STDOUT).decode("utf8", "ignore")
+info = subprocess.run([FFMPEG, "-i", VOICE_MP3], stderr=subprocess.STDOUT, stdout=subprocess.PIPE, text=True).stdout
 m = re.search(r"Duration:/s*(/d+):(/d+):(/d+/./d+)", info)
 dur = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
 
@@ -159,55 +218,130 @@ print("[done]", VIDEO_MP4)
 </script>
 
 <script>
-const BG_MAP = {
-  gradient: "gradients=s=1080x1920:c0=0x0E1326:c1=0x223D6B:c2=0x0B1020:x0=0:y0=0:x1=1080:y1=1920",
-  warm:     "gradients=s=1080x1920:c0=0x3A1F0A:c1=0xB85C1A:c2=0x1A0A05:x0=0:y0=0:x1=1080:y1=1920",
-  solid:    "color=c=0x0E1326:s=1080x1920:r=30",
-  black:    "color=c=0x000000:s=1080x1920:r=30"
+const LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const BG_CSS = {
+  gradient: 'linear-gradient(155deg,#0E1326 0%,#223D6B 55%,#0B1020 100%)',
+  warm:     'linear-gradient(155deg,#3A1F0A 0%,#B85C1A 55%,#1A0A05 100%)',
+  solid:    '#0E1326',
+  black:    '#000000'
 };
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 1500);
-}
-function pyRepr(s){
-  return '"""' + s.replace(/\\/g, '\\\\').replace(/"""/g, '\\"\\"\\"') + '"""';
-}
+const BG_NAME = { gradient:'动态渐变·深蓝', warm:'动态渐变·暖橙', solid:'纯色·深蓝', black:'纯色·纯黑' };
+const RATE_NAME = { '+0%':'标准', '+5%':'稍快', '+10%':'更快', '-5%':'稍慢' };
+
+const $ = id => document.getElementById(id);
+function showToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1500); }
+
+function pyRepr(s){ return '"""' + s.replace(/\\/g,'\\\\').replace(/"""/g,'\\"\\"\\"') + '"""'; }
+
 function build(){
-  const txt = document.getElementById('txt').value.trim();
-  const voice = document.getElementById('voice').value;
-  const bg = document.getElementById('bg').value;
-  const rate = document.getElementById('rate').value;
+  const txt=$('txt').value.trim();
+  const voice=$('voice').value, bg=$('bg').value, rate=$('rate').value;
   if(!txt){ showToast('请先填写文案'); return null; }
   if(!/[。！？]/.test(txt)){ showToast('请用全角句号（。）分句'); return null; }
-  const tpl = document.getElementById('tpl').textContent;
+  const tpl=$('tpl').textContent;
   return tpl
     .replace('__TEXT__', pyRepr(txt))
     .replace('__VOICE__', '"'+voice.replace(/"/g,'\\"')+'"')
     .replace('__RATE__',  '"'+rate.replace(/"/g,'\\"')+'"')
     .replace('__BG__',    '"'+BG_MAP[bg]+'"');
 }
-document.getElementById('gen').onclick = ()=>{
-  const code = build();
-  if(code){ document.getElementById('out').textContent = code; showToast('已生成'); }
+const BG_MAP = {
+  gradient: "gradients=s=1080x1920:c0=0x0E1326:c1=0x223D6B:c2=0x0B1020:x0=0:y0=0:x1=1080:y1=1920",
+  warm:     "gradients=s=1080x1920:c0=0x3A1F0A:c1=0xB85C1A:c2=0x1A0A05:x0=0:y0=0:x1=1080:y1=1920",
+  solid:    "color=c=0x0E1326:s=1080x1920:r=30",
+  black:    "color=c=0x000000:s=1080x1920:r=30"
 };
-document.getElementById('copy').onclick = async ()=>{
-  const code = build(); if(!code) return;
-  document.getElementById('out').textContent = code;
-  try{ await navigator.clipboard.writeText(code); showToast('已复制到剪贴板'); }
-  catch(e){ showToast('复制失败：'+e.message); }
-};
-document.getElementById('dl').onclick = ()=>{
-  const code = build(); if(!code) return;
-  document.getElementById('out').textContent = code;
-  const blob = new Blob([code], {type:'text/x-python;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'make_cn_video.py';
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
-  showToast('已下载 make_cn_video.py');
-};
+
+/* 实时预览更新 */
+function updatePreview(){
+  const txt=$('txt').value.trim();
+  const voice=$('voice'), bg=$('bg'), rate=$('rate');
+  $('phone').style.background = BG_CSS[bg.value];
+  const vLabel = voice.options[voice.selectedIndex].text;
+  $('phCenter').textContent = (LOCAL ? '🚀 本地出片就绪' : '☁ 云端模式') + '\n' + vLabel.split('（')[0];
+  $('phCap').innerHTML = (txt ? escapeHtml(txt) : '在此输入文案后，这里会实时显示预览…')
+    + '<span class="hint">（文案为配音内容；如需烧录字幕见教程页）</span>';
+  $('mVoice').textContent = vLabel;
+  $('mRate').textContent = RATE_NAME[rate.value] || rate.value;
+  $('mBg').textContent = BG_NAME[bg.value];
+}
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* 浏览器试听（仅供参考，非 Edge 音色） */
+function previewTTS(){
+  try{
+    if(!('speechSynthesis' in window)){ showToast('当前浏览器不支持语音合成'); return; }
+    const txt=$('txt').value.trim();
+    if(!txt){ showToast('请先填写文案'); return; }
+    const u=new SpeechSynthesisUtterance(txt);
+    u.lang='zh-CN';
+    const vs=speechSynthesis.getVoices();
+    const zh=vs.find(v=>/^zh/i.test(v.lang));
+    if(zh) u.voice=zh;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+    showToast('试听中（浏览器合成，仅供参考）');
+  }catch(e){ showToast('试听失败：'+e.message); }
+}
+
+/* 本地直接出片（仅 localhost） */
+let rendering=false;
+function log(msg, isErr){ const l=$('log'); const d=document.createElement('div'); if(isErr) d.className='err'; d.textContent=msg; l.appendChild(d); l.scrollTop=l.scrollHeight; }
+async function renderLocal(){
+  if(rendering) return;
+  const cfg={ text:$('txt').value.trim(), voice:$('voice').value, bg:$('bg').value, rate:$('rate').value };
+  if(!cfg.text){ showToast('请先填写文案'); return; }
+  if(!/[。！？]/.test(cfg.text)){ showToast('请用全角句号（。）分句'); return; }
+  rendering=true;
+  $('render').disabled=true;
+  $('log').textContent=''; $('video').style.display='none'; $('dlVideo').style.display='none';
+  log('▶ 连接本地伴生服务…');
+  try{
+    const resp=await fetch('/render',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+    if(!resp.ok){ log('服务返回 '+resp.status+'，请确认 studio_server.py 已启动', true); return; }
+    const reader=resp.body.getReader(); const dec=new TextDecoder(); let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      let idx;
+      while((idx=buf.indexOf('\n\n'))>=0){
+        const piece=buf.slice(0,idx); buf=buf.slice(idx+2);
+        const line=piece.split('\n').find(l=>l.startsWith('data: ')); if(!line) continue;
+        const ev=JSON.parse(line.slice(6));
+        if(ev.msg) log(ev.msg);
+        if(ev.error){ log('❌ '+ev.error, true); return; }
+        if(ev.done){
+          $('video').src=ev.video; $('video').style.display='block';
+          $('dlVideo').href=ev.video; $('dlVideo').style.display='inline-block';
+          log('✓ 完成，视频已就绪'); return;
+        }
+      }
+    }
+  }catch(e){ log('❌ '+e.message, true); }
+  finally{ rendering=false; $('render').disabled=false; }
+}
+
+/* 按钮与模式初始化 */
+$('gen').onclick=()=>{ const c=build(); if(c){ $('out').textContent=c; showToast('已生成'); } };
+$('copy').onclick=async()=>{ const c=build(); if(!c) return; $('out').textContent=c; try{ await navigator.clipboard.writeText(c); showToast('已复制到剪贴板'); }catch(e){ showToast('复制失败：'+e.message); } };
+$('dl').onclick=()=>{ const c=build(); if(!c) return; $('out').textContent=c; const b=new Blob([c],{type:'text/x-python;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='make_cn_video.py'; document.body.appendChild(a); a.click(); setTimeout(()=>{document.body.removeChild(a); URL.revokeObjectURL(a.href);},100); showToast('已下载 make_cn_video.py'); };
+$('tts').onclick=previewTTS;
+$('render').onclick=renderLocal;
+
+['txt','voice','bg','rate'].forEach(id=>{ $(id).addEventListener('input',updatePreview); $(id).addEventListener('change',updatePreview); });
+if('speechSynthesis' in window){ speechSynthesis.getVoices(); }
+
+/* 模式提示 */
+if(LOCAL){
+  $('modeChip').textContent='本地模式 · 可直接出片'; $('modeChip').className='modechip mode-local';
+  $('renderCard').style.display='block';
+  $('usageTip').innerHTML='你正在 <b>本地伴生服务</b>（127.0.0.1）打开本页，点「🚀 直接出片」会实时调用本机 OpenMontage（edge-tts + ffmpeg）渲染成片，无需下载脚本。';
+}else{
+  $('modeChip').textContent='云端模式 · GitHub Pages'; $('modeChip').className='modechip mode-cloud';
+  $('render').disabled=true;
+  $('usageTip').innerHTML='本页部署在 GitHub Pages（纯前端，无后端），故「🚀 直接出片」已禁用。两种用法：① 点「生成/下载 .py 脚本」在本机 OpenMontage 运行；② 在 OpenMontage 目录运行 <code>python studio_server.py</code>，于 <b>http://127.0.0.1:8777</b> 打开本页即可启用一键出片。';
+}
+updatePreview();
 </script>
 </body>
 </html>
