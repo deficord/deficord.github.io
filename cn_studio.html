@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中文视频生成器 · OpenMontage 零成本</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--ink:#1f2329;--sub:#8a9099;--line:#e7e9ee;--green:#15803d;--greenbg:#eafaf0;--greenline:#cdeccd;--blue:#3a6df0;--bluebg:#eef3ff;--blueline:#cdddff;}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;}
+header{padding:18px 20px 12px;background:var(--panel);border-bottom:1px solid var(--line);}
+header h1{margin:0;font-size:18px;font-weight:700;}
+header p{margin:4px 0 0;font-size:12px;color:var(--sub);}
+.wrap{max-width:960px;margin:0 auto;padding:18px 20px 48px;}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;}
+.card h2{margin:0 0 10px;font-size:15px;font-weight:700;}
+.card .desc{margin:0 0 12px;font-size:12.5px;color:var(--sub);line-height:1.75;}
+label{display:block;font-size:12.5px;font-weight:600;margin:0 0 6px;}
+textarea{width:100%;min-height:140px;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:14px;line-height:1.7;resize:vertical;background:#fafbfc;color:var(--ink);font-family:inherit;}
+textarea:focus{outline:none;border-color:var(--blue);background:#fff;}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fafbfc;font-size:13.5px;font-family:inherit;cursor:pointer;}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid transparent;text-decoration:none;}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn-ghost{background:var(--panel);color:var(--ink);border-color:var(--line);}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green);}
+pre.code{background:#0e1326;color:#e6edf3;padding:14px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.65;max-height:460px;white-space:pre;}
+.tip{background:var(--bluebg);color:#3a6df0;border:1px solid var(--blueline);padding:10px 14px;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 12px;}
+.caps{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.cap{background:var(--greenbg);color:var(--green);border:1px solid var(--greenline);border-radius:999px;padding:4px 10px;font-size:11.5px;font-weight:600;}
+.back{display:inline-block;margin-top:8px;color:var(--green);font-size:13px;text-decoration:none;font-weight:700;}
+.toast{position:fixed;left:50%;top:24px;transform:translateX(-50%);background:#1f2329;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .25s;z-index:99;pointer-events:none;}
+.toast.show{opacity:1;}
+@media(max-width:640px){.row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎬 中文视频生成器 · OpenMontage 零成本</h1>
+  <p>文案嵌入 · 音色 / 背景 / 语速自由选择 · 一键生成可在本机运行的脚本</p>
+</header>
+<div class="wrap">
+
+  <div class="card">
+    <h2>① 填写文案</h2>
+    <p class="desc">支持中文（建议 50–300 字），可从 GLUCK「运营思路题库」复制选题。用全角句号（。）分句，配音会自动按句停顿。</p>
+    <label for="txt">视频文案</label>
+    <textarea id="txt" placeholder="例如：今天我们来聊聊，如何用零成本方案做一条中文短视频。配音由微软 Edge TTS 免费合成。画面由 ffmpeg 动态背景合成。全程无需任何 API Key。"></textarea>
+  </div>
+
+  <div class="card">
+    <h2>② 选择样式</h2>
+    <p class="desc">三个下拉自由组合。全部零成本中文优化方案。点「生成」会在下面得到一段可在本机一键运行的 Python 脚本。</p>
+    <div class="row">
+      <div>
+        <label for="voice">配音音色</label>
+        <select id="voice">
+          <option value="zh-CN-XiaoxiaoNeural">女声 · Xiaoxiao（推荐 温柔）</option>
+          <option value="zh-CN-YunxiNeural">男声 · Yunxi（阳光活泼）</option>
+          <option value="zh-CN-YunyangNeural">男声 · Yunyang（新闻腔）</option>
+          <option value="zh-CN-XiaoyiNeural">女声 · Xiaoyi（甜美女声）</option>
+          <option value="zh-CN-YunjianNeural">男声 · Yunjian（体育解说）</option>
+          <option value="zh-CN-YunxiaNeural">女声 · Yunxia（俏皮可爱）</option>
+          <option value="zh-CN-YunzeNeural">男声 · Yunze（沉稳磁性）</option>
+        </select>
+      </div>
+      <div>
+        <label for="bg">背景风格</label>
+        <select id="bg">
+          <option value="gradient">动态渐变 · 深蓝（推荐）</option>
+          <option value="warm">动态渐变 · 暖橙</option>
+          <option value="solid">纯色 · 深蓝</option>
+          <option value="black">纯色 · 纯黑</option>
+        </select>
+      </div>
+      <div>
+        <label for="rate">语速</label>
+        <select id="rate">
+          <option value="+0%">标准</option>
+          <option value="+5%">稍快</option>
+          <option value="+10%">更快</option>
+          <option value="-5%">稍慢</option>
+        </select>
+      </div>
+    </div>
+    <div class="btns">
+      <button class="btn btn-primary" id="gen">🎬 生成一键脚本</button>
+      <button class="btn btn-ghost" id="copy">📋 复制脚本</button>
+      <button class="btn btn-green" id="dl">💾 下载 .py 脚本</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>③ 生成的脚本</h2>
+    <p class="desc">把脚本保存到本机 OpenMontage 目录下，运行 <code>python make_cn_video.py</code>，即可在 <code>projects/demos/cn_out/</code> 获得 mp3 配音 + 9:16 竖屏 mp4 视频。</p>
+    <pre class="code" id="out">点击「🎬 生成一键脚本」开始…</pre>
+    <div class="caps">
+      <span class="cap">Edge TTS 免费</span>
+      <span class="cap">零 API Key</span>
+      <span class="cap">ffmpeg 合成</span>
+      <span class="cap">中文不乱码</span>
+      <span class="cap">本机一键运行</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>使用说明</h2>
+    <div class="tip">本页面是<strong>纯前端</strong>，GLUCK 部署在 GitHub Pages 无后端，所以点按钮不是"立即出片"，而是生成<strong>可在本机一键运行的 Python 脚本</strong>，调用本机 OpenMontage + ffmpeg 渲染。全程零成本、零密钥。画面烧录固定品牌标题字幕；如需烧录完整文案字幕，请参考 <a href="./cn_video.html" style="color:var(--blue);font-weight:700;">中文视频示例</a> 的 drawtext 逐段方案。</div>
+    <a class="back" href="./cn_video.html">← 查看中文视频示例</a>
+    <a class="back" href="./index.html" style="margin-left:14px;">← 返回 GLUCK 工作台</a>
+  </div>
+
+</div>
+<div class="toast" id="toast">已复制</div>
+
+<script type="text/x-python" id="tpl">#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# OpenMontage 中文视频一键生成（由 GLUCK 中文视频生成器生成）
+# 在 OpenMontage 根目录运行：python make_cn_video.py
+# 输出：projects/demos/cn_out/voice.mp3  +  cn_out.mp4
+import os, sys, re, subprocess
+
+TEXT = __TEXT__
+VOICE = __VOICE__
+RATE  = __RATE__
+BG    = __BG__
+OUT   = os.path.join("projects", "demos", "cn_out")
+os.makedirs(OUT, exist_ok=True)
+VOICE_MP3 = os.path.join(OUT, "voice.mp3")
+VIDEO_MP4 = os.path.join(OUT, "cn_out.mp4")
+FFMPEG = os.environ.get("FFMPEG", r"C:/Users/Administrator/ffmpeg/ffmpeg-9.0.1-essentials_build/bin/ffmpeg.exe")
+
+# 1) Edge TTS 免费中文配音（tts_selector 自动选 edge）
+from tools.tool_registry import registry
+registry.discover()
+tts = registry.get("tts_selector")
+r = tts.execute({"text": TEXT, "voice": VOICE, "rate": RATE, "output_path": VOICE_MP3})
+print("[TTS]", r.data)
+if not r.success:
+    sys.exit(1)
+
+# 2) 探测配音真实时长
+info = subprocess.check_output([FFMPEG, "-i", VOICE_MP3], stderr=subprocess.STDOUT).decode("utf8", "ignore")
+m = re.search(r"Duration:/s*(/d+):(/d+):(/d+/./d+)", info)
+dur = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
+
+# 3) ffmpeg 合成：背景 + 固定品牌标题（drawtext 烧录，无文案转义烦恼）
+font = r"C\:\Windows\Fonts\simhei.ttf"
+vf = (f"drawtext=fontfile='{font}':text='OpenMontage  ·  中文短视频':"
+      f"fontcolor=white:fontsize=50:x=(w-text_w)/2:y=110:"
+      f"box=1:boxcolor=0x000000@0.5:boxborderw=20")
+cmd = [FFMPEG, "-y", "-f", "lavfi", "-i", f"{BG}:d={dur}", "-i", VOICE_MP3, "-vf", vf,
+       "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-r", "30",
+       "-shortest", "-movflags", "+faststart", VIDEO_MP4]
+print("[ffmpeg] running...")
+subprocess.run(cmd)
+print("[done]", VIDEO_MP4)
+</script>
+
+<script>
+const BG_MAP = {
+  gradient: "gradients=s=1080x1920:c0=0x0E1326:c1=0x223D6B:c2=0x0B1020:x0=0:y0=0:x1=1080:y1=1920",
+  warm:     "gradients=s=1080x1920:c0=0x3A1F0A:c1=0xB85C1A:c2=0x1A0A05:x0=0:y0=0:x1=1080:y1=1920",
+  solid:    "color=c=0x0E1326:s=1080x1920:r=30",
+  black:    "color=c=0x000000:s=1080x1920:r=30"
+};
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1500);
+}
+function pyRepr(s){
+  return '"""' + s.replace(/\\/g, '\\\\').replace(/"""/g, '\\"\\"\\"') + '"""';
+}
+function build(){
+  const txt = document.getElementById('txt').value.trim();
+  const voice = document.getElementById('voice').value;
+  const bg = document.getElementById('bg').value;
+  const rate = document.getElementById('rate').value;
+  if(!txt){ showToast('请先填写文案'); return null; }
+  if(!/[。！？]/.test(txt)){ showToast('请用全角句号（。）分句'); return null; }
+  const tpl = document.getElementById('tpl').textContent;
+  return tpl
+    .replace('__TEXT__', pyRepr(txt))
+    .replace('__VOICE__', '"'+voice.replace(/"/g,'\\"')+'"')
+    .replace('__RATE__',  '"'+rate.replace(/"/g,'\\"')+'"')
+    .replace('__BG__',    '"'+BG_MAP[bg]+'"');
+}
+document.getElementById('gen').onclick = ()=>{
+  const code = build();
+  if(code){ document.getElementById('out').textContent = code; showToast('已生成'); }
+};
+document.getElementById('copy').onclick = async ()=>{
+  const code = build(); if(!code) return;
+  document.getElementById('out').textContent = code;
+  try{ await navigator.clipboard.writeText(code); showToast('已复制到剪贴板'); }
+  catch(e){ showToast('复制失败：'+e.message); }
+};
+document.getElementById('dl').onclick = ()=>{
+  const code = build(); if(!code) return;
+  document.getElementById('out').textContent = code;
+  const blob = new Blob([code], {type:'text/x-python;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'make_cn_video.py';
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 100);
+  showToast('已下载 make_cn_video.py');
+};
+</script>
+</body>
+</html>
