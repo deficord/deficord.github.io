@@ -32,6 +32,9 @@ select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:1
 .btn-green{background:var(--green);color:#fff;border-color:var(--green);}
 .btn-amber{background:var(--amber);color:#fff;border-color:var(--amber);}
 .btn:disabled{opacity:.5;cursor:not-allowed;}
+input.txtin{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13.5px;background:#fafbfc;color:var(--ink);font-family:inherit;box-sizing:border-box;}
+input.txtin:focus{outline:none;border-color:var(--blue);background:#fff;}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;margin:0;}
 pre.code{background:#0e1326;color:#e6edf3;padding:14px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.65;max-height:460px;white-space:pre;}
 .tip{background:var(--bluebg);color:#3a6df0;border:1px solid var(--blueline);padding:10px 14px;border-radius:10px;font-size:12.5px;line-height:1.7;margin:0 0 12px;}
 .caps{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
@@ -122,6 +125,36 @@ video.result{width:100%;max-width:300px;border-radius:12px;margin-top:12px;displ
         </div>
       </div>
 
+      <div class="card" id="aiCard">
+        <h2>②-可选 · 🎨 AI 配图（自动出画面，不用你找图）</h2>
+        <p class="desc">开启后，出片时按文案自动生成配图作视频背景。需图生成 API 的 Key（通义万相 DashScope 或 OpenAI 兼容）；没有 Key 时自动降级为渐变背景，照样出片。</p>
+        <div class="row">
+          <div>
+            <label class="chk"><input type="checkbox" id="aiOn"> 启用 AI 配图</label>
+          </div>
+          <div>
+            <label for="aiBackend">图生成后端</label>
+            <select id="aiBackend">
+              <option value="dashscope">通义万相 DashScope</option>
+              <option value="openai">OpenAI 兼容（gpt-image-1/DALL·E）</option>
+            </select>
+          </div>
+          <div>
+            <label for="aiModel">模型</label>
+            <select id="aiModel">
+              <option value="wanx-v1">wanx-v1（通义万相）</option>
+              <option value="gpt-image-1">gpt-image-1</option>
+              <option value="dall-e-3">dall-e-3</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label for="aiKey">API Key（仅存本机浏览器，不上传仓库）</label>
+          <input type="password" id="aiKey" class="txtin" placeholder="粘贴 Key；或留空让本机伴生服务读环境变量 DASHSCOPE_API_KEY / OPENAI_API_KEY">
+        </div>
+        <p class="desc" style="margin-top:8px;">用法：本地模式在 <code>studio_server.py</code> 同机设好环境变量即可；云端模式下载的脚本会用这里填的 Key 出图。无 Key 时不影响出片（降级渐变）。</p>
+      </div>
+
       <div class="card">
         <h2>③ 生成的脚本</h2>
         <p class="desc">把脚本保存到本机 OpenMontage 目录下，运行 <code>python make_cn_video.py</code>，即可在 <code>projects/demos/cn_out/</code> 获得 mp3 配音 + 9:16 竖屏 mp4 视频。</p>
@@ -150,6 +183,7 @@ video.result{width:100%;max-width:300px;border-radius:12px;margin-top:12px;displ
           <div>音色：<b id="mVoice">—</b></div>
           <div>语速：<b id="mRate">—</b></div>
           <div>背景：<b id="mBg">—</b></div>
+          <div>AI 配图：<b id="mAI">关闭</b></div>
         </div>
       </div>
 
@@ -177,13 +211,17 @@ video.result{width:100%;max-width:300px;border-radius:12px;margin-top:12px;displ
 # -*- coding: utf-8 -*-
 # OpenMontage 中文视频一键生成（由 GLUCK 中文视频生成器生成）
 # 在 OpenMontage 根目录运行：python make_cn_video.py
-# 输出：projects/demos/cn_out/voice.mp3  +  cn_out.mp4
-import os, sys, re, subprocess
+# 输出：projects/demos/cn_out/voice.mp3 + cn_out.mp4（可选 ai_img.png 作背景）
+import os, sys, re, subprocess, json, base64, time, urllib.request, urllib.error
 
 TEXT = __TEXT__
 VOICE = __VOICE__
 RATE  = __RATE__
 BG    = __BG__
+AI_ON = __AI_ON__
+AI_BACKEND = __AI_BACKEND__
+AI_MODEL = __AI_MODEL__
+AI_KEY  = __AI_KEY__
 OUT   = os.path.join("projects", "demos", "cn_out")
 os.makedirs(OUT, exist_ok=True)
 VOICE_MP3 = os.path.join(OUT, "voice.mp3")
@@ -204,14 +242,64 @@ info = subprocess.run([FFMPEG, "-i", VOICE_MP3], stderr=subprocess.STDOUT, stdou
 m = re.search(r"Duration:/s*(/d+):(/d+):(/d+/./d+)", info)
 dur = float(m.group(1)) * 3600 + float(m.group(2)) * 60 + float(m.group(3))
 
-# 3) ffmpeg 合成：背景 + 固定品牌标题（drawtext 烧录，无文案转义烦恼）
+# 3) 可选：AI 配图（标准库 urllib，无额外依赖）
+def gen_image(prompt, backend, model, key):
+    proxies = urllib.request.getproxies()
+    opener = urllib.request.build_opener()
+    if proxies:
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler(proxies))
+    try:
+        if backend == "dashscope":
+            url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis"
+            hdr = {"Authorization": "Bearer " + key, "Content-Type": "application/json", "X-DashScope-Async": "enable"}
+            req = urllib.request.Request(url, data=json.dumps({"model": model or "wanx-v1", "input": {"prompt": prompt}, "parameters": {"size": "1024*1792", "n": 1}}).encode(), headers=hdr, method="POST")
+            task = json.loads(opener.open(req, timeout=60).read().decode())
+            tid = task.get("output", {}).get("task_id")
+            if not tid: return None
+            for _ in range(40):
+                time.sleep(3)
+                sreq = urllib.request.Request(url + "/" + tid, headers={"Authorization": "Bearer " + key, "X-DashScope-Async": "enable"})
+                st = json.loads(opener.open(sreq, timeout=30).read().decode())
+                if st.get("output", {}).get("task_status") == "SUCCEEDED":
+                    img_url = st["output"]["results"][0]["url"]
+                    data = opener.open(urllib.request.Request(img_url), timeout=60).read()
+                    p = os.path.join(OUT, "ai_img.png"); open(p, "wb").write(data); return p
+            return None
+        else:
+            url = "https://api.openai.com/v1/images/generations"
+            hdr = {"Authorization": "Bearer " + key, "Content-Type": "application/json"}
+            req = urllib.request.Request(url, data=json.dumps({"model": model or "gpt-image-1", "prompt": prompt, "n": 1, "size": "1024x1792"}).encode(), headers=hdr, method="POST")
+            d = json.loads(opener.open(req, timeout=60).read().decode())
+            item = d["data"][0]
+            if "b64_json" in item:
+                p = os.path.join(OUT, "ai_img.png"); open(p, "wb").write(base64.b64decode(item["b64_json"])); return p
+            if "url" in item:
+                data = opener.open(urllib.request.Request(item["url"]), timeout=60).read()
+                p = os.path.join(OUT, "ai_img.png"); open(p, "wb").write(data); return p
+            return None
+    except Exception as e:
+        print("[image] 失败:", e); return None
+
+img_path = None
+if AI_ON and AI_KEY:
+    img_path = gen_image(TEXT[:200], AI_BACKEND, AI_MODEL, AI_KEY)
+    if img_path: print("[image] 配图已生成:", img_path)
+    else: print("[image] 未生成，降级渐变背景")
+
+# 4) ffmpeg 合成：有配图用图作背景，否则渐变
 font = r"C\:\Windows\Fonts\simhei.ttf"
-vf = (f"drawtext=fontfile='{font}':text='OpenMontage  ·  中文短视频':"
+dt = (f"drawtext=fontfile='{font}':text='OpenMontage  ·  中文短视频':"
       f"fontcolor=white:fontsize=50:x=(w-text_w)/2:y=110:"
       f"box=1:boxcolor=0x000000@0.5:boxborderw=20")
-cmd = [FFMPEG, "-y", "-f", "lavfi", "-i", f"{BG}:d={dur}", "-i", VOICE_MP3, "-vf", vf,
-       "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-r", "30",
-       "-shortest", "-movflags", "+faststart", VIDEO_MP4]
+if img_path and os.path.isfile(img_path):
+    cmd = [FFMPEG, "-y", "-loop", "1", "-i", img_path, "-i", VOICE_MP3,
+           "-vf", "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920," + dt,
+           "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-r", "30",
+           "-shortest", "-movflags", "+faststart", VIDEO_MP4]
+else:
+    cmd = [FFMPEG, "-y", "-f", "lavfi", "-i", f"{BG}:d={dur}", "-i", VOICE_MP3, "-vf", dt,
+           "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-r", "30",
+           "-shortest", "-movflags", "+faststart", VIDEO_MP4]
 print("[ffmpeg] running...")
 subprocess.run(cmd)
 print("[done]", VIDEO_MP4)
@@ -236,6 +324,7 @@ function pyRepr(s){ return '"""' + s.replace(/\\/g,'\\\\').replace(/"""/g,'\\"\\
 function build(){
   const txt=$('txt').value.trim();
   const voice=$('voice').value, bg=$('bg').value, rate=$('rate').value;
+  const aiOn=$('aiOn').checked, aiBackend=$('aiBackend').value, aiModel=$('aiModel').value, aiKey=$('aiKey').value.trim();
   if(!txt){ showToast('请先填写文案'); return null; }
   if(!/[。！？]/.test(txt)){ showToast('请用全角句号（。）分句'); return null; }
   const tpl=$('tpl').textContent;
@@ -243,7 +332,11 @@ function build(){
     .replace('__TEXT__', pyRepr(txt))
     .replace('__VOICE__', '"'+voice.replace(/"/g,'\\"')+'"')
     .replace('__RATE__',  '"'+rate.replace(/"/g,'\\"')+'"')
-    .replace('__BG__',    '"'+BG_MAP[bg]+'"');
+    .replace('__BG__',    '"'+BG_MAP[bg]+'"')
+    .replace('__AI_ON__', aiOn ? 'True' : 'False')
+    .replace('__AI_BACKEND__', '"'+aiBackend.replace(/"/g,'\\"')+'"')
+    .replace('__AI_MODEL__', '"'+aiModel.replace(/"/g,'\\"')+'"')
+    .replace('__AI_KEY__', '"'+aiKey.replace(/"/g,'\\"')+'"');
 }
 const BG_MAP = {
   gradient: "gradients=s=1080x1920:c0=0x0E1326:c1=0x223D6B:c2=0x0B1020:x0=0:y0=0:x1=1080:y1=1920",
@@ -258,12 +351,14 @@ function updatePreview(){
   const voice=$('voice'), bg=$('bg'), rate=$('rate');
   $('phone').style.background = BG_CSS[bg.value];
   const vLabel = voice.options[voice.selectedIndex].text;
+  const aiOn=$('aiOn').checked, aiBackend=$('aiBackend').value;
   $('phCenter').textContent = (LOCAL ? '🚀 本地出片就绪' : '☁ 云端模式') + '\n' + vLabel.split('（')[0];
   $('phCap').innerHTML = (txt ? escapeHtml(txt) : '在此输入文案后，这里会实时显示预览…')
     + '<span class="hint">（文案为配音内容；如需烧录字幕见教程页）</span>';
   $('mVoice').textContent = vLabel;
   $('mRate').textContent = RATE_NAME[rate.value] || rate.value;
   $('mBg').textContent = BG_NAME[bg.value];
+  $('mAI').textContent = aiOn ? ('开启 · ' + (aiBackend === 'dashscope' ? '通义万相' : 'OpenAI兼容')) : '关闭';
 }
 function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -289,7 +384,8 @@ let rendering=false;
 function log(msg, isErr){ const l=$('log'); const d=document.createElement('div'); if(isErr) d.className='err'; d.textContent=msg; l.appendChild(d); l.scrollTop=l.scrollHeight; }
 async function renderLocal(){
   if(rendering) return;
-  const cfg={ text:$('txt').value.trim(), voice:$('voice').value, bg:$('bg').value, rate:$('rate').value };
+  const cfg={ text:$('txt').value.trim(), voice:$('voice').value, bg:$('bg').value, rate:$('rate').value,
+    image:{ on:$('aiOn').checked, backend:$('aiBackend').value, model:$('aiModel').value, key:$('aiKey').value.trim() } };
   if(!cfg.text){ showToast('请先填写文案'); return; }
   if(!/[。！？]/.test(cfg.text)){ showToast('请用全角句号（。）分句'); return; }
   rendering=true;
@@ -328,7 +424,7 @@ $('dl').onclick=()=>{ const c=build(); if(!c) return; $('out').textContent=c; co
 $('tts').onclick=previewTTS;
 $('render').onclick=renderLocal;
 
-['txt','voice','bg','rate'].forEach(id=>{ $(id).addEventListener('input',updatePreview); $(id).addEventListener('change',updatePreview); });
+['txt','voice','bg','rate','aiOn','aiBackend','aiModel'].forEach(id=>{ $(id).addEventListener('input',updatePreview); $(id).addEventListener('change',updatePreview); });
 if('speechSynthesis' in window){ speechSynthesis.getVoices(); }
 
 /* 模式提示 */
