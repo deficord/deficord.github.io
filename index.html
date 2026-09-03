@@ -257,6 +257,14 @@
   .fn-card .detail-link{font-size:13px;color:#2563EB;text-decoration:none;font-weight:500;margin-top:2px;align-self:flex-start;}
   .fn-card .detail-link:hover{text-decoration:underline;}
   .fn-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-3px);}
+  /* 连载讲故事模式 · 使用说明可折叠 */
+  details.story-help{background:linear-gradient(135deg,#fff5f7,#fef2f8);border:1px solid #ffd6e0;border-radius:14px;padding:4px 16px;margin:10px 0 14px;overflow:hidden;}
+  details.story-help > summary{list-style:none;cursor:pointer;font-weight:800;font-size:15px;color:#e01030;padding:10px 0;display:flex;align-items:center;gap:8px;user-select:none;}
+  details.story-help > summary::-webkit-details-marker{display:none;}
+  details.story-help .sh-arw{display:inline-flex;transition:transform .2s ease;font-size:13px;color:#e01030;}
+  details.story-help[open] .sh-arw{transform:rotate(180deg);}
+  details.story-help .sh-dot{font-size:11px;font-weight:600;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 9px;}
+  details.story-help > div{padding:2px 0 12px;font-size:12.5px;color:#444;line-height:1.75;}
   .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;background:var(--bg-light);color:var(--title);}
   .tag.pending{background:#FFF3E0;color:#E65100;}
   .tag.hold{background:#ECEFF1;color:#546E7A;}
@@ -1912,16 +1920,16 @@ function storyCardHtml(it,i,page){
   return sh;
 }
 function storySectionHtml(page, view){
-  // 固定说明卡片（使用 + 配音选型 + 生产流水线）
-  let h = '<div style="background:linear-gradient(135deg,#fff5f7,#fef2f8);border:1px solid #ffd6e0;border-radius:14px;padding:14px 16px;margin:10px 0 14px;">';
-  h += '<div style="font-weight:800;font-size:15px;color:#e01030;margin-bottom:6px;">📖 连载讲故事模式 · 使用与配音说明（固定）</div>';
-  h += '<div style="font-size:12.5px;color:#444;line-height:1.75;">';
-  h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿（<b>含开场白</b>，直接读）；点「查看详情」看完整正文+开场白。每集结尾自带钩子引下集，适合做追更中视频。<br>';
+  // 固定说明卡片（使用 + 配音选型 + 生产流水线）—— 默认收起，点箭头展开
+  let h = '<details class="story-help">';
+  h += '<summary>📖 连载讲故事模式 · 使用与配音说明 <span class="sh-dot">点击展开</span><span class="sh-arw">▾</span></summary>';
+  h += '<div>';
+  h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿（<b>含开场白</b>，直接读）；点「查看详情」看完整正文+开场白（不跳页）。每集结尾自带钩子引下集，适合做追更中视频。<br>';
   h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）。<br>';
   h += '③ <b>生产流水线</b>：复制文案 → TTS 选音色（语速0.9-1.0、BGM 压到人声20%下）→ 导出 mp3 → 剪映建工程加 AI 字幕 → 配画面+BGM → 导出发布（标题带"第N集"+结尾口播下集预告）。<br>';
   h += '④ <b>让粉丝有依赖性</b>：固定开场白 + 强钩子结尾 + 固定音色/BGM + 稳定更新节奏（隔日/日更）。<br>';
   h += '<span style="color:#b45309;">⚠️ 全部原创/公版史实，零侵权风险；不朗读受版权保护的付费小说原文。</span>';
-  h += '</div></div>';
+  h += '</div></details>';
   // 按 series 分组（历史类按 era 从古至今排序）
   const ERA_ORDER = {'先秦':1,'秦汉':2,'三国两晋':3,'隋唐':4,'宋':5,'元':6,'明':7,'清':8,'近代':9,'现代':10};
   const groups = {}, order = [];
@@ -4590,6 +4598,7 @@ function bindEvents(){
   $('content').addEventListener('click', e=>{
     const f = e.target.closest('[data-act]');
     if(f){
+      e.preventDefault(); // 阻止 data-act 元素的默认行为（如 <a href="#"> 跳到页顶）
       const act=f.dataset.act, page=f.dataset.page, idx=f.dataset.idx!=null?Number(f.dataset.idx):null;
       if(act==='add'){ if(MODULES[page].type==='holdings') openHoldingForm(null); else openForm(page, null); return; }
       if(act==='edit'){ if(MODULES[page].type==='holdings') openHoldingForm(idx); else if(page==='__kb') openKbEdit(idx); else openForm(page, idx); return; }
