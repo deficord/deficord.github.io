@@ -257,7 +257,7 @@
   .fn-card .detail-link{font-size:13px;color:#2563EB;text-decoration:none;font-weight:500;margin-top:2px;align-self:flex-start;}
   .fn-card .detail-link:hover{text-decoration:underline;}
   .fn-card:hover{box-shadow:0 8px 22px rgba(15,23,42,.10);transform:translateY(-3px);}
-  /* 连载讲故事模式 · 使用说明可折叠 */
+  /* 连载故事 · 使用说明可折叠 */
   details.story-help{background:linear-gradient(135deg,#fff5f7,#fef2f8);border:1px solid #ffd6e0;border-radius:14px;padding:4px 16px;margin:10px 0 14px;overflow:hidden;}
   details.story-help > summary{list-style:none;cursor:pointer;font-weight:800;font-size:15px;color:#e01030;padding:10px 0;display:flex;align-items:center;gap:8px;user-select:none;}
   details.story-help > summary::-webkit-details-marker{display:none;}
@@ -1922,7 +1922,7 @@ function storyCardHtml(it,i,page){
 function storySectionHtml(page, view){
   // 固定说明卡片（使用 + 配音选型 + 生产流水线）—— 默认收起，点箭头展开
   let h = '<details class="story-help">';
-  h += '<summary>📖 连载讲故事模式 · 使用与配音说明 <span class="sh-dot">点击展开</span><span class="sh-arw">▾</span></summary>';
+  h += '<summary>📖 连载故事 · 使用与配音说明 <span class="sh-dot">点击展开</span><span class="sh-arw">▾</span></summary>';
   h += '<div>';
   h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿（<b>含开场白</b>，直接读）；点「查看详情」看完整正文+开场白（不跳页）。每集结尾自带钩子引下集，适合做追更中视频。<br>';
   h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）。<br>';
@@ -1972,7 +1972,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>'+headBtns+'</div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。<b>大部分分类</b>为「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示）；其中<b>「小说推文类 / 历史解说类」为连载讲故事模式</b>——直接上原创故事正文，一集一集往下讲，<b>无分镜、无 60/30/15s 切片</b>，复制即可当口播中视频文案。内容均为原创/二创，仅作创作参考。</p>';
+      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。<b>大部分分类</b>为「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示）；其中<b>「小说推文类 / 历史解说类」为连载故事</b>——直接上原创故事正文，一集一集往下讲，<b>无分镜、无 60/30/15s 切片</b>，复制即可当口播中视频文案。内容均为原创/二创，仅作创作参考。</p>';
       html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
             + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#fff0f3;color:#e01030;border:1px solid #ffd0d8;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
             + '<a href="./xvideo.html" target="_blank" rel="noopener" style="display:inline-block;background:#eef3ff;color:#3a6df0;border:1px solid #cdddff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">🎬 AI 视频生成器 →</a>'
