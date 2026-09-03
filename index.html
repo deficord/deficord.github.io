@@ -1900,11 +1900,12 @@ function storyCardHtml(it,i,page){
   const content = it.content || '';
   const cv = it.cat ? namedCardVars(it.cat) : '';
   const ep = it.ep ? ('第'+it.ep+'集') : '连载';
-  const dur = it.dur ? ('约 '+it.dur) : '';
+  const chars = (content.replace(/\s/g,'')).length;
+  const mins = Math.max(1, Math.round(chars/230));
   let sh = '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
   sh += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap;">';
   sh += '<span style="font-size:11px;font-weight:800;color:#fff;background:#e01030;border-radius:999px;padding:2px 10px;">'+esc(ep)+'</span>';
-  if(dur) sh += '<span style="font-size:11px;color:#888;">'+esc(dur)+'</span>';
+  sh += '<span style="font-size:11px;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:1px 8px;">📝 约 '+chars+' 字 · 约 '+mins+' 分钟</span>';
   if(it.status) sh += '<span style="font-size:11px;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 8px;">'+esc(it.status)+'</span>';
   sh += '</div>';
   if(it.intro) sh += '<div style="font-size:12px;color:#b45309;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:4px 8px;margin-bottom:6px;line-height:1.5;"><b>🎙 开场白</b> '+esc(it.intro)+'</div>';
@@ -3980,6 +3981,7 @@ function showFull(page, idx){
   $('textTitle').textContent = it.title||'全文';
   let body = '';
   if(it.intro) body += '<div style="font-size:13px;color:#b45309;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;"><b>🎙 开场白</b><br>'+esc(it.intro)+'</div>';
+  if(it.kind==='story'){ const c2=((it.content||'').replace(/\s/g,'')).length; const m2=Math.max(1,Math.round(c2/230)); body += '<div style="margin:0 0 10px;font-size:12px;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;">📝 约 '+c2+' 字 · 约 '+m2+' 分钟口播</div>'; }
   body += '<div class="content">'+(it.content||it.summary||'')+'</div>';
   if(it.hookNext) body += '<div style="margin-top:14px;font-size:13px;color:#7c2d12;background:#fff7ed;border-left:4px solid #fb923c;border-radius:8px;padding:10px 14px;line-height:1.8;"><b>🔔 下集预告</b><br>'+esc(it.hookNext)+'</div>';
   if(it.url) body += '<div class="row" style="margin-top:10px"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>';
