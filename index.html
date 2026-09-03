@@ -1897,6 +1897,7 @@ function storyCardHtml(it,i,page){
   sh += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap;">';
   sh += '<span style="font-size:11px;font-weight:800;color:#fff;background:#e01030;border-radius:999px;padding:2px 10px;">'+esc(ep)+'</span>';
   if(dur) sh += '<span style="font-size:11px;color:#888;">'+esc(dur)+'</span>';
+  if(it.status) sh += '<span style="font-size:11px;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 8px;">'+esc(it.status)+'</span>';
   sh += '</div>';
   if(it.intro) sh += '<div style="font-size:12px;color:#b45309;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:4px 8px;margin-bottom:6px;line-height:1.5;"><b>🎙 开场白</b> '+esc(it.intro)+'</div>';
   sh += '<h4>'+esc(it.title||'')+'</h4>';
@@ -1905,6 +1906,7 @@ function storyCardHtml(it,i,page){
   sh += '<button class="pill" data-act="copystory" data-page="'+page+'" data-idx="'+i+'" style="background:#e01030;color:#fff;border:none;font-size:12px;padding:4px 12px;cursor:pointer;">复制故事文案</button>';
   sh += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
   sh += '</div>';
+  if(it.hookNext) sh += '<div style="margin-top:8px;font-size:12px;color:#7c2d12;background:#fff7ed;border-left:3px solid #fb923c;border-radius:6px;padding:5px 9px;line-height:1.55;"><b>🔔 下集预告</b> '+esc(it.hookNext)+'</div>';
   sh += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span></div>';
   sh += '</div>';
   return sh;
@@ -3962,6 +3964,7 @@ function showFull(page, idx){
   let body = '';
   if(it.intro) body += '<div style="font-size:13px;color:#b45309;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;"><b>🎙 开场白</b><br>'+esc(it.intro)+'</div>';
   body += '<div class="content">'+(it.content||it.summary||'')+'</div>';
+  if(it.hookNext) body += '<div style="margin-top:14px;font-size:13px;color:#7c2d12;background:#fff7ed;border-left:4px solid #fb923c;border-radius:8px;padding:10px 14px;line-height:1.8;"><b>🔔 下集预告</b><br>'+esc(it.hookNext)+'</div>';
   if(it.url) body += '<div class="row" style="margin-top:10px"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>';
   $('textBody').innerHTML = body;
   $('textMask').classList.add('show');
