@@ -1898,6 +1898,7 @@ function storyCardHtml(it,i,page){
   sh += '<span style="font-size:11px;font-weight:800;color:#fff;background:#e01030;border-radius:999px;padding:2px 10px;">'+esc(ep)+'</span>';
   if(dur) sh += '<span style="font-size:11px;color:#888;">'+esc(dur)+'</span>';
   sh += '</div>';
+  if(it.intro) sh += '<div style="font-size:12px;color:#b45309;background:#fffbeb;border-left:3px solid #f59e0b;border-radius:6px;padding:4px 8px;margin-bottom:6px;line-height:1.5;"><b>🎙 开场白</b> '+esc(it.intro)+'</div>';
   sh += '<h4>'+esc(it.title||'')+'</h4>';
   sh += '<div class="summary">'+esc(content).replace(/\n/g,'<br>')+'</div>';
   sh += '<div style="display:flex;gap:10px;align-items:center;margin-top:6px;">';
@@ -1913,7 +1914,7 @@ function storySectionHtml(page, view){
   let h = '<div style="background:linear-gradient(135deg,#fff5f7,#fef2f8);border:1px solid #ffd6e0;border-radius:14px;padding:14px 16px;margin:10px 0 14px;">';
   h += '<div style="font-weight:800;font-size:15px;color:#e01030;margin-bottom:6px;">📖 连载讲故事模式 · 使用与配音说明（固定）</div>';
   h += '<div style="font-size:12.5px;color:#444;line-height:1.75;">';
-  h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿；点「查看详情」看完整正文。每集结尾自带钩子引下集，适合做追更中视频。<br>';
+  h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿（<b>含开场白</b>，直接读）；点「查看详情」看完整正文+开场白。每集结尾自带钩子引下集，适合做追更中视频。<br>';
   h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）。<br>';
   h += '③ <b>生产流水线</b>：复制文案 → TTS 选音色（语速0.9-1.0、BGM 压到人声20%下）→ 导出 mp3 → 剪映建工程加 AI 字幕 → 配画面+BGM → 导出发布（标题带"第N集"+结尾口播下集预告）。<br>';
   h += '④ <b>让粉丝有依赖性</b>：固定开场白 + 强钩子结尾 + 固定音色/BGM + 稳定更新节奏（隔日/日更）。<br>';
@@ -3958,7 +3959,9 @@ function showFull(page, idx){
   const arr = remoteData[MODULES[page].key] || remoteData.financeNews || [];
   const it = arr[idx]; if(!it) return;
   $('textTitle').textContent = it.title||'全文';
-  let body = '<div class="content">'+(it.content||it.summary||'')+'</div>';
+  let body = '';
+  if(it.intro) body += '<div style="font-size:13px;color:#b45309;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;"><b>🎙 开场白</b><br>'+esc(it.intro)+'</div>';
+  body += '<div class="content">'+(it.content||it.summary||'')+'</div>';
   if(it.url) body += '<div class="row" style="margin-top:10px"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>';
   $('textBody').innerHTML = body;
   $('textMask').classList.add('show');
@@ -4617,7 +4620,7 @@ function bindEvents(){
       if(act==='cmEdit'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ const idx=Number(f.dataset.idx); const it=cfg.items[idx]||{}; const t=prompt('标题', it.title||''); if(t!==null){ const c=prompt('内容', it.text||''); it.title=t; it.text=c; cfg.items[idx]=it; saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } } return; }
       if(act==='cmAirefresh'){ loadRemoteData(); toast('已刷新（拉取最新部署内容）'); return; }
       if(act==='refreshQuote'){ refreshQuotes(f.dataset.page||currentPage); return; }
-      if(act==='copystory'){ const arr=remoteData[MODULES[page].key]||[]; const it=arr[idx]; if(it){ copyText(it.content||''); f.textContent='已复制✓'; setTimeout(()=>f.textContent='复制故事文案',1500); } return; }
+      if(act==='copystory'){ const arr=remoteData[MODULES[page].key]||[]; const it=arr[idx]; if(it){ const head=it.intro?('【开场白】'+it.intro+'\n\n'):''; copyText(head+(it.content||'')); f.textContent='已复制✓'; setTimeout(()=>f.textContent='复制故事文案',1500); } return; }
       if(act==='full'){ showFull(page, idx); return; }
       if(act==='mod-tab'){ modTab[f.dataset.page]=f.dataset.tab; renderCurrent(); return; }
       /* ===== 股票基金分析模块事件 ===== */
