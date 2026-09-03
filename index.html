@@ -886,7 +886,7 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['健身','生活现实句子','家庭教育','高情商恋爱关系','知识科普类','发布运营','搞笑类','职场高情商'], field:'cat'}},
+  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['健身','生活现实句子','家庭教育','高情商恋爱关系','知识科普类','发布运营','搞笑类','职场高情商','小说推文类','历史解说类'], field:'cat'}},
   'account-observe':{type:'list', title:'对标账号观测', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -994,7 +994,7 @@ const CAT_COLOR = {
   // 知识库分类
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
   // 运营思路题库 cat（短视频赛道）
-  '健身':'#F97316','生活现实句子':'#64748B','家庭教育':'#EC4899','高情商恋爱关系':'#F43F5E','知识科普类':'#06B6D4','发布运营':'#8B5CF6','搞笑类':'#EAB308',
+  '健身':'#F97316','生活现实句子':'#64748B','家庭教育':'#EC4899','高情商恋爱关系':'#F43F5E','知识科普类':'#06B6D4','发布运营':'#8B5CF6','搞笑类':'#EAB308','小说推文类':'#DB2777','历史解说类':'#0EA5E9',
   // 副业创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
   // 健康科普知识 cat
@@ -2194,7 +2194,7 @@ const TAB_LABELS_KEY='wb_tab_labels';
 let _tabLabels=null;
 function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getItem(TAB_LABELS_KEY); _tabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _tabLabels={}; } if(!_tabLabels||typeof _tabLabels!=='object') _tabLabels={}; try{ const old=localStorage.getItem('wb_idx_tab_labels'); if(old){ const o=JSON.parse(old); if(o&&typeof o==='object' && !_tabLabels['index-track']){ _tabLabels['index-track']=o; } } }catch(e){} } return _tabLabels; }
 // 运营思路题库默认 Tab 显示名（改名仅影响显示，底层 cat 数据键不变；localStorage 用户覆盖优先于默认）
-const DEFAULT_TAB_LABELS = { 'operation-ideas': { '健身':'健身运动类', '生活现实句子':'现实生活类', '家庭教育':'家庭教育类', '高情商恋爱关系':'恋爱高手类', '发布运营':'发布运营类', '搞笑类':'搞笑段子类' } };
+const DEFAULT_TAB_LABELS = { 'operation-ideas': { '健身':'健身运动类', '生活现实句子':'现实生活类', '家庭教育':'家庭教育类', '高情商恋爱关系':'恋爱高手类', '发布运营':'发布运营类', '搞笑类':'搞笑段子类', '小说推文类':'小说推文类', '历史解说类':'历史解说类' } };
 function loadTabLabels(page){ const all=_ensureTabLabels(); const d=(DEFAULT_TAB_LABELS&&DEFAULT_TAB_LABELS[page])||{}; return Object.assign({}, d, all[page]||{}); }
 function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
 function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
