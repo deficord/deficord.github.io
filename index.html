@@ -1908,12 +1908,43 @@ function storyCardHtml(it,i,page){
   sh += '</div>';
   return sh;
 }
+function storySectionHtml(page, view){
+  // 固定说明卡片（使用 + 配音选型 + 生产流水线）
+  let h = '<div style="background:linear-gradient(135deg,#fff5f7,#fef2f8);border:1px solid #ffd6e0;border-radius:14px;padding:14px 16px;margin:10px 0 14px;">';
+  h += '<div style="font-weight:800;font-size:15px;color:#e01030;margin-bottom:6px;">📖 连载讲故事模式 · 使用与配音说明（固定）</div>';
+  h += '<div style="font-size:12.5px;color:#444;line-height:1.75;">';
+  h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿；点「查看详情」看完整正文。每集结尾自带钩子引下集，适合做追更中视频。<br>';
+  h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）。<br>';
+  h += '③ <b>生产流水线</b>：复制文案 → TTS 选音色（语速0.9-1.0、BGM 压到人声20%下）→ 导出 mp3 → 剪映建工程加 AI 字幕 → 配画面+BGM → 导出发布（标题带"第N集"+结尾口播下集预告）。<br>';
+  h += '④ <b>让粉丝有依赖性</b>：固定开场白 + 强钩子结尾 + 固定音色/BGM + 稳定更新节奏（隔日/日更）。<br>';
+  h += '<span style="color:#b45309;">⚠️ 全部原创/公版史实，零侵权风险；不朗读受版权保护的付费小说原文。</span>';
+  h += '</div></div>';
+  // 按 series 分组
+  const groups = {}, order = [];
+  view.forEach(o=>{ const s=(o.it&&o.it.series)||'未命名系列'; if(!groups[s]){groups[s]=[];order.push(s);} groups[s].push(o); });
+  order.forEach(s=>{
+    const items = groups[s];
+    const cat = items[0].it.cat;
+    const total = items.length;
+    h += '<div style="margin:14px 0 4px;padding:10px 12px;background:#fff;border:1px solid #ffe0e6;border-left:4px solid #e01030;border-radius:10px;">';
+    h += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">';
+    h += '<span style="font-weight:800;font-size:15px;color:#1f2330;">📚 '+esc(s)+'</span>';
+    h += '<span style="font-size:12px;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 9px;">'+esc(cat)+'</span>';
+    h += '<span style="font-size:12px;color:#888;">共 '+total+' 集 · 原创连载</span>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px;">';
+    items.forEach(o=>{ h += storyCardHtml(o.it, o.i, page); });
+    h += '</div></div>';
+  });
+  return h;
+}
 function renderAiText(page, body){
   const m = MODULES[page];
   const arr0 = remoteData[m.key] || [];
   const active = modTab[page] || '__all__';
   let view = modView(m, arr0, active);
   view = displayOrdered(page, arr0, view);
+  const isStoryCat = (page==='operation-ideas' && (active==='小说推文类'||active==='历史解说类'));
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let headBtns = '<button class="pill ai" data-act="airefresh">AI刷新抓取</button>';
@@ -1936,6 +1967,8 @@ function renderAiText(page, body){
   if(arr0.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署上线后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
+    if(isStoryCat){ html += storySectionHtml(page, view); }
+    else {
     html += '<div class="finance-grid draggable-cards" data-drag-page="'+page+'" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     view.forEach(o=>{ const it=o.it, i=o.i;
       if(page==='operation-ideas' && it.kind==='story'){ html += storyCardHtml(it,i,page); return; }
@@ -1966,6 +1999,7 @@ function renderAiText(page, body){
       html += '</div>';
     });
     html += '</div>';
+    }
   }
   body.innerHTML = html;
   if(page==='operation-ideas'){
