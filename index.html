@@ -1888,6 +1888,26 @@ function planBlock(h, t, sub, promptEn, promptCn){
   s+='</div>';
   return s;
 }
+function storyCardHtml(it,i,page){
+  const content = it.content || '';
+  const cv = it.cat ? namedCardVars(it.cat) : '';
+  const ep = it.ep ? ('第'+it.ep+'集') : '连载';
+  const dur = it.dur ? ('约 '+it.dur) : '';
+  let sh = '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
+  sh += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px;flex-wrap:wrap;">';
+  sh += '<span style="font-size:11px;font-weight:800;color:#fff;background:#e01030;border-radius:999px;padding:2px 10px;">'+esc(ep)+'</span>';
+  if(dur) sh += '<span style="font-size:11px;color:#888;">'+esc(dur)+'</span>';
+  sh += '</div>';
+  sh += '<h4>'+esc(it.title||'')+'</h4>';
+  sh += '<div class="summary">'+esc(content).replace(/\n/g,'<br>')+'</div>';
+  sh += '<div style="display:flex;gap:10px;align-items:center;margin-top:6px;">';
+  sh += '<button class="pill" data-act="copystory" data-page="'+page+'" data-idx="'+i+'" style="background:#e01030;color:#fff;border:none;font-size:12px;padding:4px 12px;cursor:pointer;">复制故事文案</button>';
+  sh += '<a class="detail-link" href="#" data-act="full" data-page="'+page+'" data-idx="'+i+'">查看详情 ›</a>';
+  sh += '</div>';
+  sh += '<div class="meta">'+(it.source?'<span class="src">'+esc(it.source)+'</span>':'')+'<span>'+esc(it.date||'--')+'</span></div>';
+  sh += '</div>';
+  return sh;
+}
 function renderAiText(page, body){
   const m = MODULES[page];
   const arr0 = remoteData[m.key] || [];
@@ -1901,7 +1921,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>'+headBtns+'</div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。每条都是「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示），复制即可喂给 AI 生成高完播率中视频。内容仅作创作参考。</p>';
+      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。<b>大部分分类</b>为「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示）；其中<b>「小说推文类 / 历史解说类」为连载讲故事模式</b>——直接上原创故事正文，一集一集往下讲，<b>无分镜、无 60/30/15s 切片</b>，复制即可当口播中视频文案。内容均为原创/二创，仅作创作参考。</p>';
       html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
             + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#fff0f3;color:#e01030;border:1px solid #ffd0d8;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
             + '<a href="./xvideo.html" target="_blank" rel="noopener" style="display:inline-block;background:#eef3ff;color:#3a6df0;border:1px solid #cdddff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">🎬 AI 视频生成器 →</a>'
@@ -1918,6 +1938,7 @@ function renderAiText(page, body){
   else {
     html += '<div class="finance-grid draggable-cards" data-drag-page="'+page+'" style="--card-accent:#2563EB;--card-soft:#EFF6FF;">';
     view.forEach(o=>{ const it=o.it, i=o.i;
+      if(page==='operation-ideas' && it.kind==='story'){ html += storyCardHtml(it,i,page); return; }
       const content = it.content || '';
       const cv = it.cat ? namedCardVars(it.cat) : '';
       let planHtml = '';
@@ -4562,6 +4583,7 @@ function bindEvents(){
       if(act==='cmEdit'){ const cfg=getModuleConfig(f.dataset.id); if(cfg){ const idx=Number(f.dataset.idx); const it=cfg.items[idx]||{}; const t=prompt('标题', it.title||''); if(t!==null){ const c=prompt('内容', it.text||''); it.title=t; it.text=c; cfg.items[idx]=it; saveModuleConfig(cfg); renderCustomModule(f.dataset.id, $('body-'+f.dataset.id)); } } return; }
       if(act==='cmAirefresh'){ loadRemoteData(); toast('已刷新（拉取最新部署内容）'); return; }
       if(act==='refreshQuote'){ refreshQuotes(f.dataset.page||currentPage); return; }
+      if(act==='copystory'){ const arr=remoteData[MODULES[page].key]||[]; const it=arr[idx]; if(it){ copyText(it.content||''); f.textContent='已复制✓'; setTimeout(()=>f.textContent='复制故事文案',1500); } return; }
       if(act==='full'){ showFull(page, idx); return; }
       if(act==='mod-tab'){ modTab[f.dataset.page]=f.dataset.tab; renderCurrent(); return; }
       /* ===== 股票基金分析模块事件 ===== */
