@@ -1922,17 +1922,26 @@ function storySectionHtml(page, view){
   h += '④ <b>让粉丝有依赖性</b>：固定开场白 + 强钩子结尾 + 固定音色/BGM + 稳定更新节奏（隔日/日更）。<br>';
   h += '<span style="color:#b45309;">⚠️ 全部原创/公版史实，零侵权风险；不朗读受版权保护的付费小说原文。</span>';
   h += '</div></div>';
-  // 按 series 分组
+  // 按 series 分组（历史类按 era 从古至今排序）
+  const ERA_ORDER = {'先秦':1,'秦汉':2,'三国两晋':3,'隋唐':4,'宋':5,'元':6,'明':7,'清':8,'近代':9,'现代':10};
   const groups = {}, order = [];
   view.forEach(o=>{ const s=(o.it&&o.it.series)||'未命名系列'; if(!groups[s]){groups[s]=[];order.push(s);} groups[s].push(o); });
+  order.sort((a,b)=>{
+    const ea = groups[a][0].it.era, eb = groups[b][0].it.era;
+    const va = ea?ERA_ORDER[ea]:99, vb = eb?ERA_ORDER[eb]:99;
+    if(va!==vb) return va-vb;
+    return a.localeCompare(b,'zh');
+  });
   order.forEach(s=>{
     const items = groups[s];
     const cat = items[0].it.cat;
     const total = items.length;
+    const era = items[0].it.era;
     h += '<div style="margin:14px 0 4px;padding:10px 12px;background:#fff;border:1px solid #ffe0e6;border-left:4px solid #e01030;border-radius:10px;">';
     h += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">';
     h += '<span style="font-weight:800;font-size:15px;color:#1f2330;">📚 '+esc(s)+'</span>';
     h += '<span style="font-size:12px;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 9px;">'+esc(cat)+'</span>';
+    if(era) h += '<span style="font-size:12px;color:#7c2d12;background:#fff7ed;border:1px solid #fed7aa;border-radius:999px;padding:1px 9px;">🏛 '+esc(era)+'</span>';
     h += '<span style="font-size:12px;color:#888;">共 '+total+' 集 · 原创连载</span>';
     h += '</div>';
     h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px;">';
