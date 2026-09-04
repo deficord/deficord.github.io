@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A30D24"/>
+      <stop offset="1" stop-color="#3A0810"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <!-- stars -->
+  <circle cx="120" cy="120" r="3" fill="#C9A24B" opacity=".85"/>
+  <circle cx="205" cy="78" r="2" fill="#FFFFFF" opacity=".7"/>
+  <circle cx="690" cy="95" r="2.5" fill="#FFFFFF" opacity=".6"/>
+  <circle cx="95" cy="225" r="2" fill="#C9A24B" opacity=".7"/>
+  <circle cx="730" cy="240" r="2" fill="#FFFFFF" opacity=".5"/>
+  <!-- crescent moon -->
+  <circle cx="615" cy="178" r="92" fill="#C9A24B"/>
+  <circle cx="572" cy="158" r="78" fill="#3A0810"/>
+  <!-- water -->
+  <path d="M0 662 Q200 636 400 662 T800 662 L800 800 L0 800 Z" fill="#5A0712"/>
+  <!-- boat -->
+  <g>
+    <path d="M300 602 Q400 642 500 602 L478 630 Q400 654 322 630 Z" fill="#1F2330"/>
+    <rect x="396" y="540" width="6" height="64" fill="#1F2330"/>
+    <path d="M402 545 L470 588 L402 588 Z" fill="#C9A24B" opacity=".92"/>
+  </g>
+  <!-- brand text -->
+  <text x="400" y="418" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',sans-serif" font-size="96" font-weight="800" fill="#FFFFFF" letter-spacing="8">夜航故事局</text>
+  <text x="400" y="467" text-anchor="middle" font-family="'PingFang SC','Microsoft YaHei','Hiragino Sans GB',sans-serif" font-size="25" font-weight="400" fill="#C9A24B" letter-spacing="2">每个深夜，讲一个你没听过的故事</text>
+</svg>
