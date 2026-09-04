@@ -894,7 +894,7 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['健身','生活现实句子','家庭教育','高情商恋爱关系','知识科普类','发布运营','搞笑类','职场高情商','小说推文类','历史解说类'], field:'cat'}},
+  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['健身','生活现实句子','家庭教育','高情商恋爱关系','知识科普类','发布运营','搞笑类','职场高情商','小说推文类','历史解说类','悬疑奇案','民间传说'], field:'cat'}},
   'account-observe':{type:'list', title:'对标账号观测', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -1002,7 +1002,7 @@ const CAT_COLOR = {
   // 知识库分类
   '理财':'#3B82F6','养生':'#10B981','AI':'#8B5CF6','运营':'#F59E0B',
   // 运营思路题库 cat（短视频赛道）
-  '健身':'#F97316','生活现实句子':'#64748B','家庭教育':'#EC4899','高情商恋爱关系':'#F43F5E','知识科普类':'#06B6D4','发布运营':'#8B5CF6','搞笑类':'#EAB308','小说推文类':'#DB2777','历史解说类':'#0EA5E9',
+  '健身':'#F97316','生活现实句子':'#64748B','家庭教育':'#EC4899','高情商恋爱关系':'#F43F5E','知识科普类':'#06B6D4','发布运营':'#8B5CF6','搞笑类':'#EAB308','小说推文类':'#DB2777','历史解说类':'#0EA5E9','悬疑奇案':'#7C3AED','民间传说':'#B45309',
   // 副业创业精选 cat
   'AI副业':'#8B5CF6','内容创作':'#06B6D4','轻资产创业':'#10B981','实操案例':'#F97316',
   // 健康科普知识 cat
@@ -1926,20 +1926,20 @@ function storySectionHtml(page, view){
   h += '<summary>📖 连载故事 · 使用与配音说明 <span class="sh-dot">点击展开</span><span class="sh-arw">▾</span></summary>';
   h += '<div>';
   h += '① <b>怎么用</b>：每张卡片点「复制故事文案」即得整集口播稿（<b>含开场白</b>，直接读）；点「查看详情」看完整正文+开场白（不跳页）。每集结尾自带钩子引下集，适合做追更中视频。<br>';
-  h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）。<br>';
+  h += '② <b>配音选型</b>：悬疑/规则怪谈→冷感低音男（edge-tts <code>YunxiNeural</code> 语速0.9）；重生爽文→沉稳中年男（<code>YunyangNeural</code>）；女性反转→清冷转凌厉女（<code>XiaoxiaoNeural</code>）；末日→沙哑疲惫（<code>YunjianNeural</code>）；古言轻喜→俏皮女（<code>XiaoyiNeural</code>）；历史→大气纪录片男（<code>YunyangNeural</code>）；悬疑奇案→低沉悬疑男（<code>YunxiNeural</code> 语速0.9）；民间传说→温润说书人男（<code>YunjianNeural</code> 或 <code>YunyangNeural</code>）。<br>';
   h += '③ <b>生产流水线</b>：复制文案 → TTS 选音色（语速0.9-1.0、BGM 压到人声20%下）→ 导出 mp3 → 剪映建工程加 AI 字幕 → 配画面+BGM → 导出发布（标题带"第N集"+结尾口播下集预告）。<br>';
   h += '④ <b>让粉丝有依赖性</b>：固定开场白 + 强钩子结尾 + 固定音色/BGM + 稳定更新节奏（隔日/日更）。<br>';
   h += '<span style="color:#b45309;">⚠️ 全部原创/公版史实，零侵权风险；不朗读受版权保护的付费小说原文。</span>';
   h += '</div></details>';
   // 按 series 分组（历史类按 era 从古至今排序）
-  const ERA_ORDER = {'先秦':1,'秦汉':2,'三国两晋':3,'隋唐':4,'宋':5,'元':6,'明':7,'清':8,'近代':9,'现代':10};
+  const ERA_ORDER = {'先秦':1,'秦汉':2,'三国两晋':3,'隋唐':4,'宋':5,'元':6,'明':7,'清':8,'近代':9,'现代':10,'北境':11,'江南':12,'岭南':13,'西南':14,'海疆':15,'西域':16};
   const groups = {}, order = [];
   view.forEach(o=>{ const s=(o.it&&o.it.series)||'未命名系列'; if(!groups[s]){groups[s]=[];order.push(s);} groups[s].push(o); });
   order.sort((a,b)=>{
     const ea = groups[a][0].it.era, eb = groups[b][0].it.era;
     const va = ea?ERA_ORDER[ea]:99, vb = eb?ERA_ORDER[eb]:99;
     if(va!==vb) return va-vb;
-    return a.localeCompare(b,'zh');
+    return (groups[a][0].i||0)-(groups[b][0].i||0);
   });
   order.forEach(s=>{
     const items = groups[s];
@@ -1950,7 +1950,7 @@ function storySectionHtml(page, view){
     h += '<div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;">';
     h += '<span style="font-weight:800;font-size:15px;color:#1f2330;">📚 '+esc(s)+'</span>';
     h += '<span style="font-size:12px;color:#e01030;background:#fff0f3;border:1px solid #ffd6e0;border-radius:999px;padding:1px 9px;">'+esc(cat)+'</span>';
-    if(era) h += '<span style="font-size:12px;color:#7c2d12;background:#fff7ed;border:1px solid #fed7aa;border-radius:999px;padding:1px 9px;">🏛 '+esc(era)+'</span>';
+    if(era) h += '<span style="font-size:12px;color:#7c2d12;background:#fff7ed;border:1px solid #fed7aa;border-radius:999px;padding:1px 9px;">'+(cat==='历史解说类'?'🏛 ':'📍 ')+esc(era)+'</span>';
     h += '<span style="font-size:12px;color:#888;">共 '+total+' 集 · 原创连载</span>';
     h += '</div>';
     h += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:10px;">';
@@ -1965,7 +1965,7 @@ function renderAiText(page, body){
   const active = modTab[page] || '__all__';
   let view = modView(m, arr0, active);
   view = displayOrdered(page, arr0, view);
-  const isStoryCat = (page==='operation-ideas' && (active==='小说推文类'||active==='历史解说类'));
+  const isStoryCat = (page==='operation-ideas' && (active==='小说推文类'||active==='历史解说类'||active==='悬疑奇案'||active==='民间传说'));
   let lastUpdate='';
   arr0.forEach(n=>{ if(n.date && n.date>lastUpdate) lastUpdate=n.date; });
   let headBtns = '<button class="pill ai" data-act="airefresh">AI刷新抓取</button>';
@@ -1973,7 +1973,7 @@ function renderAiText(page, body){
   let html = '<div class="page-head"><h2 class="page-title">'+esc(m.title)+'</h2>'+headBtns+'</div>';
   if(m.tabs){
     if(page==='operation-ideas'){
-      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。<b>大部分分类</b>为「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示）；其中<b>「小说推文类 / 历史解说类」为连载故事</b>——直接上原创故事正文，一集一集往下讲，<b>无分镜、无 60/30/15s 切片</b>，复制即可当口播中视频文案。内容均为原创/二创，仅作创作参考。</p>';
+      html += '<p class="hint">短视频脚本库：由 AI 按需刷新（暂停自动更新后，需要最新内容时在对话中让小诺刷新）。<b>大部分分类</b>为「60 秒以上横屏 16:9 口播母版」（含时间轴钩子+场景+口播+情绪升华+画面/BGM/字幕提示）；其中<b>「小说推文类 / 历史解说类 / 悬疑奇案 / 民间传说」为连载故事</b>——直接上原创故事正文，一集一集往下讲，<b>无分镜、无 60/30/15s 切片</b>，复制即可当口播中视频文案。内容均为原创/二创，仅作创作参考。</p>';
       html += '<div style="margin:10px 0 2px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">'
             + '<a href="./xhs.html" target="_blank" rel="noopener" style="display:inline-block;background:#fff0f3;color:#e01030;border:1px solid #ffd0d8;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">📕 小红书图文生成器 →</a>'
             + '<a href="./xvideo.html" target="_blank" rel="noopener" style="display:inline-block;background:#eef3ff;color:#3a6df0;border:1px solid #cdddff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:10px;text-decoration:none;">🎬 AI 视频生成器 →</a>'
@@ -2270,7 +2270,7 @@ const TAB_LABELS_KEY='wb_tab_labels';
 let _tabLabels=null;
 function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getItem(TAB_LABELS_KEY); _tabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _tabLabels={}; } if(!_tabLabels||typeof _tabLabels!=='object') _tabLabels={}; try{ const old=localStorage.getItem('wb_idx_tab_labels'); if(old){ const o=JSON.parse(old); if(o&&typeof o==='object' && !_tabLabels['index-track']){ _tabLabels['index-track']=o; } } }catch(e){} } return _tabLabels; }
 // 运营思路题库默认 Tab 显示名（改名仅影响显示，底层 cat 数据键不变；localStorage 用户覆盖优先于默认）
-const DEFAULT_TAB_LABELS = { 'operation-ideas': { '健身':'健身运动类', '生活现实句子':'现实生活类', '家庭教育':'家庭教育类', '高情商恋爱关系':'恋爱高手类', '发布运营':'发布运营类', '搞笑类':'搞笑段子类', '小说推文类':'小说推文类', '历史解说类':'历史解说类' } };
+const DEFAULT_TAB_LABELS = { 'operation-ideas': { '健身':'健身运动类', '生活现实句子':'现实生活类', '家庭教育':'家庭教育类', '高情商恋爱关系':'恋爱高手类', '发布运营':'发布运营类', '搞笑类':'搞笑段子类', '小说推文类':'小说推文类', '历史解说类':'历史解说类', '悬疑奇案':'悬疑奇案', '民间传说':'民间传说' } };
 function loadTabLabels(page){ const all=_ensureTabLabels(); const d=(DEFAULT_TAB_LABELS&&DEFAULT_TAB_LABELS[page])||{}; return Object.assign({}, d, all[page]||{}); }
 function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
 function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
