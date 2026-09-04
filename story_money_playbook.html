@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从0到赚到钱 · 故事短视频变现实操手册</title>
+<style>
+  :root{
+    --red:#e01030; --red-soft:#fff0f3; --ink:#1f2330; --sub:#666;
+    --line:#ececf1; --bg:#f6f7fb; --card:#fff; --ok:#0a8a3e; --warn:#b45309;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    line-height:1.75;font-size:15px;}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 18px 80px;}
+  header{background:linear-gradient(135deg,#e01030,#ff5a73);color:#fff;
+    border-radius:16px;padding:26px 24px;margin-bottom:22px;}
+  header h1{margin:0 0 6px;font-size:24px;letter-spacing:.5px;}
+  header p{margin:0;opacity:.95;font-size:13.5px;}
+  .tag{display:inline-block;background:rgba(255,255,255,.22);border-radius:999px;
+    padding:2px 12px;font-size:12px;margin-top:10px;}
+  h2{font-size:19px;margin:30px 0 12px;padding-left:12px;
+    border-left:5px solid var(--red);color:var(--ink);}
+  h3{font-size:15.5px;margin:18px 0 8px;color:var(--red);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin:12px 0;box-shadow:0 2px 8px rgba(15,23,42,.04);}
+  .n{display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;
+    font-size:13px;font-weight:800;margin-right:8px;flex:0 0 auto;}
+  .step{display:flex;align-items:flex-start;margin:10px 0;}
+  .step b{color:var(--ink);}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px;
+    background:#fff;border-radius:10px;overflow:hidden;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--red-soft);color:var(--red);font-weight:700;font-size:13px;}
+  tr:nth-child(even) td{background:#fafafe;}
+  code{background:#f1f2f7;border-radius:5px;padding:1px 6px;font-size:12.5px;
+    color:#b3183a;font-family:Consolas,Menlo,monospace;}
+  .path{background:#0f1830;color:#d6e2ff;border-radius:8px;padding:9px 12px;
+    font-size:13px;margin:8px 0;font-family:Consolas,Menlo,monospace;
+    line-height:1.9;white-space:pre-wrap;word-break:break-all;}
+  .path b{color:#7fd1ff;}
+  .tip{background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;
+    padding:10px 14px;margin:10px 0;font-size:13.5px;color:#7c4a03;}
+  .danger{background:#fff1f1;border-left:4px solid var(--red);border-radius:8px;
+    padding:10px 14px;margin:10px 0;font-size:13.5px;color:#9a1020;}
+  .ok{background:#eafaf0;border-left:4px solid var(--ok);border-radius:8px;
+    padding:10px 14px;margin:10px 0;font-size:13.5px;color:#0a5a2a;}
+  .money{font-size:22px;font-weight:800;color:var(--red);}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:620px){.grid{grid-template-columns:1fr;}}
+  .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;
+    font-weight:700;margin:2px 4px 2px 0;}
+  .pill.red{background:var(--red-soft);color:var(--red);}
+  .pill.blue{background:#eef4ff;color:#1d5fd0;}
+  .pill.green{background:#eafaf0;color:var(--ok);}
+  .pill.gray{background:#f0f1f5;color:#555;}
+  footer{margin-top:34px;text-align:center;color:#9aa;font-size:12px;}
+  .kp{background:#0f1830;color:#d6e2ff;border-radius:10px;padding:14px 16px;
+    font-size:13.5px;line-height:2;margin:10px 0;}
+  .kp b{color:#ffd56b;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>从 0 到赚到钱</h1>
+  <p>小说 / 历史故事短视频变现 · 一步一步实操手册</p>
+  <p style="opacity:.85;font-size:12.5px;margin-top:8px;">基于你的 107 集原创故事（62 小说 + 45 历史），每集 600–900 字口播稿已就绪</p>
+  <span class="tag">制作：GLUCK 策展库 · 小诺</span>
+  <span class="tag">更新：2026-09-03</span>
+</header>
+
+<!-- 0 -->
+<h2>0. 先说清楚：你能赚的 4 笔钱 + 多久见到第一笔</h2>
+<div class="card">
+<p>你手里的内容是<b>原创故事口播稿</b>（小说悬疑 + 历史冷门真相），零侵权风险——这是最大的合规优势。变现本质是<b>「把稿子变成视频 → 发平台 → 平台按播放/转化给你结算」</b>。一共 4 笔钱，按"从易到难、从快到慢"排：</p>
+<table>
+<tr><th>序号</th><th>收入来源</th><th>门槛</th><th>到账速度</th><th>单笔量级</th></tr>
+<tr><td>①</td><td><b>平台播放分成</b>（中视频计划 / 视频号分成 / B站激励）</td><td>低（0 粉可做，过播放门槛即可）</td><td>发后第 2 天起可见，满 100 元提</td><td>万播 10–80 元</td></tr>
+<tr><td>②</td><td><b>小说分销 CPS</b>（番茄达人中心）</td><td>0 粉</td><td>用户充值当天起算，T+2 可见</td><td>拉新 7–15 元/人；充值 50%–70% 分佣</td></tr>
+<tr><td>③</td><td><b>商单 / 互选广告</b></td><td>1000 粉左右</td><td>接单后 7–15 天结</td><td>单条 500–3000 元</td></tr>
+<tr><td>④</td><td><b>私域 / 知识付费</b></td><td>有粉丝沉淀后</td><td>即时</td><td>课程 99–599 元/人</td></tr>
+</table>
+<div class="kp">
+<b>真实时间线（照做的前提下）：</b>
+第 1 周 = 注册+实名+把"赚钱开关"全打开，<b>这周 0 收入</b>（在攒播放过门槛）；
+第 2 周 = 过中视频 1.7 万播门槛，<b>第 14 天左右看到第一笔分成</b>；
+第 3–4 周 = 稳定日更，单条 1000–3000 播，<b>日入 20–50 元</b>；
+第 2 个月 = 破千粉+爆款，<b>日入 80–200 元</b>；
+第 3 个月 = 矩阵+商单，<b>月入 5000–15000 元</b> 区间。
+<span style="color:#ffb3c0;">⚠️ 这是"认真日更"的预期，不是躺赚。任何说"日赚 300 无脑"的都是割韭菜。</span>
+</div>
+</div>
+
+<!-- 1 -->
+<h2>1. 第 1 天：注册与实名（一次性，约 40 分钟）</h2>
+<div class="card">
+<p>用<b>同一部手机、同一个手机号</b>注册以下账号，全部走官方 App / 小程序，<b>不要点任何"代开""培训"链接</b>。</p>
+<table>
+<tr><th>平台</th><th>用途</th><th>注册入口</th><th>必做</th></tr>
+<tr><td><b>抖音</b></td><td>小说类中视频主战场 + 番茄分销挂载</td><td>应用商店下"抖音"</td><td>实名认证（我→≡→设置→账号与安全→实名）</td></tr>
+<tr><td><b>西瓜视频</b></td><td>中视频三端之一，横屏播放单价高</td><td>应用商店下"西瓜视频"</td><td>用<b>同一手机号</b>注册，并去"我的→设置→第三方账号绑定→绑定抖音"</td></tr>
+<tr><td><b>今日头条</b></td><td>中视频三端之一，历史类单价高</td><td>应用商店下"今日头条"</td><td>用<b>同一手机号</b>注册</td></tr>
+<tr><td><b>微信视频号</b></td><td>历史类主战场（中老年+情感/历史赛道）</td><td>微信→发现→视频号→右上角头像→"发表视频"按提示开通</td><td>视频号实名（同微信支付实名）</td></tr>
+<tr><td><b>快手</b></td><td>小说类备选 + 番茄分销</td><td>应用商店下"快手"</td><td>实名认证</td></tr>
+<tr><td><b>番茄达人中心</b></td><td>小说分销 CPS（0 粉）</td><td>微信搜"番茄达人中心"小程序，或电脑开 <code>kol.fanqieopen.com</code></td><td>个人入驻→实名（1–2 天审核）</td></tr>
+<tr><td><b>B站</b></td><td>历史考据类长尾（后置到第 4 周）</td><td>应用商店下"哔哩哔哩"</td><td>先注册，粉丝满 1000 再开激励</td></tr>
+</table>
+<div class="tip">💡 <b>账号人设统一</b>：抖音/快手/番茄用" storytelling 号"名（如"夜说馆""史事儿"）；视频号/头条用偏知识向名（如"冷历史""老故事会"）。两个方向分开养，算法推荐更准。</div>
+</div>
+
+<!-- 2 -->
+<h2>2. 第 1 周：把"赚钱开关"全打开</h2>
+<div class="card">
+<h3><span class="n">1</span>抖音中视频伙伴计划（三端分成，最核心）</h3>
+<p>这是你最大的播放收入来源，必须先把开关打开。条件是<b>发满 3 条横屏原创（≥1 分钟、≥1080P、16:9）+ 三端累计 1.7 万播</b>。</p>
+<div class="path"><b>抖音 App 点击路径：</b>
+我 → 右上角 <b>≡</b> → 创作者服务中心 → 全部服务 → <b>中视频伙伴计划</b> → 立即加入
+（若按钮灰，说明还没发够 3 条，先去发；发够且播够 1.7 万后系统自动亮）</div>
+<div class="tip">💡 关键：发布时一定要勾 <code>原创声明</code> + <code>同步至西瓜/头条</code>。否则播放不互通、不算任务进度。</div>
+
+<h3><span class="n">2</span>微信视频号创作分成计划（历史类现金牛）</h3>
+<p>条件：<b>有效粉丝 ≥ 100 + 发 ≥10 条公开原创 + 内容合规</b>。粉丝靠历史类视频自然涨，第 1 周先发内容养粉。</p>
+<div class="path"><b>微信内路径：</b>
+发现 → 视频号 → 右上角头像 → <b>创作者中心</b> → 创作者服务 → 创作分成计划 → 申请加入
+（开通后每次发视频必须勾"原创声明"，评论区才会出现广告位）</div>
+
+<h3><span class="n">3</span>番茄达人中心（小说分销，0 粉先做）</h3>
+<div class="path"><b>微信小程序路径：</b>
+微信 → 搜"番茄达人中心" → 个人入驻 → 实名认证 → 任务中心选 1 部热门小说 →
+申请 <b>3–6 字专属别名（=你的推广口令）</b> → 等审核（通常 1–2 天）</div>
+<div class="danger">⚠️ <b>回填铁律</b>：视频发出后 <b>24 小时内</b>必须回番茄达人中心→申词记录→"回填发文"贴视频链接，否则平台统计不到、<b>佣金清零</b>。这是 90% 新手亏钱的原因。</div>
+</div>
+
+<!-- 3 -->
+<h2>3. 第 2 周：把 1 集故事变成 1 条视频（生产流水线）</h2>
+<div class="card">
+<p>你工作台里已有每集 600–900 字口播稿。流程：<b>复制文案 → 配音 → 配画面 → 加字幕/BGM → 导出横屏</b>。每天做 2 条（1 历史 + 1 小说），单条约 25 分钟。</p>
+
+<h3>步骤 A：拿文案</h3>
+<p>打开 <code>deficord.github.io</code> → 小说推文类 / 历史解说类 → 点卡片「复制故事文案」（含开场白，直接读）。</p>
+
+<h3>步骤 B：配音（3 选 1，推荐第 1 种）</h3>
+<table>
+<tr><th>方式</th><th>操作</th><th>适合</th></tr>
+<tr><td><b>剪映/必剪 文本朗读</b>（最省事）</td><td>剪映新建工程→"音频"→"文本朗读"→粘贴文案→选音色</td><td>所有人，0 成本</td></tr>
+<tr><td><b>edge-tts 本地</b>（音色多）</td><td>用 <code>云扬 YunyangNeural</code>（男沉稳）/ <code>晓晓 XiaoxiaoNeural</code>（女清冷）语速 0.95</td><td>想批量</td></tr>
+<tr><td><b>火山/讯飞 TTS</b>（最自然）</td><td>Cloudflare Worker 代理或官方 SDK</td><td>追求质感</td></tr>
+</table>
+<div class="tip">💡 <b>音色固定</b>：历史类全用"大气纪录片男"（云扬）；小说类按系列定（悬疑用冷感低音、重生用沉稳中年、女性反转用清冷女）。固定音色=粉丝依赖性。</div>
+
+<h3>步骤 C：配画面（别用版权图）</h3>
+<table>
+<tr><th>内容</th><th>画面来源（合规）</th></tr>
+<tr><td>历史类</td><td>① AI 生图（工作台/即梦/通义万相）生成古风场景；② 公开博物馆/遗址图（标注来源）；③ 你自己拍的物件空镜</td></tr>
+<tr><td>小说类</td><td>① AI 生图按剧情出分镜；② 实拍空镜（街道/房间/雨夜）；③ 纯文字卡点（大字+氛围 BGM，零素材风险）</td></tr>
+</table>
+
+<h3>步骤 D：剪映合成导出</h3>
+<div class="path">剪映：导入配音 mp3 + 画面 → 选中音频"识别字幕"自动加字幕 →
+加 BGM（音量压到人声 20% 以下）→ 比例选 <b>16:9 横屏</b> →
+分辨率 1080P → 导出 1–3 分钟</div>
+<div class="ok">✅ 一条合格视频 = 横屏 16:9 + ≥1 分钟 + 有字幕 + 勾原创 + 前 3 秒强钩子。满足这 5 条，中视频计划才结算。</div>
+</div>
+
+<!-- 4 -->
+<h2>4. 第 3–4 周：每天发什么、怎么发</h2>
+<div class="card">
+<h3>发布节奏（每天 2 条，错峰）</h3>
+<table>
+<tr><th>时间</th><th>内容</th><th>主投平台</th></tr>
+<tr><td>早 7:30</td><td>历史 1 集</td><td>视频号 + 头条 + B站</td></tr>
+<tr><td>午 12:30</td><td>小说 1 集</td><td>抖音 + 西瓜 + 快手</td></tr>
+<tr><td>晚 20:30</td><td>（第 3 周起）补发历史到抖音/小说到视频号做交叉</td><td>全平台</td></tr>
+</table>
+
+<h3>标题模板（直接套，{ } 替换为你的内容）</h3>
+<table>
+<tr><th>平台</th><th>模板</th></tr>
+<tr><td>抖音/快手</td><td><code>第N集·{系列}：{标题钩子}……（结局在第N+1集）</code></td></tr>
+<tr><td>视频号</td><td><code>很多人被误导了：{历史真相一句话}（{时代}）</code></td></tr>
+<tr><td>头条</td><td><code>{时代}不为人知的事：{冷门真相}</code></td></tr>
+<tr><td>B站</td><td><code>【考据】{被误读的历史人物}到底冤不冤？</code></td></tr>
+</table>
+
+<h3>结尾话术（每条必须加，拉订阅+转化）</h3>
+<div class="path">口播结尾："想知道 {下集钩子} 吗？点关注，下一集接着讲。"
+小说类再加："想看全集？去番茄搜 <b>{你的专属别名}</b>，评论区也有。"（别名=番茄达人中心申请的口令）</div>
+<div class="tip">💡 评论区<b>置顶</b>：历史类置顶"下集预告"+引导关注；小说类置顶"番茄搜 XXX 看全集"。置顶能多 30% 转化。</div>
+</div>
+
+<!-- 5 -->
+<h2>5. 第 4 周：开通番茄分销，小说类多赚一笔 CPS</h2>
+<div class="card">
+<p>前面第 1 周已申请别名。现在把别名用起来：</p>
+<div class="step"><span class="n">1</span><div><b>选品</b>：番茄达人中心→任务中心→选"热度/收益榜"里的小说（家庭伦理、年代种田、逆袭爽文转化最高，贴合你的重生/爽文类）。</div></div>
+<div class="step"><span class="n">2</span><div><b>视频引导</b>：小说类每条视频结尾口播"番茄搜 <code>{别名}</code> 看全集"，并下载官方素材混剪（必须二创，不能直接搬）。</div></div>
+<div class="step"><span class="n">3</span><div><b>发后回填</b>：视频发完 <b>24h 内</b>回后台"申词记录→回填发文"贴链接（抖音/快手分别回填）。</div></div>
+<div class="step"><span class="n">4</span><div><b>收益</b>：用户通过别名注册奖 7–15 元/人；充值你拿 50%–70%。满 15–100 元经抖音钱包/支付宝提。</div></div>
+<div class="ok">✅ 举例：一条小说视频带 30 人搜别名、其中 5 人充值 30 元 → 你赚 拉新 5×10 + 充值 150×60% ≈ 140 元/条。比纯播放分成高一个数量级。</div>
+</div>
+
+<!-- 6 -->
+<h2>6. 第 5 周起：放大与加收入</h2>
+<div class="card">
+<div class="grid">
+<div class="card" style="margin:0">
+<h3 style="margin-top:0">破千粉后</h3>
+<p>• 抖音<strong>星图/巨量星图</strong>接商单（单条 500–3000）</p>
+<p>• 视频号<strong>互选广告</strong>（5000 粉邀约）</p>
+<p>• 快手<strong>光合计划</strong>涨价</p>
+</div>
+<div class="card" style="margin:0">
+<h3 style="margin-top:0">长尾布局</h3>
+<p>• <strong>B站</strong>传历史考据长视频（激励+充电）</p>
+<p>• <strong>喜马拉雅</strong>投音频版（播放分成）</p>
+<p>• <strong>公众号</strong>沉淀私域，卖"故事创作素材包"99–599</p>
+</div>
+</div>
+<div class="tip">💡 矩阵：主号跑通后，用同套 107 集换个音色/封面再开 1–2 个号，收入叠加且边际成本趋零。</div>
+</div>
+
+<!-- 7 -->
+<h2>7. 钱到底从哪来（收益预测，照做版）</h2>
+<div class="card">
+<table>
+<tr><th>阶段</th><th>单条平均播放</th><th>日更条数</th><th>日收入（保守）</th><th>日收入（中性）</th><th>日收入（乐观）</th></tr>
+<tr><td>第 2 周（过门槛）</td><td>300–800</td><td>2</td><td>0 元*</td><td>0 元*</td><td>0 元*</td></tr>
+<tr><td>第 3–4 周</td><td>1000–3000</td><td>2</td><td>8 元</td><td>25 元</td><td>60 元</td></tr>
+<tr><td>第 2 个月</td><td>3000–8000</td><td>2–3</td><td>40 元</td><td>120 元</td><td>260 元</td></tr>
+<tr><td>第 3 个月</td><td>5000–2 万 + 爆款</td><td>3</td><td>100 元</td><td>350 元</td><td>800 元</td></tr>
+</table>
+<p style="font-size:12.5px;color:#888">* 第 2 周在攒播放过中视频 1.7 万门槛，分成未激活；视频号/番茄分销若粉丝/转化先到，可提前有小额进账。</p>
+<div class="kp">
+<b>中性预期月收入：</b>第 1 月 ≈ 300 元（主要是过门槛期）｜ 第 2 月 ≈ 2500–3600 元 ｜ 第 3 月 ≈ 8000–12000 元（含商单+分销+矩阵）。
+<b>关键变量</b>：日更是否坚持、钩子是否够强、番茄别名是否每发必回填。
+</div>
+</div>
+
+<!-- 8 -->
+<h2>8. 每日 Checklist（打印贴墙）</h2>
+<div class="card">
+<div class="path">☐ 早 7:30 发历史 1 条（视频号+头条+B站），勾原创，标题套模板
+☐ 午 12:30 发小说 1 条（抖音+西瓜+快手），勾原创+同步三端
+☐ 小说结尾口播番茄别名 + 评论区置顶"搜 XXX 看全集"
+☐ 发完 <b>24h 内</b>回番茄达人中心回填链接
+☐ 晚 20:30 交叉补发（历史→抖音 / 小说→视频号）
+☐ 看昨天数据：完播率<30% 的，改前 3 秒钩子重剪
+☐ 回复评论区，引导关注（下集预告）</div>
+</div>
+
+<!-- 9 -->
+<h2>9. 避坑清单（守住才赚得久）</h2>
+<div class="card">
+<div class="danger">🚫 <b>绝不交钱</b>：任何"加盟费/培训费/保证金/代运营"都是骗子。中视频、视频号分成、番茄达人全部<b>免费开通</b>。</div>
+<div class="danger">🚫 <b>绝不搬运</b>：混剪必须二创（调色+字幕+解说），直接搬原片判重、清退、收益清零。</div>
+<div class="danger">🚫 <b>小说分销只推已授权</b>：番茄达人中心的任务都是官方授权，别自己念付费原文小说（侵权）。</div>
+<div class="ok">✅ <b>你的护城河</b>：107 集全是原创+公版史实，零侵权，可放心勾原创、长期做。</div>
+<div class="ok">✅ <b>原创标识必勾</b>：每次发视频勾"原创声明"，否则中视频/视频号都不结算。</div>
+<div class="ok">✅ <b>回填必做</b>：番茄分销发后 24h 内回填，否则佣金清零（设手机闹钟提醒）。</div>
+</div>
+
+<footer>
+GLUCK 策展库 · 小诺 ｜ 本手册基于 2026-09-03 各平台公开规则整理，阈值以 App 内最新显示为准 ｜ 配套：story_publish_plan.html（107 集排期表）
+</footer>
+
+</div>
+</body>
+</html>
