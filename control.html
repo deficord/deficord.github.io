@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GLUCK 出片指挥中心</title>
+<style>
+:root{--bg:#f4f6fb;--card:#ffffff;--ink:#1f2733;--mut:#6b7686;--line:#e6eaf2;--brand:#2f6fed;--brand2:#e8f0ff;--ok:#2bb673;--warn:#e08a00;--red:#e5484d;--chip:#eef2f9}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:14px}
+.wrap{max-width:1080px;margin:0 auto;padding:24px 18px 60px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mut);font-size:13px;margin-bottom:18px}
+.badge{display:inline-block;padding:3px 12px;border-radius:999px;font-size:12px;font-weight:600;margin-left:8px;vertical-align:middle}
+.badge.on{background:#e3f8ee;color:var(--ok)}
+.badge.off{background:#fdeaea;color:var(--red)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px;box-shadow:0 1px 3px rgba(20,40,80,.04)}
+.card h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.card h2 .n{background:var(--brand);color:#fff;width:22px;height:22px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.row.tight{gap:8px}
+label{font-size:12.5px;color:var(--mut);margin-right:4px}
+select,input[type=text]{padding:7px 10px;border:1px solid var(--line);border-radius:9px;font-size:13px;background:#fff;color:var(--ink);min-width:150px}
+select:focus,input:focus{outline:none;border-color:var(--brand)}
+button{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);padding:8px 14px;border-radius:9px;font-size:13px;font-weight:600;transition:.15s}
+button:hover{border-color:var(--brand);color:var(--brand)}
+button.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+button.primary:hover{background:#2257c9}
+button.ghost{background:var(--chip)}
+small{color:var(--mut)}
+.mode-box{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.mode-box label{display:flex;align-items:center;gap:5px;background:var(--chip);padding:6px 10px;border-radius:9px;cursor:pointer;font-size:12.5px;color:var(--ink)}
+.idx-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+#idxBody{overflow:auto;max-height:420px;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#fafbfe;color:var(--mut);font-weight:600;z-index:1}
+tbody tr:hover{background:var(--brand2)}
+.copy{min-width:auto;padding:4px 10px;font-size:12px}
+.log{background:#0f1626;color:#cfe3ff;font-family:Consolas,Menlo,monospace;font-size:12.5px;line-height:1.5;padding:12px;border-radius:10px;height:300px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+.log .err{color:#ff9a9a}
+.log .done{color:#7ef0b0;font-weight:700}
+.hint{background:var(--chip);border-radius:9px;padding:10px 12px;font-size:12.5px;color:var(--mut);margin-top:10px}
+.hide{display:none}
+footer{margin-top:28px;color:var(--mut);font-size:12px;text-align:center}
+code{background:var(--chip);padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>GLUCK 出片指挥中心 <span id="badge" class="badge off">未连接本机服务</span></h1>
+  <div class="sub">选集 → 一键出片。本页可独立发布为操作指南；本机启动 <code>serve.js</code> 后即变网页版出片控制台。</div>
+
+  <!-- ① 集数索引 -->
+  <div class="card">
+    <h2><span class="n">①</span>集数索引（共 <span id="cnt">0</span> 集）</h2>
+    <div class="idx-tools">
+      <input type="text" id="idxSearch" placeholder="搜 系列 / 标题 / 关键字" style="min-width:240px">
+      <select id="idxCat"><option value="">全部类型</option></select>
+      <button class="ghost" id="idxReset">重置</button>
+    </div>
+    <div id="idxBody"><table><thead><tr><th>#</th><th>类型</th><th>系列</th><th>集</th><th>标题</th><th>操作</th></tr></thead><tbody id="idxRows"></tbody></table></div>
+    <div class="hint">点「复制出片」把 <code>node make_video.js --i N --covers --final</code> 复制到剪贴板；粘贴到终端回车即出那集（即使在未连接模式的资料库/网站上也可用）。</div>
+  </div>
+
+  <!-- ② 出片控制台（连上才显示） -->
+  <div class="card hide" id="console">
+    <h2><span class="n">②</span>出片控制台（已连接本机服务）</h2>
+    <div class="row tight" style="margin-bottom:10px">
+      <span><label>类型</label><select id="cCat"></select></span>
+      <span><label>系列</label><select id="cSer"></select></span>
+      <span><label>集</label><select id="cEp"></select></span>
+    </div>
+    <div class="mode-box" id="cMode">
+      <label><input type="radio" name="mode" value="1">只分镜</label>
+      <label><input type="radio" name="mode" value="2">+封面</label>
+      <label><input type="radio" name="mode" value="3">+素材</label>
+      <label><input type="radio" name="mode" value="4" checked>+一键出片</label>
+      <label><input type="radio" name="mode" value="5">只重合成</label>
+    </div>
+    <div class="row tight" style="margin-bottom:10px">
+      <span><label>Pexels KEY</label><input type="text" id="cKey" placeholder="模式3/批量需要" style="min-width:220px"></span>
+    </div>
+    <div class="row tight">
+      <button class="primary" id="cRun">▶ 开始出片</button>
+      <button id="cStop">■ 停止</button>
+      <button class="primary" id="cBatch">▶ 30天批量出片</button>
+    </div>
+    <div class="log" id="log" style="margin-top:12px">等待操作…</div>
+  </div>
+
+  <!-- ③ 离线提示 -->
+  <div class="card" id="offline">
+    <h2><span class="n">③</span>未连接本机服务</h2>
+    <div class="hint">当前页面未检测到本机出片服务（<code>serve.js</code>）。已切换为「指南 + 复制命令」模式——上方①索引区的「复制出片」按钮可直接复制命令到终端运行。<br>
+    若要在本机使用网页控制台：双击 <code>start_serve.bat</code> 启动服务，再刷新本页即可。</div>
+  </div>
+
+  <footer>GLUCK 短视频出片工具链 · 自包含单页 · 数据内联 235 集</footer>
+</div>
+
+<script>window.EP_INDEX=[{"i":0,"cat":"小说推文类","series":"第十三路末班车","title":"第1集 · 多出来的站牌","ep":1,"dur":"约4分钟"},{"i":1,"cat":"小说推文类","series":"第十三路末班车","title":"第2集 · 忘记站","ep":2,"dur":"约4分钟"},{"i":2,"cat":"小说推文类","series":"第十三路末班车","title":"第3集 · 方向盘上的债","ep":3,"dur":"约4分钟"},{"i":3,"cat":"小说推文类","series":"第十三路末班车","title":"第4集 · 偷时间的人","ep":4,"dur":"约4分钟"},{"i":4,"cat":"小说推文类","series":"第十三路末班车","title":"第5集 · 抢方向盘的人","ep":5,"dur":"约4分钟"},{"i":5,"cat":"小说推文类","series":"第十三路末班车","title":"第6集 · 那罐糖","ep":6,"dur":"约4分钟"},{"i":6,"cat":"小说推文类","series":"第十三路末班车","title":"第7集 · 接替的人","ep":7,"dur":"约4分钟"},{"i":7,"cat":"小说推文类","series":"第十三路末班车","title":"第8集 · 站牌上的字","ep":8,"dur":"约4分钟"},{"i":8,"cat":"小说推文类","series":"第十三路末班车","title":"第9集 · 终点站归途","ep":9,"dur":"约4分钟"},{"i":9,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第1集 · 江边睁眼","ep":1,"dur":"约4分钟"},{"i":10,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第2集 · 改变相遇","ep":2,"dur":"约4分钟"},{"i":11,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第3集 · 地下的东西","ep":3,"dur":"约4分钟"},{"i":12,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第4集 · 露出的破绽","ep":4,"dur":"约4分钟"},{"i":13,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第5集 · 她说信","ep":5,"dur":"约4分钟"},{"i":14,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第6集 · 正在收回的记忆","ep":6,"dur":"约4分钟"},{"i":15,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第7集 · 遗书上的字","ep":7,"dur":"约4分钟"},{"i":16,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第8集 · 不靠预知的仗","ep":8,"dur":"约4分钟"},{"i":17,"cat":"小说推文类","series":"重生1998：从地摊到首富","title":"第9集 · 最后的答案","ep":9,"dur":"约4分钟"},{"i":18,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第1集 · 跳下来的女人","ep":1,"dur":"约4分钟"},{"i":19,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第2集 · 那份账","ep":2,"dur":"约4分钟"},{"i":20,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第3集 · 隔壁楼的人","ep":3,"dur":"约4分钟"},{"i":21,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第4集 · 白裙里的布","ep":4,"dur":"约4分钟"},{"i":22,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第5集 · 三处备份","ep":5,"dur":"约4分钟"},{"i":23,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第6集 · 葬礼前的人","ep":6,"dur":"约4分钟"},{"i":24,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第7集 · 两个女人的账","ep":7,"dur":"约4分钟"},{"i":25,"cat":"小说推文类","series":"天台上的女人说她没死","title":"第8集 · 替身的脸","ep":8,"dur":"约4分钟"},{"i":26,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第1集 · 还亮着灯","ep":1,"dur":"约4分钟"},{"i":27,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第2集 · 病号服","ep":2,"dur":"约4分钟"},{"i":28,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第3集 · 最后的哨兵","ep":3,"dur":"约4分钟"},{"i":29,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第4集 · 关不掉的光","ep":4,"dur":"约4分钟"},{"i":30,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第5集 · 变淡的影子","ep":5,"dur":"约4分钟"},{"i":31,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第6集 · 交易的价","ep":6,"dur":"约4分钟"},{"i":32,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第7集 · 没编号的影子","ep":7,"dur":"约4分钟"},{"i":33,"cat":"小说推文类","series":"末日那年，便利店还开着","title":"第8集 · 留门的人","ep":8,"dur":"约4分钟"},{"i":34,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第1集 · 冷宫挂牌","ep":1,"dur":"约4分钟"},{"i":35,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第2集 · 教皇帝追人","ep":2,"dur":"约4分钟"},{"i":36,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第3集 · 摆摊人的打法","ep":3,"dur":"约4分钟"},{"i":37,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第4集 · 三角里的店","ep":4,"dur":"约4分钟"},{"i":38,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第5集 · 粉碗底的牌","ep":5,"dur":"约4分钟"},{"i":39,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第6集 · 站那碗粉","ep":6,"dur":"约4分钟"},{"i":40,"cat":"小说推文类","series":"王妃她又不想宫斗了","title":"第7集 · 永世不出宫","ep":7,"dur":"约4分钟"},{"i":41,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第1集 · 永远满房","ep":1,"dur":"约4分钟"},{"i":42,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第2集 · 等雾的姑娘","ep":2,"dur":"约4分钟"},{"i":43,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第3集 · 空着的位置","ep":3,"dur":"约4分钟"},{"i":44,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第4集 · 公共伤口","ep":4,"dur":"约4分钟"},{"i":45,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第5集 · 孩子的画","ep":5,"dur":"约4分钟"},{"i":46,"cat":"小说推文类","series":"雾港旅店的107号房","title":"第6集 · 留痛还是留命","ep":6,"dur":"约4分钟"},{"i":47,"cat":"小说推文类","series":"寄信来的已经死去的人","title":"第1集 · 周三的信","ep":1,"dur":"约4分钟"},{"i":48,"cat":"小说推文类","series":"寄信来的已经死去的人","title":"第2集 · 哑巴的册子","ep":2,"dur":"约4分钟"},{"i":49,"cat":"小说推文类","series":"寄信来的已经死去的人","title":"第3集 · 她藏的东西","ep":3,"dur":"约4分钟"},{"i":50,"cat":"小说推文类","series":"寄信来的已经死去的人","title":"第4集 · 秘密漏了","ep":4,"dur":"约4分钟"},{"i":51,"cat":"小说推文类","series":"寄信来的已经死去的人","title":"第5集 · 三年后的信","ep":5,"dur":"约4分钟"},{"i":52,"cat":"小说推文类","series":"镜子比我先醒来","title":"第1集 · 早一步的镜","ep":1,"dur":"约4分钟"},{"i":53,"cat":"小说推文类","series":"镜子比我先醒来","title":"第2集 · 替她活","ep":2,"dur":"约4分钟"},{"i":54,"cat":"小说推文类","series":"镜子比我先醒来","title":"第3集 · 镜里人哭","ep":3,"dur":"约4分钟"},{"i":55,"cat":"小说推文类","series":"镜子比我先醒来","title":"第4集 · 废掉的肌肉","ep":4,"dur":"约4分钟"},{"i":56,"cat":"小说推文类","series":"镜子比我先醒来","title":"第5集 · 妈的镜","ep":5,"dur":"约4分钟"},{"i":57,"cat":"小说推文类","series":"电梯停在十三层半","title":"第1集 · 多停的一下","ep":1,"dur":"约4分钟"},{"i":58,"cat":"小说推文类","series":"电梯停在十三层半","title":"第2集 · 红裙姑娘","ep":2,"dur":"约4分钟"},{"i":59,"cat":"小说推文类","series":"电梯停在十三层半","title":"第3集 · 被核实","ep":3,"dur":"约4分钟"},{"i":60,"cat":"小说推文类","series":"电梯停在十三层半","title":"第4集 · 真房间","ep":4,"dur":"约4分钟"},{"i":61,"cat":"小说推文类","series":"电梯停在十三层半","title":"第5集 · 传下去的话","ep":5,"dur":"约4分钟"},{"i":62,"cat":"历史解说类","series":"先秦：被误读的历史","title":"第1集 · 商朝最后一位王","ep":1,"dur":"约4分钟"},{"i":63,"cat":"历史解说类","series":"先秦：被误读的历史","title":"第2集 · 甲骨文里的真相","ep":2,"dur":"约4分钟"},{"i":64,"cat":"历史解说类","series":"先秦：被误读的历史","title":"第3集 · 「红颜祸水」的剧本","ep":3,"dur":"约4分钟"},{"i":65,"cat":"历史解说类","series":"先秦：被误读的历史","title":"第4集 · 商鞅的两根木头","ep":4,"dur":"约4分钟"},{"i":66,"cat":"历史解说类","series":"先秦：被误读的历史","title":"第5集 · 史官的底气","ep":5,"dur":"约4分钟"},{"i":67,"cat":"历史解说类","series":"秦汉：真话与远行","title":"第1集 · 一句公道话的代价","ep":1,"dur":"约4分钟"},{"i":68,"cat":"历史解说类","series":"秦汉：真话与远行","title":"第2集 · 牢里的藏书阁","ep":2,"dur":"约4分钟"},{"i":69,"cat":"历史解说类","series":"秦汉：真话与远行","title":"第3集 · 把耻辱写成书","ep":3,"dur":"约4分钟"},{"i":70,"cat":"历史解说类","series":"秦汉：真话与远行","title":"第4集 · 一部书的千年","ep":4,"dur":"约4分钟"},{"i":71,"cat":"历史解说类","series":"秦汉：真话与远行","title":"第5集 · 张骞的通西域","ep":5,"dur":"约4分钟"},{"i":72,"cat":"历史解说类","series":"草船借箭不是诸葛亮","title":"第1集 · 小说与正史两张脸","ep":1,"dur":"约4分钟"},{"i":73,"cat":"历史解说类","series":"草船借箭不是诸葛亮","title":"第2集 · 被挪用的名场面","ep":2,"dur":"约4分钟"},{"i":74,"cat":"历史解说类","series":"草船借箭不是诸葛亮","title":"第3集 · 神医华佗之死","ep":3,"dur":"约4分钟"},{"i":75,"cat":"历史解说类","series":"草船借箭不是诸葛亮","title":"第4集 · 戏说与信史之间","ep":4,"dur":"约4分钟"},{"i":76,"cat":"历史解说类","series":"长安城里的一万张外国脸","title":"第1集 · 世界上最大的城","ep":1,"dur":"约4分钟"},{"i":77,"cat":"历史解说类","series":"长安城里的一万张外国脸","title":"第2集 · 日本留学生的长安梦","ep":2,"dur":"约4分钟"},{"i":78,"cat":"历史解说类","series":"长安城里的一万张外国脸","title":"第3集 · 骆驼背上的生意","ep":3,"dur":"约4分钟"},{"i":79,"cat":"历史解说类","series":"长安城里的一万张外国脸","title":"第4集 · 诗人的长安","ep":4,"dur":"约4分钟"},{"i":80,"cat":"历史解说类","series":"长安城里的一万张外国脸","title":"第5集 · 盛世的底色","ep":5,"dur":"约4分钟"},{"i":81,"cat":"历史解说类","series":"科举：一条路改变中国千年","title":"第1集 · 世袭的困局","ep":1,"dur":"约4分钟"},{"i":82,"cat":"历史解说类","series":"科举：一条路改变中国千年","title":"第2集 · 第一场考试考什么","ep":2,"dur":"约4分钟"},{"i":83,"cat":"历史解说类","series":"科举：一条路改变中国千年","title":"第3集 · 范进们的孤注","ep":3,"dur":"约4分钟"},{"i":84,"cat":"历史解说类","series":"科举：一条路改变中国千年","title":"第4集 · 千年路的终点","ep":4,"dur":"约4分钟"},{"i":85,"cat":"历史解说类","series":"宋朝人比我们会生活","title":"第1集 · 不夜的宋朝","ep":1,"dur":"约4分钟"},{"i":86,"cat":"历史解说类","series":"宋朝人比我们会生活","title":"第2集 · 宋朝的外卖员","ep":2,"dur":"约4分钟"},{"i":87,"cat":"历史解说类","series":"宋朝人比我们会生活","title":"第3集 · 专业的消防队","ep":3,"dur":"约4分钟"},{"i":88,"cat":"历史解说类","series":"宋朝人比我们会生活","title":"第4集 · 强生活弱军事的谜","ep":4,"dur":"约4分钟"},{"i":89,"cat":"历史解说类","series":"宋朝人比我们会生活","title":"第5集 · 真实的包青天","ep":5,"dur":"约4分钟"},{"i":90,"cat":"历史解说类","series":"郑和：被遗忘的海上帝国","title":"第1集 · 比足球场大的船","ep":1,"dur":"约4分钟"},{"i":91,"cat":"历史解说类","series":"郑和：被遗忘的海上帝国","title":"第2集 · 舰队去了哪","ep":2,"dur":"约4分钟"},{"i":92,"cat":"历史解说类","series":"郑和：被遗忘的海上帝国","title":"第3集 · 被踩停的远航","ep":3,"dur":"约4分钟"},{"i":93,"cat":"历史解说类","series":"郑和：被遗忘的海上帝国","title":"第4集 · 海瑞：把清官做成孤本","ep":4,"dur":"约4分钟"},{"i":94,"cat":"历史解说类","series":"郑和：被遗忘的海上帝国","title":"第5集 · 开阔与干净","ep":5,"dur":"约4分钟"},{"i":95,"cat":"历史解说类","series":"甲午前夜：北洋水师真的不弱","title":"第1集 · 亚洲第一舰队","ep":1,"dur":"约4分钟"},{"i":96,"cat":"历史解说类","series":"甲午前夜：北洋水师真的不弱","title":"第2集 · 被挪走的钱","ep":2,"dur":"约4分钟"},{"i":97,"cat":"历史解说类","series":"甲午前夜：北洋水师真的不弱","title":"第3集 · 黄海的炮弹","ep":3,"dur":"约4分钟"},{"i":98,"cat":"历史解说类","series":"甲午前夜：北洋水师真的不弱","title":"第4集 · 败仗之后的醒","ep":4,"dur":"约4分钟"},{"i":99,"cat":"历史解说类","series":"詹天佑与京张铁路","title":"第1集 · 不被看好的铁路","ep":1,"dur":"约4分钟"},{"i":100,"cat":"历史解说类","series":"詹天佑与京张铁路","title":"第2集 · 人字形铁路","ep":2,"dur":"约4分钟"},{"i":101,"cat":"历史解说类","series":"詹天佑与京张铁路","title":"第3集 · 最后一科状元","ep":3,"dur":"约4分钟"},{"i":102,"cat":"历史解说类","series":"詹天佑与京张铁路","title":"第4集 · 从旧到新的桥","ep":4,"dur":"约4分钟"},{"i":103,"cat":"历史解说类","series":"两弹一星：隐姓埋名的人","title":"第1集 · 消失的科学家","ep":1,"dur":"约4分钟"},{"i":104,"cat":"历史解说类","series":"两弹一星：隐姓埋名的人","title":"第2集 · 戈壁里的公式","ep":2,"dur":"约4分钟"},{"i":105,"cat":"历史解说类","series":"两弹一星：隐姓埋名的人","title":"第3集 · 抬头看天","ep":3,"dur":"约4分钟"},{"i":106,"cat":"历史解说类","series":"两弹一星：隐姓埋名的人","title":"第4集 · 为什么讲历史","ep":4,"dur":"约4分钟"},{"i":107,"cat":"悬疑奇案","series":"深夜档案室","title":"第1集 · 电梯永远没有十三层","ep":1,"dur":"约4分钟"},{"i":108,"cat":"悬疑奇案","series":"深夜档案室","title":"第2集 · 楼道里跟着你的脚步声","ep":2,"dur":"约4分钟"},{"i":109,"cat":"悬疑奇案","series":"深夜档案室","title":"第3集 · 监控里多出的那一秒","ep":3,"dur":"约4分钟"},{"i":110,"cat":"悬疑奇案","series":"深夜档案室","title":"第4集 · 酒店里那间不存在的房","ep":4,"dur":"约4分钟"},{"i":111,"cat":"悬疑奇案","series":"深夜档案室","title":"第5集 · 办公室深夜自己响的机器","ep":5,"dur":"约4分钟"},{"i":112,"cat":"悬疑奇案","series":"古玩街的诡价","title":"第1集 · 会自己响的留声机","ep":1,"dur":"约4分钟"},{"i":113,"cat":"悬疑奇案","series":"古玩街的诡价","title":"第2集 · 镜子里多出的那张脸","ep":2,"dur":"约4分钟"},{"i":114,"cat":"悬疑奇案","series":"古玩街的诡价","title":"第3集 · 佛像眼睛为什么会动","ep":3,"dur":"约4分钟"},{"i":115,"cat":"悬疑奇案","series":"古玩街的诡价","title":"第4集 · 赝品店里混进的真品","ep":4,"dur":"约4分钟"},{"i":116,"cat":"悬疑奇案","series":"古玩街的诡价","title":"第5集 · 老匠人留在器物上的暗记","ep":5,"dur":"约4分钟"},{"i":117,"cat":"悬疑奇案","series":"停尸房的夜班守则","title":"第1集 · 第13号冷藏柜的体温","ep":1,"dur":"约4分钟"},{"i":118,"cat":"悬疑奇案","series":"停尸房的夜班守则","title":"第2集 · 死者手机里的新短信","ep":2,"dur":"约4分钟"},{"i":119,"cat":"悬疑奇案","series":"停尸房的夜班守则","title":"第3集 · 缝合线下的字","ep":3,"dur":"约4分钟"},{"i":120,"cat":"悬疑奇案","series":"停尸房的夜班守则","title":"第4集 · 太平间监控的空白三分钟","ep":4,"dur":"约4分钟"},{"i":121,"cat":"悬疑奇案","series":"停尸房的夜班守则","title":"第5集 · 尸检报告上的第三人","ep":5,"dur":"约4分钟"},{"i":122,"cat":"悬疑奇案","series":"雾镇连环失踪","title":"第1集 · 桥头的第二双鞋","ep":1,"dur":"约4分钟"},{"i":123,"cat":"悬疑奇案","series":"雾镇连环失踪","title":"第2集 · 雨季不涨的河","ep":2,"dur":"约4分钟"},{"i":124,"cat":"悬疑奇案","series":"雾镇连环失踪","title":"第3集 · 老照相馆的底片","ep":3,"dur":"约4分钟"},{"i":125,"cat":"悬疑奇案","series":"雾镇连环失踪","title":"第4集 · 镇长家的族谱","ep":4,"dur":"约4分钟"},{"i":126,"cat":"悬疑奇案","series":"雾镇连环失踪","title":"第5集 · 雾散那天的出口","ep":5,"dur":"约4分钟"},{"i":127,"cat":"悬疑奇案","series":"末班公交的空座位","title":"第1集 · 末班车多出来的那一站","ep":1,"dur":"约4分钟"},{"i":128,"cat":"悬疑奇案","series":"末班公交的空座位","title":"第2集 · 空座位上的体温","ep":2,"dur":"约4分钟"},{"i":129,"cat":"悬疑奇案","series":"末班公交的空座位","title":"第3集 · 红衣女孩只坐到桥头","ep":3,"dur":"约4分钟"},{"i":130,"cat":"悬疑奇案","series":"末班公交的空座位","title":"第4集 · 404 路公交车","ep":4,"dur":"约4分钟"},{"i":131,"cat":"悬疑奇案","series":"末班公交的空座位","title":"第5集 · 隧道里消失的乘客","ep":5,"dur":"约4分钟"},{"i":132,"cat":"悬疑奇案","series":"手机里的陌生人","title":"第1集 · 半夜响起的陌生来电","ep":1,"dur":"约4分钟"},{"i":133,"cat":"悬疑奇案","series":"手机里的陌生人","title":"第2集 · 已停机号码发来的短信","ep":2,"dur":"约4分钟"},{"i":134,"cat":"悬疑奇案","series":"手机里的陌生人","title":"第3集 · 微信群里多出的一个人","ep":3,"dur":"约4分钟"},{"i":135,"cat":"悬疑奇案","series":"手机里的陌生人","title":"第4集 · 照片背景里那张脸","ep":4,"dur":"约4分钟"},{"i":136,"cat":"悬疑奇案","series":"手机里的陌生人","title":"第5集 · 通话录音里的回声","ep":5,"dur":"约4分钟"},{"i":137,"cat":"悬疑奇案","series":"出租屋的夜半声响","title":"第1集 · 隔壁从来没人住","ep":1,"dur":"约4分钟"},{"i":138,"cat":"悬疑奇案","series":"出租屋的夜半声响","title":"第2集 · 墙上多出来的那扇门","ep":2,"dur":"约4分钟"},{"i":139,"cat":"悬疑奇案","series":"出租屋的夜半声响","title":"第3集 · 浴室镜子里的倒计时","ep":3,"dur":"约4分钟"},{"i":140,"cat":"悬疑奇案","series":"出租屋的夜半声响","title":"第4集 · 衣柜里叠好的衣服","ep":4,"dur":"约4分钟"},{"i":141,"cat":"悬疑奇案","series":"出租屋的夜半声响","title":"第5集 · 半夜拖椅子的声音","ep":5,"dur":"约4分钟"},{"i":142,"cat":"悬疑奇案","series":"旧校舍的晚自习","title":"第1集 · 空教室里的歌声","ep":1,"dur":"约4分钟"},{"i":143,"cat":"悬疑奇案","series":"旧校舍的晚自习","title":"第2集 · 午夜的校园广播","ep":2,"dur":"约4分钟"},{"i":144,"cat":"悬疑奇案","series":"旧校舍的晚自习","title":"第3集 · 自习室最后一排的人","ep":3,"dur":"约4分钟"},{"i":145,"cat":"悬疑奇案","series":"旧校舍的晚自习","title":"第4集 · 走廊尽头那间办公室","ep":4,"dur":"约4分钟"},{"i":146,"cat":"悬疑奇案","series":"旧校舍的晚自习","title":"第5集 · 毕业照上多出的同学","ep":5,"dur":"约4分钟"},{"i":147,"cat":"民间传说","series":"北境雪原的古老契约","title":"第1集 · 人参娃娃的契约","ep":1,"dur":"约4分钟"},{"i":148,"cat":"民间传说","series":"北境雪原的古老契约","title":"第2集 · 火炕底下的狐仙","ep":2,"dur":"约4分钟"},{"i":149,"cat":"民间传说","series":"北境雪原的古老契约","title":"第3集 · 冰湖下的鼓声","ep":3,"dur":"约4分钟"},{"i":150,"cat":"民间传说","series":"北境雪原的古老契约","title":"第4集 · 雪女报恩","ep":4,"dur":"约4分钟"},{"i":151,"cat":"民间传说","series":"北境雪原的古老契约","title":"第5集 · 白桦林里的邮差","ep":5,"dur":"约4分钟"},{"i":152,"cat":"民间传说","series":"江南水乡的夜航船","title":"第1集 · 河灯引魂","ep":1,"dur":"约4分钟"},{"i":153,"cat":"民间传说","series":"江南水乡的夜航船","title":"第2集 · 桥神娶亲","ep":2,"dur":"约4分钟"},{"i":154,"cat":"民间传说","series":"江南水乡的夜航船","title":"第3集 · 沉塘的绣花鞋","ep":3,"dur":"约4分钟"},{"i":155,"cat":"民间传说","series":"江南水乡的夜航船","title":"第4集 · 蚕花娘子","ep":4,"dur":"约4分钟"},{"i":156,"cat":"民间传说","series":"江南水乡的夜航船","title":"第5集 · 油纸伞下的渡客","ep":5,"dur":"约4分钟"},{"i":157,"cat":"民间传说","series":"岭南百越的山海精怪","title":"第1集 · 榕树公守村","ep":1,"dur":"约4分钟"},{"i":158,"cat":"民间传说","series":"岭南百越的山海精怪","title":"第2集 · 疍家龙女","ep":2,"dur":"约4分钟"},{"i":159,"cat":"民间传说","series":"岭南百越的山海精怪","title":"第3集 · 妈祖前身林默","ep":3,"dur":"约4分钟"},{"i":160,"cat":"民间传说","series":"岭南百越的山海精怪","title":"第4集 · 五羊新城的石头","ep":4,"dur":"约4分钟"},{"i":161,"cat":"民间传说","series":"岭南百越的山海精怪","title":"第5集 · 骑楼下的哭墙","ep":5,"dur":"约4分钟"},{"i":162,"cat":"民间传说","series":"西南秘境的万物有灵","title":"第1集 · 苗疆蛊娘的真相","ep":1,"dur":"约4分钟"},{"i":163,"cat":"民间传说","series":"西南秘境的万物有灵","title":"第2集 · 彝族火把节的起源","ep":2,"dur":"约4分钟"},{"i":164,"cat":"民间传说","series":"西南秘境的万物有灵","title":"第3集 · 纳西玉龙第三国","ep":3,"dur":"约4分钟"},{"i":165,"cat":"民间传说","series":"西南秘境的万物有灵","title":"第4集 · 傣族竹楼的来由","ep":4,"dur":"约4分钟"},{"i":166,"cat":"民间传说","series":"西南秘境的万物有灵","title":"第5集 · 铜鼓里的雷声","ep":5,"dur":"约4分钟"},{"i":167,"cat":"民间传说","series":"西北丝路的黄沙密码","title":"第1集 · 月牙泉为什么不枯","ep":1,"dur":"约4分钟"},{"i":168,"cat":"民间传说","series":"西北丝路的黄沙密码","title":"第2集 · 莫高窟的飞天为何流泪","ep":2,"dur":"约4分钟"},{"i":169,"cat":"民间传说","series":"西北丝路的黄沙密码","title":"第3集 · 楼兰新娘的等待","ep":3,"dur":"约4分钟"},{"i":170,"cat":"民间传说","series":"西北丝路的黄沙密码","title":"第4集 · 胡杨三千年不倒","ep":4,"dur":"约4分钟"},{"i":171,"cat":"民间传说","series":"西北丝路的黄沙密码","title":"第5集 · 鸣沙山的回声","ep":5,"dur":"约4分钟"},{"i":172,"cat":"民间传说","series":"中原厚土的古老盟誓","title":"第1集 · 黄河鲤鱼的龙门劫","ep":1,"dur":"约4分钟"},{"i":173,"cat":"民间传说","series":"中原厚土的古老盟誓","title":"第2集 · 牡丹为何为花王","ep":2,"dur":"约4分钟"},{"i":174,"cat":"民间传说","series":"中原厚土的古老盟誓","title":"第3集 · 少林达摩面壁影","ep":3,"dur":"约4分钟"},{"i":175,"cat":"民间传说","series":"中原厚土的古老盟誓","title":"第4集 · 龙门石窟的凿痕","ep":4,"dur":"约4分钟"},{"i":176,"cat":"民间传说","series":"中原厚土的古老盟誓","title":"第5集 · 大禹锁蛟的铁链","ep":5,"dur":"约4分钟"},{"i":177,"cat":"民间传说","series":"青藏雪域的苍茫回响","title":"第1集 · 格萨尔王的长歌","ep":1,"dur":"约4分钟"},{"i":178,"cat":"民间传说","series":"青藏雪域的苍茫回响","title":"第2集 · 转经筒里的经","ep":2,"dur":"约4分钟"},{"i":179,"cat":"民间传说","series":"青藏雪域的苍茫回响","title":"第3集 · 圣湖里的倒影","ep":3,"dur":"约4分钟"},{"i":180,"cat":"民间传说","series":"青藏雪域的苍茫回响","title":"第4集 · 天葬台的鹰","ep":4,"dur":"约4分钟"},{"i":181,"cat":"民间传说","series":"青藏雪域的苍茫回响","title":"第5集 · 雪狮守护的经幡","ep":5,"dur":"约4分钟"},{"i":182,"cat":"民间传说","series":"南洋华人的乡愁神祇","title":"第1集 · 唐人街的关公守财","ep":1,"dur":"约4分钟"},{"i":183,"cat":"民间传说","series":"南洋华人的乡愁神祇","title":"第2集 · 妈祖过南洋","ep":2,"dur":"约4分钟"},{"i":184,"cat":"民间传说","series":"南洋华人的乡愁神祇","title":"第3集 · 拿督公的土地情","ep":3,"dur":"约4分钟"},{"i":185,"cat":"民间传说","series":"南洋华人的乡愁神祇","title":"第4集 · 戏班神的海外戏台","ep":4,"dur":"约4分钟"},{"i":186,"cat":"民间传说","series":"南洋华人的乡愁神祇","title":"第5集 · 一碗罗汉斋的乡愁","ep":5,"dur":"约4分钟"},{"i":187,"cat":"未解之谜类","series":"失落文明的谜题","title":"第1集 · 亚特兰蒂斯：柏拉图笔下被海吞没的帝国","ep":1,"dur":"约4分钟"},{"i":188,"cat":"未解之谜类","series":"失落文明的谜题","title":"第2集 · 复活节岛：摩艾石像是怎么「走」到海边的","ep":2,"dur":"约4分钟"},{"i":189,"cat":"未解之谜类","series":"失落文明的谜题","title":"第3集 · 玛雅：一座座城，为什么被自己人放弃","ep":3,"dur":"约4分钟"},{"i":190,"cat":"未解之谜类","series":"失落文明的谜题","title":"第4集 · 纳斯卡地画：只有从天上看得见的图案","ep":4,"dur":"约4分钟"},{"i":191,"cat":"未解之谜类","series":"失落文明的谜题","title":"第5集 · 哥贝克力石阵：改写文明起点的石头","ep":5,"dur":"约4分钟"},{"i":192,"cat":"未解之谜类","series":"巨石与远古工程","title":"第1集 · 吉萨大金字塔：两百多万块石头怎么堆到一百四十六米","ep":1,"dur":"约4分钟"},{"i":193,"cat":"未解之谜类","series":"巨石与远古工程","title":"第2集 · 巨石阵：二十五吨的石头，从两百多公里外运来","ep":2,"dur":"约4分钟"},{"i":194,"cat":"未解之谜类","series":"巨石与远古工程","title":"第3集 · 哥斯达黎加石球：近乎完美的圆，谁滚出来的","ep":3,"dur":"约4分钟"},{"i":195,"cat":"未解之谜类","series":"巨石与远古工程","title":"第4集 · 特奥蒂瓦坎：一座没有留下名字的城市","ep":4,"dur":"约4分钟"},{"i":196,"cat":"未解之谜类","series":"巨石与远古工程","title":"第5集 · 三星堆：黄金面具背后，一个没有文字的文明","ep":5,"dur":"约4分钟"},{"i":197,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第1集 · 百慕大三角：被夸大，还是真有蹊跷","ep":1,"dur":"约4分钟"},{"i":198,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第2集 · 通古斯大爆炸：一声没有留下坑的巨响","ep":2,"dur":"约4分钟"},{"i":199,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第3集 · 麦田怪圈：一场骗了全世界的坦诚","ep":3,"dur":"约4分钟"},{"i":200,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第4集 · 尼斯湖水怪：一次给整片湖做的「人口普查」","ep":4,"dur":"约4分钟"},{"i":201,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第5集 · 球状闪电：它终于被摄像机拍到了","ep":5,"dur":"约4分钟"},{"i":202,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第1集 · 安提基特拉机械：两千年前的齿轮组","ep":1,"dur":"约4分钟"},{"i":203,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第2集 · 伏尼契手稿：一本没人读得懂的书","ep":2,"dur":"约4分钟"},{"i":204,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第3集 · 水晶头骨：一件被科学识破的「古物」","ep":3,"dur":"约4分钟"},{"i":205,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第4集 · 费斯托斯圆盘：可能是世界最早的「活字」","ep":4,"dur":"约4分钟"},{"i":206,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第5集 · 奥兹冰人：五千三百年前的一桩悬案","ep":5,"dur":"约4分钟"},{"i":207,"cat":"未解之谜类","series":"消失的人与船","title":"第1集 · 罗阿诺克：一百多人，只留下一个词","ep":1,"dur":"约4分钟"},{"i":208,"cat":"未解之谜类","series":"消失的人与船","title":"第2集 · 玛丽·西莱斯特号：一艘完好、却无人的船","ep":2,"dur":"约4分钟"},{"i":209,"cat":"未解之谜类","series":"消失的人与船","title":"第3集 · 阿梅莉亚·埃尔哈特：她飞向的那座岛","ep":3,"dur":"约4分钟"},{"i":210,"cat":"未解之谜类","series":"消失的人与船","title":"第4集 · 弗兰南群岛灯塔：三个人，一顿没吃完的饭","ep":4,"dur":"约4分钟"},{"i":211,"cat":"未解之谜类","series":"消失的人与船","title":"第5集 · 亚马逊的失落之城Z：走进雨林的人","ep":5,"dur":"约4分钟"},{"i":212,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第1集 · 费米悖论：他们都在哪儿","ep":1,"dur":"约4分钟"},{"i":213,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第2集 · 月球是怎么来的","ep":2,"dur":"约4分钟"},{"i":214,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第3集 · 生命是从哪儿开始的","ep":3,"dur":"约4分钟"},{"i":215,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第4集 · 大灭绝：谁按下了重启键","ep":4,"dur":"约4分钟"},{"i":216,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第5集 · 深海：我们其实没看过自己的星球","ep":5,"dur":"约4分钟"},{"i":217,"cat":"未解之谜类","series":"失落文明的谜题","title":"第6集 · 吴哥：一座被森林吞掉的水城","ep":6,"dur":"约4分钟"},{"i":218,"cat":"未解之谜类","series":"失落文明的谜题","title":"第7集 · 摩亨佐-达罗：四千年前的城市规划","ep":7,"dur":"约4分钟"},{"i":219,"cat":"未解之谜类","series":"失落文明的谜题","title":"第8集 · 佩特拉：在沙漠里驯服洪水的城市","ep":8,"dur":"约4分钟"},{"i":220,"cat":"未解之谜类","series":"巨石与远古工程","title":"第6集 · 马丘比丘：不用灰浆的墙，怎么扛住地震","ep":6,"dur":"约4分钟"},{"i":221,"cat":"未解之谜类","series":"巨石与远古工程","title":"第7集 · 纽格莱奇墓：一年只亮一次的光","ep":7,"dur":"约4分钟"},{"i":222,"cat":"未解之谜类","series":"巨石与远古工程","title":"第8集 · 罗马混凝土：两千年不倒的配方","ep":8,"dur":"约4分钟"},{"i":223,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第6集 · 圣艾尔摩之火：桅杆上那团冷火","ep":6,"dur":"约4分钟"},{"i":224,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第7集 · 死亡谷的走石：会自己移动的石头","ep":7,"dur":"约4分钟"},{"i":225,"cat":"未解之谜类","series":"地球上最诡异的现象","title":"第8集 · 极光：天上那道会动的光","ep":8,"dur":"约4分钟"},{"i":226,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第6集 · 罗马十二面体：出土一百多个，没有一个说明书","ep":6,"dur":"约4分钟"},{"i":227,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第7集 · 内布拉星象盘：三千六百年前的星空","ep":7,"dur":"约4分钟"},{"i":228,"cat":"未解之谜类","series":"改写历史的器物与手稿","title":"第8集 · 罗塞塔石碑：同一份公告写了三遍","ep":8,"dur":"约4分钟"},{"i":229,"cat":"未解之谜类","series":"消失的人与船","title":"第6集 · 贝奇莫号：漂流了三十八年的空船","ep":6,"dur":"约4分钟"},{"i":230,"cat":"未解之谜类","series":"消失的人与船","title":"第7集 · 棉兰号：一个只有杂志、没有档案的传说","ep":7,"dur":"约4分钟"},{"i":231,"cat":"未解之谜类","series":"消失的人与船","title":"第8集 · 雪人：追踪了近百年的脚印","ep":8,"dur":"约4分钟"},{"i":232,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第6集 · 暗物质与暗能量：宇宙里看不见的那九成五","ep":6,"dur":"约4分钟"},{"i":233,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第7集 · 时间为什么只有一个方向","ep":7,"dur":"约4分钟"},{"i":234,"cat":"未解之谜类","series":"宇宙与人类的终极之问","title":"第8集 · 意识：为什么会有「感觉」这件事","ep":8,"dur":"约4分钟"}];</script>
+<script>
+const NODE = "C:/Users/Administrator/.workbuddy/binaries/node/versions/22.22.2-2/node.exe";
+const flat = window.EP_INDEX || [];
+document.getElementById('cnt').textContent = flat.length;
+
+// 重建分组
+const groups = {};
+flat.forEach(e => { (groups[e.cat] = groups[e.cat] || {})[e.series] = groups[e.cat][e.series] || []; groups[e.cat][e.series].push(e); });
+const catList = Object.keys(groups);
+
+// 复制命令（带完整 node 路径，复制即用）
+function cmdFor(i, mode) {
+  const e = flat[i]; const m = String(mode || '4');
+  let base = NODE + ' make_video.js --i ' + i;
+  if (m === '1') return base;
+  if (m === '2') return base + ' --covers';
+  if (m === '3') return base + ' --covers --footage --key <你的KEY>';
+  if (m === '4') return base + ' --covers --final';
+  if (m === '5') { const d = (e.series + '_第' + e.ep + '集').replace(/[\\/:*?"<>|]/g, '_'); return NODE + ' render_final.js --dir out/' + d; }
+  return base + ' --covers --final';
+}
+async function copy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { return false; }
+}
+
+// ① 索引表
+const idxRows = document.getElementById('idxRows');
+const idxCat = document.getElementById('idxCat');
+catList.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; idxCat.appendChild(o); });
+function renderIdx() {
+  const kw = document.getElementById('idxSearch').value.trim().toLowerCase();
+  const cf = idxCat.value;
+  idxRows.innerHTML = '';
+  let n = 0;
+  flat.forEach(e => {
+    if (cf && e.cat !== cf) return;
+    if (kw && !(e.series + e.title + e.cat).toLowerCase().includes(kw)) return;
+    n++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>#' + e.i + '</td><td>' + e.cat + '</td><td>' + e.series + '</td><td>第' + e.ep + '集</td><td>' + e.title + '</td>' +
+      '<td><button class="copy" data-i="' + e.i + '">复制出片</button></td>';
+    idxRows.appendChild(tr);
+  });
+  document.getElementById('cnt').textContent = flat.length;
+}
+idxRows.addEventListener('click', async ev => {
+  const b = ev.target.closest('.copy'); if (!b) return;
+  const ok = await copy(cmdFor(b.dataset.i, 4));
+  b.textContent = ok ? '已复制 ✓' : '复制失败';
+  setTimeout(() => b.textContent = '复制出片', 1400);
+});
+document.getElementById('idxSearch').addEventListener('input', renderIdx);
+idxCat.addEventListener('change', renderIdx);
+document.getElementById('idxReset').addEventListener('click', () => { document.getElementById('idxSearch').value = ''; idxCat.value = ''; renderIdx(); });
+renderIdx();
+
+// ② 控制台
+const cCat = document.getElementById('cCat'), cSer = document.getElementById('cSer'), cEp = document.getElementById('cEp');
+function fillCats() { cCat.innerHTML = ''; catList.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; cCat.appendChild(o); }); fillSers(); }
+function fillSers() { cSer.innerHTML = ''; const s = groups[cCat.value] || {}; Object.keys(s).forEach(ser => { const o = document.createElement('option'); o.value = ser; o.textContent = ser + ' (' + s[ser].length + '集)'; cSer.appendChild(o); }); fillEps(); }
+function fillEps() { cEp.innerHTML = ''; const arr = (groups[cCat.value] || {})[cSer.value] || []; arr.forEach(e => { const o = document.createElement('option'); o.value = e.i; o.textContent = '第' + e.ep + '集 · ' + e.title; cEp.appendChild(o); }); }
+cCat.addEventListener('change', fillSers); cSer.addEventListener('change', fillEps);
+fillCats();
+
+const logBox = document.getElementById('log');
+let es = null;
+function log(line, cls) { const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = line; logBox.appendChild(d); logBox.scrollTop = logBox.scrollHeight; }
+function startStream(url) {
+  if (es) es.close();
+  logBox.textContent = ''; log('连接中…');
+  es = new EventSource(url);
+  es.onmessage = ev => {
+    let o; try { o = JSON.parse(ev.data); } catch (e) { return; }
+    if (o.type === 'start') log('▶ ' + o.label + '  ' + o.cmd, 'done');
+    else if (o.type === 'done') { log(o.status === 0 ? '✓ 完成 (status 0)' : '✗ 结束 (status ' + o.status + (o.error ? ' ' + o.error : '') + ')', o.status === 0 ? 'done' : 'err'); es.close(); es = null; }
+    else log(o.line || '', o.err ? 'err' : '');
+  };
+  es.onerror = () => { if (es) { log('— 连接断开 —', 'err'); es.close(); es = null; } };
+}
+function curMode() { const r = document.querySelector('input[name=mode]:checked'); return r ? r.value : '4'; }
+document.getElementById('cRun').addEventListener('click', () => {
+  const i = cEp.value; const mode = curMode(); const key = document.getElementById('cKey').value.trim();
+  let q = '/api/render?i=' + encodeURIComponent(i) + '&mode=' + mode;
+  if (key) q += '&key=' + encodeURIComponent(key);
+  startStream(q);
+});
+document.getElementById('cBatch').addEventListener('click', () => {
+  const key = document.getElementById('cKey').value.trim();
+  startStream('/api/batch' + (key ? '?key=' + encodeURIComponent(key) : ''));
+});
+document.getElementById('cStop').addEventListener('click', () => { if (es) { es.close(); es = null; log('— 已停止 —', 'err'); } });
+
+// 连接探测
+fetch('/api/ping').then(r => r.json()).then(j => {
+  if (j && j.ok) {
+    document.getElementById('badge').textContent = '已连接本机服务'; document.getElementById('badge').className = 'badge on';
+    document.getElementById('console').classList.remove('hide'); document.getElementById('offline').classList.add('hide');
+    fillCats();
+  }
+}).catch(() => { /* 离线：保持指南模式 */ });
+</script>
+</body>
+</html>
