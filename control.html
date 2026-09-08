@@ -61,6 +61,7 @@ code{background:var(--chip);padding:1px 6px;border-radius:5px;font-family:Consol
       <div style="flex:1;min-width:230px"><b>方式四 · 公网指南</b><br><small>开 <code>deficord.github.io/control.html</code>：索引+复制命令（不自出片）。</small></div>
     </div>
     <div class="hint" style="margin-top:12px"><b>改了再出片：</b>改文案/分镜 → 浏览器开 <code>storyboard.html</code> 改字 → 重跑一键出片（覆盖）；只换素材 → 替换 <code>out/.../footage/*.mp4</code> → 跑「只重合成」；只调封面 → <code>studio_multiplat.html</code> 改并下载 → 覆盖 <code>covers/*.png</code> → 跑「只重合成」。<br>只重合成命令：<code>node render_final.js --dir out/&lt;系列&gt;_第N集</code></div>
+    <div class="hint" style="margin-top:12px;background:#fff7e8;border-color:#ffe0a3"><b>📡 数据更新后如何重同步：</b>本页集数索引来自 <code>storyboard.html</code> 的 EP 数据。若新增/调整了系列或集数，依次重跑：① <code>node gen_index.js</code>（刷新 ep_index.js）→ ② <code>node gen_control.js</code>（重生成本页）。同步到三处：本机（重跑 gen_control 后刷新 start_serve 服务即生效）、公网（<code>node push_repo.js</code> 推 GitHub Pages）、资料库（重新 import_html 覆盖 ⑯ 节点，id 不变）。换机时若 ffmpeg 路径不同，改 <code>render_final.js</code> 第 26 行 ffmpeg 绝对路径即可。</div>
   </div>
 
   <!-- ① 集数索引 -->
