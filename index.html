@@ -870,7 +870,6 @@ const GROUPS = [
   ]},
   {n:2, title:'🚀 账号运营', items:[
     {id:'operation-ideas', label:'运营思路题库'},
-    {id:'short-copy', label:'短视频文案类'},
     {id:'account-observe', label:'对标账号观测'},
     {id:'work-review', label:'作品复盘记录'},
   ]},
@@ -904,8 +903,7 @@ const GROUPS = [
 const MODULES = {
   'knowledge-base':{type:'knowledge', title:'知识库笔记', key:'wb_knowledge', home:true},
   'overview':{type:'overview', title:'数据概览', key:'__overview'},
-  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['小说推文类','悬疑奇案','历史解说类','生活避坑','普通人真实故事','未解之谜类','分发·小红书','分发·头条','分发·公众号'], field:'cat'}},
-  'short-copy':{type:'aiText', title:'短视频文案类', key:'operationIdeas', tabs:{cats:['健身','知识科普类','生活现实句子','高情商恋爱关系','家庭教育','搞笑类','职场高情商','发布运营'], field:'cat', singleDropdown:true}},
+  'operation-ideas':{type:'aiText', title:'运营思路题库', key:'operationIdeas', tabs:{cats:['小说推文类','悬疑奇案','历史解说类','生活避坑','普通人真实故事','未解之谜类','分发·小红书','分发·头条','分发·公众号','健身','知识科普类','生活现实句子','高情商恋爱关系','家庭教育','搞笑类','职场高情商','发布运营'], field:'cat'}},
   'account-observe':{type:'list', title:'对标账号观测', key:'wb_account_observe', fields:[
     {k:'name',l:'账号名',t:'text',title:true},{k:'platform',l:'平台',t:'text'},
     {k:'fans',l:'粉丝数',t:'number'},{k:'persona',l:'人设',t:'text'},
@@ -2282,7 +2280,7 @@ const TAB_LABELS_KEY='wb_tab_labels';
 let _tabLabels=null;
 function _ensureTabLabels(){ if(!_tabLabels){ try{ const raw=localStorage.getItem(TAB_LABELS_KEY); _tabLabels=(raw?JSON.parse(raw):{}); }catch(e){ _tabLabels={}; } if(!_tabLabels||typeof _tabLabels!=='object') _tabLabels={}; try{ const old=localStorage.getItem('wb_idx_tab_labels'); if(old){ const o=JSON.parse(old); if(o&&typeof o==='object' && !_tabLabels['index-track']){ _tabLabels['index-track']=o; } } }catch(e){} } return _tabLabels; }
 // 运营思路题库默认 Tab 显示名（改名仅影响显示，底层 cat 数据键不变；localStorage 用户覆盖优先于默认）
-const DEFAULT_TAB_LABELS = { 'operation-ideas': { '小说推文类':'①AI短剧·漫剧｜逆袭爽文', '悬疑奇案':'①AI短剧·漫剧｜悬疑奇案', '历史解说类':'①AI短剧·漫剧｜历史解说', '生活避坑':'①AI短剧·漫剧｜生活避坑', '生活现实句子':'②人生副本·平行人生', '普通人真实故事':'③情感共鸣·人生感悟｜普通人真实故事', '高情商恋爱关系':'③情感共鸣·人生感悟', '家庭教育':'③情感共鸣·人生感悟', '搞笑类':'③情感共鸣·人生感悟(搞笑)', '未解之谜类':'④知识科普·AI动画', '知识科普类':'④知识科普·AI动画', '健身':'④知识科普·AI动画(健康)', '职场高情商':'④知识科普·AI动画(职场)', '发布运营':'④知识科普·AI动画(发布运营)', '分发·小红书':'⑤分发·小红书｜AI视频笔记', '分发·头条':'⑥分发·头条｜AI视频微头条', '分发·公众号':'⑦分发·公众号｜同源图文' } };
+const DEFAULT_TAB_LABELS = { 'operation-ideas': { '小说推文类':'①AI短剧·漫剧｜逆袭爽文', '悬疑奇案':'①AI短剧·漫剧｜悬疑奇案', '历史解说类':'①AI短剧·漫剧｜历史解说', '生活避坑':'①AI短剧·漫剧｜生活避坑', '生活现实句子':'短视频文案类｜生活扎心话', '普通人真实故事':'③情感共鸣·人生感悟｜普通人真实故事', '高情商恋爱关系':'短视频文案类｜高情商恋爱', '家庭教育':'短视频文案类｜家庭教育经', '搞笑类':'短视频文案类｜搞笑段子王', '未解之谜类':'④知识科普·AI动画', '知识科普类':'短视频文案类｜知识科普类', '健身':'短视频文案类｜健身打卡记', '职场高情商':'短视频文案类｜职场高情商', '发布运营':'短视频文案类｜发布与运营', '分发·小红书':'⑤分发·小红书｜AI视频笔记', '分发·头条':'⑥分发·头条｜AI视频微头条', '分发·公众号':'⑦分发·公众号｜同源图文' } };
 function loadTabLabels(page){ const all=_ensureTabLabels(); const d=(DEFAULT_TAB_LABELS&&DEFAULT_TAB_LABELS[page])||{}; return Object.assign({}, d, all[page]||{}); }
 function saveTabLabels(page, obj){ const all=_ensureTabLabels(); all[page]=obj; saveData(TAB_LABELS_KEY, all); }
 function tabDisplayName(page, k){ if(k==='__all__') return '全部'; const l=loadTabLabels(page); return (l&&l[k])?l[k]:k; }
@@ -2380,7 +2378,9 @@ const TAB_LEAD = {
 function modTabGroupKey(page, header){ return page + '|' + header; }
 // 点击下拉菜单外部时收起所有展开的下拉（点下拉内部不处理）
 document.addEventListener('click', function(e){
-  if(e.target && e.target.closest && e.target.closest('.tab-group')) return;
+  if(!e.target) return;
+  if(e.target.isConnected===false) return; // 已在别处重渲染，忽略本次冒泡
+  if(e.target.closest && e.target.closest('.tab-group')) return;
   let any=false; for(const k in modGroupOpen){ if(modGroupOpen[k]){ modGroupOpen[k]=false; any=true; } }
   if(any) renderCurrent();
 });
@@ -2426,7 +2426,7 @@ function modTabBarHtml(page, cats, active){
   groups.forEach(header=>{
     const members = gmap[header];
     const hasActive = members.indexOf(active) >= 0;
-    const open = !!modGroupOpen[modTabGroupKey(page, header)] || hasActive;
+    const open = !!modGroupOpen[modTabGroupKey(page, header)];
     h += '<div class="tab-group'+(open?' open':'')+(hasActive?' active':'')+'">';
     h += '<button class="stock-tab tab-group-head'+(hasActive?' on':'')+'" data-act="mod-tab-group" data-page="'+page+'" data-grp="'+esc(header)+'">'+esc(header)+'<span class="caret">▾</span></button>';
     h += '<div class="tab-drop">';
