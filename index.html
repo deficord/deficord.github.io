@@ -381,6 +381,15 @@
   .stock-tab{padding:8px 16px;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;border:1px solid var(--border);background:#fff;border-radius:20px;margin-bottom:0;transition:color .18s ease,border-color .18s ease,box-shadow .18s ease;box-shadow:0 1px 2px rgba(15,23,42,.04);}
   .stock-tab:hover{color:#2563EB;background:#EFF6FF;border-color:#BFD7FE;text-decoration:none;box-shadow:0 2px 8px rgba(37,99,235,.14);}
   .stock-tab.on{color:#fff;background:linear-gradient(135deg,#3B82F6,#2563EB);border-color:transparent;box-shadow:0 3px 10px rgba(37,99,235,.28);}
+  /* 运营思路题库：同类 Tab 合并下拉（仅合并标题，文案各自独立） */
+  .tab-group{position:relative;display:inline-block;}
+  .tab-group-head .caret{margin-left:6px;font-size:10px;opacity:.7;transition:transform .18s ease;}
+  .tab-group.open .tab-group-head .caret{transform:rotate(180deg);}
+  .tab-drop{display:none;position:absolute;z-index:30;top:calc(100% + 6px);left:0;min-width:212px;flex-direction:column;gap:6px;padding:8px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.18);}
+  .tab-group.open .tab-drop{display:flex;}
+  .tab-drop-item{text-align:left;white-space:nowrap;border-radius:16px;font-weight:600;}
+  .tab-drop-item:hover{color:#2563EB;background:#EFF6FF;border-color:#BFD7FE;}
+  .tab-lead{margin:2px 0 14px;padding:10px 14px;background:linear-gradient(135deg,#F8FAFF,#EFF6FF);border:1px solid #DBEAFE;border-left:4px solid #3B82F6;border-radius:10px;color:#334155;font-size:13.5px;line-height:1.75;}
   .import-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px;}
   .import-area{width:100%;min-height:130px;font-family:UI-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;border:1px solid #D8DEE9;border-radius:8px;padding:10px;resize:vertical;box-sizing:border-box;line-height:1.6;}
   .import-area:focus{outline:none;border-color:var(--accent);}
@@ -1985,6 +1994,7 @@ function renderAiText(page, body){
     html += '<p class="hint">来源：GLUCK 策展库（对话发「刷新」由 AI 联网抓取并推送到仓库）。'+(mcpEnabled?'':'当前 MCP 已关闭，无法联网拉取。')+'</p>';
   }
   if(m.tabs) html += modTabBarHtml(page, modTabCats(m, arr0), active);
+  if(m.tabs && active!=='__all__' && TAB_LEAD[active]){ html += '<p class="tab-lead">'+esc(TAB_LEAD[active])+'</p>'; }
   if(arr0.length===0){ html += '<div class="empty">尚未取到数据 —— 请部署上线后发「刷新」让 AI 推送，或点「AI刷新抓取」。</div>'; }
   else if(view.length===0){ html += '<div class="empty">该分类暂无内容。</div>'; }
   else {
@@ -2343,14 +2353,62 @@ function modView(m, arr0, active){
     return v===active;
   });
 }
+const modGroupOpen = {};
+// 运营思路题库：每个分类的「趋势化标题文案/导语」（对应 7 大平台最火赛道，2026 当前流量大、有针对性）
+// 仅作选题方向提示，不改变任何长文案；选中分类时显示在Tab下方。
+const TAB_LEAD = {
+  '小说推文类': '2026 AI漫剧/短剧全面爆发（Q1月均上架4.27万部、占比超95%），是抖音/快手最大增量。逆袭爽文用「废柴逆袭」强冲突钩子做1–3分钟口播母版，广告+分销+短剧分成三线变现。',
+  '悬疑奇案': '轻悬疑是2026微短剧最易起量的四类之一。悬疑奇案走「真实案件感+未解钩子」，抖音悬疑向+视频号情感向双发，强订阅留人、长尾稳。',
+  '历史解说类': '历史解说在B站/抖音仍属高信任垂类；2026算法向「价值导向」倾斜。用「冷知识+大国基建/非遗/文明脉络」做有信息密度的1–3分钟，涨粉稳、商单顺。',
+  '生活避坑': '实用干货是2026常青赛道（高收藏/转发/长尾）。本地避坑、消费防骗、健康谣言拆解，公式「3秒给结论+步骤可复制」——最适配抖音下沉+视频号中老年转发。',
+  '生活现实句子': '「活人感」取代精英人设：普通人真实生活、接地气表达流量暴涨。生活现实句子走「不完美但真诚」的独白体，深夜文案+城市/独居日常，不露脸也能做情绪陪伴。',
+  '高情商恋爱关系': '情感向在视频号是蓝海（中老年+家庭+情绪陪伴）。高情商恋爱讲「关系里的分寸感」，用真实场景替代剧本化表演，引共鸣+转发，私域承接转化高。',
+  '家庭教育': '育儿/家庭教育是视频号高转化垂类；2026家长焦虑转向「非鸡娃+情绪价值+底层能力」。一个具体场景+一句戳心的话，不露脸口播，收藏率高、复看强。',
+  '搞笑类': '搞笑赛道内卷但仍有机会：在「共鸣感+真实感+惊喜感」上加一点。别再扮丑，用生活化反差+意外反转，抖音/快手轻松破圈，B站长尾。',
+  '普通人真实故事': '普通人真实故事是2026最强情绪赛道（如AI短片《纸手机》千万播放）：真实感+社会关怀天然破圈。讲普通人的高光/委屈/温柔，不露脸旁白即可，视频号/抖音双发。',
+  '未解之谜类': '未解之谜属轻知识悬疑，B站/抖音「看后搜」红利大（53%用户刷后搜）。一个真问题+证据链+刻意放慢，做有信息密度的1–3分钟，植入关键词吃搜索流量。',
+  '知识科普类': '知识科普2026三趋势：AI补齐画面、真人出镜建信任、垂直领域好变现。节奏轻快+刁钻选题，做「为什么你该看这个」的硬核科普，B站深度+抖音起量。',
+  '健身': '健身在视频号/小红书是高客单垂类；2026去滤镜化，「居家可复制+适老化/银发友好」动作更易起量。公式：3秒给动作+跟练无器械+避坑提示。',
+  '职场高情商': '职场教育是5分钟+深度内容信任转化最高的垂类之一；抖音工地/工厂纪实、轻创业教程红利明显。一个职场坑+一句大实话，不露脸口播，收藏转发双高。',
+  '发布运营': '2026生存底线=全域运营+私域：公众号(深度)+视频号(传播)+抖音快手(曝光)+私域(承接)。讲「一套内容多平台改标题/比例/钩子」，把效率提5–10倍。',
+  '分发·小红书': '小红书女性消费力强、「平权化」内容崛起：真实测评/干货教程/生活美学最吃香。母版改「AI视频笔记」——电影感封面+痛点标题+可复制步骤，电商红利明显。',
+  '分发·头条': '头条是资讯/微头条主场，「看后搜」+信息密度流量大。母版改「AI视频微头条」——前3秒抛冲突结论、中间给依据、结尾留互动问句，吃推荐+搜索双流量。',
+  '分发·公众号': '公众号是深度承接+私域沉淀（变现效率公域3–10倍）。母版转「同源图文」——结构化干货+金句标粗+文末引私域，与视频号/抖音形成闭环。'
+};
+function modTabGroupKey(page, header){ return page + '|' + header; }
 function modTabBarHtml(page, cats, active){
   let live = cats.slice();
   const head = live.includes('__all__') ? ['__all__'] : [];
   const rest = live.filter(c=>c!=='__all__');
   const ordered = orderedCats(page, rest);
   const finalCats = head.concat(ordered);
+  // 仅运营思路题库做「同类合并下拉」；其余模块保持原扁平 Tab
+  if(page !== 'operation-ideas'){
+    let h0 = '<div class="stock-tabs">';
+    finalCats.forEach(k=>{ h0 += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
+    h0 += '</div>';
+    return h0;
+  }
+  // 运营思路题库：按显示名「组｜明细 / 组(备注)」把同类 Tab 合并为一个可点开的下拉（仅合并标题，文案各自独立）
+  const groups = []; const gmap = {};
+  finalCats.forEach(k=>{
+    const disp = tabDisplayName(page, k);
+    const header = disp.split('｜')[0].split('(')[0].trim();
+    if(!gmap[header]){ gmap[header] = []; groups.push(header); }
+    gmap[header].push(k);
+  });
   let h = '<div class="stock-tabs">';
-  finalCats.forEach(k=>{ h += '<button class="stock-tab'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
+  if(head.length){ h += '<button class="stock-tab'+(active==='__all__'?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="__all__">全部</button>'; }
+  groups.forEach(header=>{
+    const members = gmap[header];
+    const hasActive = members.indexOf(active) >= 0;
+    const open = !!modGroupOpen[modTabGroupKey(page, header)] || hasActive;
+    h += '<div class="tab-group'+(open?' open':'')+(hasActive?' active':'')+'">';
+    h += '<button class="stock-tab tab-group-head'+(hasActive?' on':'')+'" data-act="mod-tab-group" data-page="'+page+'" data-grp="'+esc(header)+'">'+esc(header)+'<span class="caret">▾</span></button>';
+    h += '<div class="tab-drop">';
+    members.forEach(k=>{ h += '<button class="stock-tab tab-drop-item'+(active===k?' on':'')+'" data-act="mod-tab" data-page="'+page+'" data-tab="'+esc(k)+'">'+esc(tabDisplayName(page, k))+'</button>'; });
+    h += '</div></div>';
+  });
   h += '</div>';
   return h;
 }
@@ -4646,6 +4704,7 @@ function bindEvents(){
       if(act==='copystory'){ const arr=remoteData[MODULES[page].key]||[]; const it=arr[idx]; if(it){ const head=it.intro?('【开场白】'+it.intro+'\n\n'):''; copyText(head+(it.content||'')); f.textContent='已复制✓'; setTimeout(()=>f.textContent='复制故事文案',1500); } return; }
       if(act==='full'){ showFull(page, idx); return; }
       if(act==='mod-tab'){ modTab[f.dataset.page]=f.dataset.tab; renderCurrent(); return; }
+      if(act==='mod-tab-group'){ const key=modTabGroupKey(f.dataset.page, f.dataset.grp); modGroupOpen[key]=!modGroupOpen[key]; renderCurrent(); return; }
       /* ===== 股票基金分析模块事件 ===== */
       if(act==='stock-tab'){ stockTab=f.dataset.tab; renderCurrent(); return; }
       if(act==='openStockTabEditor'){ openStockTabEditor(); return; }
