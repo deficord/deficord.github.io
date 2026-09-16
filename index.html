@@ -667,7 +667,25 @@
     <div class="modal">
       <h3 id="textTitle">全文</h3>
       <div class="card"><div class="content" id="textBody"></div></div>
-      <div class="modal-actions"><button class="pill" id="textClose">关闭</button></div>
+      <div class="modal-actions"><button class="pill secondary" id="imgEditBtn">编辑配图</button><button class="pill" id="textClose">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 配图编辑弹窗 -->
+  <div class="modal-mask" id="imgMask">
+    <div class="modal modal-wide">
+      <h3>编辑配图 · <span id="imgEditTitle" style="font-size:14px;color:#475569;"></span></h3>
+      <div id="imgEditRows"></div>
+      <div style="margin:12px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input id="imgAddUrl" placeholder="粘贴图片URL（http(s)://...）" style="flex:1;min-width:200px;padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;">
+        <button class="pill secondary" id="imgAddUrlBtn">添加URL图片</button>
+        <label class="pill secondary" style="cursor:pointer;margin:0;">上传本地图<input id="imgAddFile" type="file" accept="image/*" style="display:none;"></label>
+      </div>
+      <div class="modal-actions">
+        <button class="pill secondary" id="imgResetBtn">重置为默认</button>
+        <button class="pill" id="imgSaveBtn">保存</button>
+        <button class="pill" id="imgCloseBtn">关闭</button>
+      </div>
     </div>
   </div>
 
@@ -4060,16 +4078,102 @@ function openInfo(html){ const tm=$('textMask'); $('textTitle').textContent=''; 
 function showFull(page, idx){
   const arr = remoteData[MODULES[page].key] || remoteData.financeNews || [];
   const it = arr[idx]; if(!it) return;
+  window._curFull = {page:page, idx:idx};
   $('textTitle').textContent = it.title||'全文';
   let body = '';
   if(it.intro) body += '<div style="font-size:13px;color:#b45309;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:8px 12px;margin-bottom:12px;line-height:1.7;"><b>🎙 开场白</b><br>'+esc(it.intro)+'</div>';
   if(it.kind==='story'){ const c2=((it.content||'').replace(/\s/g,'')).length; const m2=Math.max(1,Math.round(c2/230)); body += '<div style="margin:0 0 10px;font-size:12px;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:8px;padding:6px 10px;">📝 约 '+c2+' 字 · 约 '+m2+' 分钟口播</div>'; }
-  body += '<div class="content">'+(it.content||it.summary||'')+'</div>';
+  body += '<div class="content">'+renderContentWithImages(it)+'</div>';
   if(it.videoPlan){ body += '<div style="margin-top:16px;border:1px solid #f5b5b5;border-radius:10px;background:#fff5f5;color:#cf1322;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.8;padding:12px 14px;"><b style="color:#cf1322;">🎬 视频号配套方案</b>\n'+esc(it.videoPlan)+'</div>'; }
   if(it.hookNext) body += '<div style="margin-top:14px;font-size:13px;color:#7c2d12;background:#fff7ed;border-left:4px solid #fb923c;border-radius:8px;padding:10px 14px;line-height:1.8;"><b>🔔 下集预告</b><br>'+esc(it.hookNext)+'</div>';
   if(it.url) body += '<div class="row" style="margin-top:10px"><span class="k">原文</span><a href="'+esc(it.url)+'" target="_blank" rel="noopener">'+esc(it.url)+'</a></div>';
   $('textBody').innerHTML = body;
   $('textMask').classList.add('show');
+}
+
+/* ============== 公众号配图渲染 + 编辑 ============== */
+let imgEditArr = [];
+function gzhImgKey(title){ try { return 'gzh_img_' + btoa(unescape(encodeURIComponent(title||''))); } catch(e){ return 'gzh_img_' + encodeURIComponent(title||''); } }
+function getCardImages(it){
+  try { const ov = localStorage.getItem(gzhImgKey(it.title)); if(ov){ const a = JSON.parse(ov); if(Array.isArray(a)) return a; } } catch(e){}
+  return it.images || [];
+}
+function renderImageFigure(im){
+  const isCenter = im.align === 'center';
+  const imgStyle = isCenter
+    ? 'display:block;max-width:300px;width:82%;margin:14px auto;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);'
+    : 'display:block;width:100%;margin:14px 0;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);';
+  const cap = im.caption ? '<div style="font-size:12px;color:#64748b;text-align:center;margin-top:6px;line-height:1.6;">'+esc(im.caption)+'</div>' : '';
+  return '<figure style="margin:0;">'+
+    '<img src="'+esc(im.src)+'" alt="'+esc(im.caption||'')+'" style="'+imgStyle+'" loading="lazy">'+
+    cap+'</figure>';
+}
+function renderContentWithImages(it){
+  const raw = it.content || it.summary || '';
+  const lines = raw.split('\n');
+  const imgs = getCardImages(it);
+  let html = ''; let ne = -1; const done = {};
+  for (let i=0;i<lines.length;i++){
+    const line = lines[i];
+    if (line.trim() !== '') {
+      ne++;
+      html += '<div style="margin:0 0 10px;line-height:1.85;">'+esc(line)+'</div>';
+      imgs.forEach((im, ki) => { if (!done[ki] && im.pos === ne) { html += renderImageFigure(im); done[ki] = true; } });
+    } else {
+      html += '<div style="height:6px"></div>';
+    }
+  }
+  imgs.forEach((im, ki) => { if (!done[ki]) html += renderImageFigure(im); });
+  return html;
+}
+function optAlign(v){ const a=[['full','通栏'],['center','居中小图']]; return a.map(x=>'<option value="'+x[0]+'"'+(x[0]===v?' selected':'')+'>'+x[1]+'</option>').join(''); }
+function optPos(v){ const a=[[0,'账号名后'],[1,'简介后'],[2,'场景后'],[3,'三点前'],[99,'文末']]; return a.map(x=>'<option value="'+x[0]+'"'+(Number(x[0])===Number(v)?' selected':'')+'>'+x[1]+'</option>').join(''); }
+function renderImgEditRows(){
+  const box = $('imgEditRows'); if(!box) return;
+  if(!imgEditArr.length){ box.innerHTML = '<div style="color:#94a3b8;font-size:13px;padding:8px 0;">暂无配图，可添加 URL 或上传本地图。</div>'; return; }
+  let h = '';
+  imgEditArr.forEach((im,i)=>{
+    h += '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:10px;">';
+    h += '<img src="'+esc(im.src)+'" style="width:88px;height:88px;object-fit:cover;border-radius:8px;flex:none;">';
+    h += '<div style="flex:1;min-width:0;">';
+    h += '<input data-act="imgCap" data-i="'+i+'" value="'+esc(im.caption||'')+'" placeholder="图注" style="width:100%;padding:5px 8px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:6px;">';
+    h += '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">';
+    h += '对齐<select data-act="imgAlign" data-i="'+i+'">'+optAlign(im.align)+'</select> ';
+    h += '位置<select data-act="imgPos" data-i="'+i+'">'+optPos(im.pos)+'</select> ';
+    h += '<button class="pill secondary" data-act="imgUp" data-i="'+i+'">↑</button>';
+    h += '<button class="pill secondary" data-act="imgDown" data-i="'+i+'">↓</button>';
+    h += '<button class="pill secondary" data-act="imgDel" data-i="'+i+'">删除</button>';
+    h += '</div></div></div>';
+  });
+  box.innerHTML = h;
+}
+function openImgEditor(){
+  const cf = window._curFull; if(!cf) return;
+  const arr = remoteData[MODULES[cf.page].key] || remoteData.financeNews || [];
+  const it = arr[cf.idx]; if(!it) return;
+  $('imgEditTitle').textContent = it.title||'';
+  imgEditArr = JSON.parse(JSON.stringify(getCardImages(it)));
+  renderImgEditRows();
+  $('imgMask').classList.add('show');
+}
+function saveImgOverride(){
+  const cf = window._curFull; if(!cf) return;
+  const arr = remoteData[MODULES[cf.page].key] || remoteData.financeNews || [];
+  const it = arr[cf.idx]; if(!it) return;
+  localStorage.setItem(gzhImgKey(it.title), JSON.stringify(imgEditArr));
+  $('imgMask').classList.remove('show');
+  showFull(cf.page, cf.idx);
+  if(typeof toast==='function') toast('配图已存本地（刷新仍在；要发布请让小诺同步线上）'); else alert('配图已保存');
+}
+function resetImgOverride(){
+  const cf = window._curFull; if(!cf) return;
+  const arr = remoteData[MODULES[cf.page].key] || remoteData.financeNews || [];
+  const it = arr[cf.idx]; if(!it) return;
+  localStorage.removeItem(gzhImgKey(it.title));
+  imgEditArr = JSON.parse(JSON.stringify(it.images||[]));
+  renderImgEditRows();
+  showFull(cf.page, cf.idx);
+  if(typeof toast==='function') toast('已重置为默认配图'); else alert('已重置');
 }
 
 /* ============== 全局搜索 ============== */
@@ -4611,6 +4715,28 @@ function bindEvents(){
   $('dcaSave').onclick = saveDca;
   $('textClose').onclick = ()=> $('textMask').classList.remove('show');
   $('searchClose').onclick = ()=> $('searchMask').classList.remove('show');
+
+  /* 公众号配图编辑 */
+  $('imgEditBtn').onclick = openImgEditor;
+  $('imgCloseBtn').onclick = ()=> $('imgMask').classList.remove('show');
+  $('imgSaveBtn').onclick = saveImgOverride;
+  $('imgResetBtn').onclick = resetImgOverride;
+  $('imgAddUrlBtn').onclick = ()=>{ const u=$('imgAddUrl').value.trim(); if(u){ imgEditArr.push({src:u,caption:'',align:'full',pos:2}); $('imgAddUrl').value=''; renderImgEditRows(); } };
+  $('imgAddFile').onchange = (e)=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ imgEditArr.push({src:r.result,caption:'(本地图)',align:'full',pos:2}); renderImgEditRows(); }; r.readAsDataURL(f); e.target.value=''; };
+  const imm=$('imgMask');
+  if(imm){
+    imm.addEventListener('click', e=>{
+      if(e.target===imm){ imm.classList.remove('show'); return; }
+      const f=e.target.closest('[data-act]'); if(!f) return;
+      const act=f.dataset.act; const i=Number(f.dataset.i);
+      if(act==='imgDel'){ imgEditArr.splice(i,1); renderImgEditRows(); }
+      else if(act==='imgUp'){ if(i>0){ const t=imgEditArr[i]; imgEditArr[i]=imgEditArr[i-1]; imgEditArr[i-1]=t; renderImgEditRows(); } }
+      else if(act==='imgDown'){ if(i<imgEditArr.length-1){ const t=imgEditArr[i]; imgEditArr[i]=imgEditArr[i+1]; imgEditArr[i+1]=t; renderImgEditRows(); } }
+      else if(act==='imgCap'){ imgEditArr[i].caption = f.value; }
+      else if(act==='imgAlign'){ imgEditArr[i].align = f.value; }
+      else if(act==='imgPos'){ imgEditArr[i].pos = Number(f.value); }
+    });
+  }
 
   /* 股票 Tab 设置弹窗：弹窗在 #content 之外，需独立监听（动态行也靠此捕获） */
   const stm=$('stockTabMask');
