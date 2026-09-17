@@ -2030,6 +2030,13 @@ function renderAiText(page, body){
         const s15 = (it.short15&&typeof it.short15==='object')?it.short15:{};
         const hk = it.hook||'';
         const wcs = it.wcSave||'';
+        if(it.videoPlan){
+          // 公众号等带 videoPlan 的卡：折叠条直接放视频号配套方案，标题改为「视频号配套方案」
+          planHtml += '<details class="op-plan" style="margin-top:10px;border-top:1px dashed #f0c0c8;padding-top:8px;">';
+          planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 视频号配套方案</summary>';
+          planHtml += '<div style="margin-top:8px;border:1px solid #f5b5b5;border-radius:10px;background:#fff5f5;color:#cf1322;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.8;padding:12px 14px;">'+esc(it.videoPlan)+'</div>';
+          planHtml += '</details>';
+        } else {
         planHtml += '<details class="op-plan" style="margin-top:10px;border-top:1px dashed #f0c0c8;padding-top:8px;">';
         planHtml += '<summary style="cursor:pointer;font-weight:700;color:#e01030;font-size:13px;">🎬 短视频方案（60s+/30s/15s三版）</summary>';
         planHtml += planBlock('🔥 黄金钩子（前3秒留人）', hk, '');
@@ -2038,6 +2045,7 @@ function renderAiText(page, body){
         planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'', s15.aiPromptCn||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
         planHtml += '</details>';
+        }
       }
       html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
       html += '<h4>'+esc(it.title||'')+'</h4>';
