@@ -2027,6 +2027,9 @@ function renderAiText(page, body){
       const cv = it.cat ? namedCardVars(it.cat) : '';
       let planHtml = '';
       if(page==='operation-ideas'){
+        const _disp = tabDisplayName(page, it.cat);
+        const _isRensheng = typeof _disp==='string' && _disp.indexOf('人生副本')===0;
+        if(!_isRensheng){
         const s50 = (it.short50&&typeof it.short50==='object')?it.short50:{text:it.short50||''};
         const s30 = (it.short30&&typeof it.short30==='object')?it.short30:{};
         const s15 = (it.short15&&typeof it.short15==='object')?it.short15:{};
@@ -2047,6 +2050,7 @@ function renderAiText(page, body){
         planHtml += planBlock('💔 15S 情感暴击版（AI 视频生成）', s15.text||'', '', s15.aiPrompt||'', s15.aiPromptCn||'');
         planHtml += planBlock('📌 视频号收藏引导（温和·引关注点赞）', wcs, '');
         planHtml += '</details>';
+        }
         }
       }
       html += '<div class="card fn-card" id="card_'+page+'_'+i+'" data-card-idx="'+i+'" data-card-page="'+page+'" '+(cv?' style="'+cv+'"':'')+'>';
