@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="VCaUVJjPn8FkocpfE4tInw">
+<head data-page-node-id="5dcVLqaL8HurTUCd6XL5La">
+<meta charset="UTF-8" data-page-node-id="wxlfkx4278X2MrQLZAQH4j">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="UjtkjuWKTh3B01KsFLTDJs">
+<title>短视频素材工作台 · 文案一键变纯视频</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --bd:#e4e7ec; --bd2:#eef0f3;
+  --tx:#0f172a; --tx2:#475569; --tx3:#94a3b8;
+  --pri:#2563eb; --pri-l:#eff4ff; --ok:#059669; --ok-l:#ecfdf5;
+  --wn:#d97706; --wn-l:#fffbeb; --dg:#dc2626; --dg-l:#fef2f2;
+  --pp:#7c3aed; --pp-l:#f5f3ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--tx);font-size:14px;line-height:1.6}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 20px 80px}
+h1{font-size:20px;font-weight:700;letter-spacing:-.2px}
+.banner{background:var(--dg-l);border:1px solid var(--dg);color:var(--dg);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:13px;line-height:1.7}
+.banner b{color:var(--dg)}
+.banner.ok{background:var(--ok-l);border-color:var(--ok);color:var(--ok)}
+.banner.ok b{color:var(--ok)}
+.banner a{color:var(--pri);font-weight:700}
+.sub{color:var(--tx2);font-size:12.5px;margin-top:4px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+.card h2{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hint{font-size:11.5px;color:var(--tx3);font-weight:400}
+.src-line{font-size:11.5px;color:#047857;font-weight:600;margin-top:6px;padding:5px 9px;border:1px dashed #6ee7b7;border-radius:8px;background:#ecfdf5}
+.tabbar{display:flex;gap:8px;margin-bottom:12px}
+.tab{padding:7px 14px;border:1px solid var(--bd);border-radius:9px;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:var(--tx2)}
+.tab.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+label{display:block;font-size:11.5px;color:var(--tx2);font-weight:600;margin-bottom:4px}
+select,input[type=text],input[type=number],textarea{
+  width:100%;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font-size:13px;
+  font-family:inherit;color:var(--tx);background:#fff;outline:none
+}
+select:focus,input:focus,textarea:focus{border-color:var(--pri);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+textarea{resize:vertical;line-height:1.7}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:820px){.g2{grid-template-columns:1fr}}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.schemes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:820px){.schemes{grid-template-columns:1fr}}
+.sch{border:1px solid var(--bd);border-radius:10px;padding:11px 12px;cursor:pointer;background:#fff;transition:.15s}
+.sch.on{border-color:var(--pri);background:var(--pri-l);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.sch b{font-size:13.5px}
+.sch .d{font-size:11.5px;color:var(--tx2);margin-top:3px}
+.sch .t{font-size:10.5px;color:var(--tx3);margin-top:5px}
+.shot{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--bd2)}
+.shot .n{flex:0 0 26px;height:26px;border-radius:7px;background:var(--pp-l);color:var(--pp);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.shot textarea{flex:1;min-height:38px;font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:9px;background:var(--pri);color:#fff;border:none;font-size:13.5px;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--tx);border:1px solid var(--bd)}
+#log{background:#0f172a;color:#cbd5e1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;border-radius:10px;padding:12px;height:200px;overflow:auto;white-space:pre-wrap}
+#log .ok{color:#34d399}.#log .er{color:#f87171}
+#video{width:100%;border-radius:10px;background:#000;display:none}
+.dl{display:none;margin-top:10px}
+.hidden{display:none}
+.pill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:var(--ok-l);color:var(--ok);font-weight:600}
+.genstate{display:inline-flex;align-items:center;gap:8px;padding:7px 15px;border-radius:99px;background:var(--pri-l);color:var(--pri);font-weight:700;font-size:13px}
+.genstate .dot{width:9px;height:9px;border-radius:50%;background:var(--pri);animation:pulse 1s infinite}
+.genstate.hidden{display:none}
+.genstate.done{background:var(--ok-l);color:var(--ok)}
+.genstate.done .dot{background:var(--ok);animation:none}
+@keyframes pulse{0%{transform:scale(.55);opacity:.35}50%{transform:scale(1);opacity:1}100%{transform:scale(.55);opacity:.35}}
+.addon-status{display:none;margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--ok-l);border:1px solid var(--ok);color:#065f46;font-size:12.5px;font-weight:600;line-height:1.7}
+.addon-status.show{display:block}
+.addon-status b{color:#065f46}
+.shot .badge{flex:0 0 auto;align-self:flex-start;margin-top:3px;font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700;white-space:nowrap}
+.badge.hook{background:#fef3c7;color:#b45309}
+.badge.quote{background:#ede9fe;color:#6d28d9}
+.badge.story{background:#dbeafe;color:#1d4ed8}
+.dur{flex:0 0 52px;text-align:right;font-size:11.5px;color:var(--tx3);font-variant-numeric:tabular-nums;margin-top:8px;font-weight:600}
+.rpt{background:var(--ok-l);border:1px solid var(--ok);border-radius:10px;padding:12px 14px;margin-top:12px;font-size:12.5px;line-height:1.85;color:#065f46}
+.rpt b{color:#065f46}
+.rpt .kv{display:inline-block;margin-right:18px}
+.rpt a{color:var(--pri);font-weight:700}
+.kbd{background:#fff;border:1px solid var(--bd);border-radius:6px;padding:1px 6px;font-size:11.5px;color:var(--tx2)}
+</style>
+</head>
+<body data-page-node-id="pFIbjwyCLWfLfXqGRrkpgx">
+<div class="wrap" data-page-node-id="OYo3VwuMYJMNt7HRlys6bu">
+  <h1 data-page-node-id="OaK392eid59pzfFDlnjedk">短视频素材工作台</h1>
+  <div id="connBanner" class="banner hidden" data-page-node-id="connBanner"></div>
+  <div class="sub" data-page-node-id="frdJ8RtHS2gAAcI1Mgu1Mq">选文案 → 选方案（1 AI电影图 / 2 免费实拍 / 3 混合推荐）→ 一键生成<b data-page-node-id="RKMasPgnKQucVFz5k7bI0F">纯视频</b>（无字幕无声音，按文案顺序，横屏快节奏）。生成后在剪映自行加字幕和配音。</div>
+
+  <div class="card" data-page-node-id="X7T3JOOWFOP1WycXdEBp5G">
+    <h2 data-page-node-id="vchr3gnWFqpQc0CZyZgLXU">① 选文案 <span class="hint" data-page-node-id="Sdjl1stOcUFWAAAK5SYX7k">运营思路题库全部文案 / 粘贴任意文案</span></h2>
+    <div class="tabbar" data-page-node-id="4G8zIvgg3dixUNlfbQreHV">
+      <div class="tab on" id="tabLib" onclick="switchTab('lib')" data-page-node-id="ZTMX2tUHoCPnh4cjAQkT8C">文案库（全部）</div>
+      <div class="tab" id="tabPaste" onclick="switchTab('paste')" data-page-node-id="FBMwtudkR7ZI2c1w1NuRzx">粘贴文案</div>
+    </div>
+
+    <div id="pLib" data-page-node-id="Sbk1venQ9gluBsAPnNmDBX">
+      <div class="g2" data-page-node-id="7SWYeGwn82uuOzD5E3YkXZ">
+        <div data-page-node-id="IptHFl6bOzscxH9BjVYmUh"><label data-page-node-id="lIt89OY5tT6CvuB1HsHHK2">类型</label><select id="cat" onchange="onCat()" data-page-node-id="NochEsAsUzzEffO0ZsAqmy"></select></div>
+        <div data-page-node-id="PRzthSki4CByEqtMk4ECHV"><label data-page-node-id="T1w1Ff4E1ieRIbMpQrFUAm">系列</label><select id="series" onchange="onSeries()" data-page-node-id="dFzhPyJ53Nk2L7IAKIB4l4"></select></div>
+      </div>
+      <div style="margin-top:10px" data-page-node-id="dERxBfyPVJb0JhWmWx4TQL"><label data-page-node-id="zDFODTwzEXiiTRudfjQBzL">集数</label><select id="ep" onchange="onEp()" data-page-node-id="SlJuZ9pzjrDs4Uo2PItdi1"></select></div>
+      <div class="row" style="margin-top:10px" id="verRow" data-page-node-id="verRow01">
+        <div style="width:260px" data-page-node-id="verBox01"><label data-page-node-id="verLbl01">文案版本（八大类专用）</label>
+          <select id="ver" onchange="onEp()" data-page-node-id="verSel01">
+            <option value="v60">60s+ 版口播文案</option>
+            <option value="v30">30s 版口播文案</option>
+            <option value="v15">15s 版口播文案</option>
+            <option value="full">完整分镜稿（带时间轴）</option>
+          </select></div>
+        <span class="hint" id="verHint" data-page-node-id="verHint01">八大类默认取 <b>60s+ 纯口播文案</b>（不含【0-3s 钩子】等分镜标记），可直接配音。</span>
+      </div>
+      <div class="row" style="margin-top:10px" data-page-node-id="rgwbETH4XTJ8qxq3M6VJdE">
+        <label style="margin:0" data-page-node-id="VpuNo1ZB3YiiNKoNqtAHIh"><input type="checkbox" id="incIntro" onchange="onEp()" data-page-node-id="WcSQqchYCP7UIN9sks5GTa"> <span id="lblIntro">附加前3秒钩子（开头）</span></label>
+        <label style="margin:0" data-page-node-id="oi1gBkKTUTkYvVGfZ47s6D"><input type="checkbox" id="incHook" onchange="onEp()" data-page-node-id="A5LD9DtruYcQEIL86NZbMl"> <span id="lblHook">附加金句钩子（结尾）</span></label>
+        <span class="hint" id="hookHint" data-page-node-id="FygdVa4zOc2BjkS0gLsoba">勾选后对应钩子/金句会作为镜头加在开头/结尾（镜数与总时长实时更新，下方③也会标出）。</span>
+        <div id="addonSrc" class="src-line" data-page-node-id="addonSrc">数据来源：未勾选附加，或本条文案无对应字段</div>
+      </div>
+      <div class="addon-status" id="addonStatus" data-page-node-id="addonStatus"></div>
+    </div>
+
+    <div id="pPaste" class="hidden" style="margin-top:10px" data-page-node-id="TxtwlJ6zrGjEYrlpPEgkxc">
+      <label data-page-node-id="oZXmgPtOl4Iz891uBFZZbq">口播稿（按标点自动切镜，一句一镜）</label>
+      <textarea id="copy" rows="7" placeholder="例如：&#10;雨夜的末班车，停在一座没有名字的站台。&#10;车门打开，上来一个浑身湿透的女孩。&#10;她不说一句话，只是盯着车厢顶上的监控红灯。"></textarea>
+      <div class="row" style="margin-top:10px" data-page-node-id="pCatRow">
+        <div style="width:230px" data-page-node-id="pCatBox"><label data-page-node-id="pCatLbl">故事类型（决定自动调色）</label>
+          <select id="pasteCat" data-page-node-id="pCatSel">
+            <option value="小说推文类">小说推文类 → 都市电影感</option>
+            <option value="悬疑奇案">悬疑奇案 → 冷青悬疑</option>
+            <option value="历史解说类">历史解说类 → 暖黄史卷</option>
+            <option value="生活避坑">生活避坑 → 暖橙实用</option>
+            <option value="普通人真实故事">普通人真实故事 → 暖心叙事</option>
+            <option value="未解之谜类">未解之谜类 → 深蓝未知</option>
+            <option value="">（不调色 · 中性）</option>
+          </select></div>
+        <div class="hint" style="padding-bottom:8px" data-page-node-id="pCatHint">选文案库时按该集类型自动匹配；粘贴文案时在这里选。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-page-node-id="LWAZkd9CQiA52Ym6lD18zc">
+    <h2 data-page-node-id="92YAOFxoxaCSFqMaMBneWh">② 选方案</h2>
+    <div class="schemes" data-page-node-id="F6d1UIgDrw49fOlAH4MQcb">
+      <div class="sch" id="s1" onclick="setScheme(1)" data-page-node-id="hAPa4mHGT2g8ijhlWCd5dO">
+        <b data-page-node-id="1hpV9D1rupUXbZuXjxe0xs">方案1 · AI电影图</b>
+        <div class="d" data-page-node-id="Q1YK2SAX5mSgFkt3cWEaL5">全用 AI 电影感实景图（Ken Burns）</div>
+        <div class="t" data-page-node-id="c0EgJBYZ74HKig2ZE1H2XM">下方填「AI 图片文件夹」，按文件名排序逐镜用</div>
+      </div>
+      <div class="sch" id="s2" onclick="setScheme(2)" data-page-node-id="1r2fGrNNTqPHAFB5dGQLH9">
+        <b data-page-node-id="MPhXg387sQGzUcdqYokRex">方案2 · 免费实拍</b>
+        <div class="d" data-page-node-id="sjG0dz2WWXvL7UXoI1MM99">全用 Pexels 横屏免费可商用视频</div>
+        <div class="t" data-page-node-id="BhNUdMmAQENZPY5gl4ZbjW">实时按文案抓，零成本，最贴近文案</div>
+      </div>
+      <div class="sch on" id="s3" onclick="setScheme(3)" data-page-node-id="XxW7exzIvPuWuDfOno7VAW">
+        <b data-page-node-id="fCbOUn4ye8Qq4NT12nC56M">方案3 · 混合推荐 ★</b>
+        <div class="d" data-page-node-id="OSMRAZDLqMw2XWHIE2lXtK">每镜优先实拍，对不上再用 AI 图</div>
+        <div class="t" data-page-node-id="HAQDadJQjZ41JvOOVTrBtI">免费保底 + AI 兜底，最稳</div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px" data-page-node-id="o7y36mBR5vLmngDwnZfnaD">
+      <div style="width:250px" data-page-node-id="rhyBox">
+        <label data-page-node-id="rhyLbl">节奏模板（对标平台爆款）</label>
+        <select id="rhy" onchange="onRhy()" data-page-node-id="rhySel">
+          <option value="hot">🔥 爆款快剪（推荐 · 通用）</option>
+          <option value="douyin">抖音风 · 黄金3秒超快切</option>
+          <option value="kuaishou">快手风 · 稳快节奏</option>
+          <option value="xhs">小红书风 · 舒服过渡</option>
+          <option value="shipinhao">视频号风 · 稳重叙事</option>
+          <option value="bili">B站风 · 中视频长镜</option>
+          <option value="toutiao">头条风 · 信息流</option>
+          <option value="gzh">公众号风 · 慢节奏阅读</option>
+          <option value="std">标准叙事（通用）</option>
+          <option value="slow">沉浸慢叙（长镜留白）</option>
+          <option value="cut">自定义（用下方参数）</option>
+        </select>
+      </div>
+      <div style="width:170px" data-page-node-id="transBox">
+        <label data-page-node-id="transLbl">镜头转场</label>
+        <select id="trans" onchange="onRhy()" data-page-node-id="transSel">
+          <option value="0">0 硬切（不转场）</option>
+          <option value="0.2">0.2s 极快叠化（抖音/快手）</option>
+          <option value="0.25">0.25s 轻叠化</option>
+          <option value="0.3" selected>0.3s 交叉淡化（推荐）</option>
+          <option value="0.35">0.35s 柔和过渡</option>
+          <option value="0.4">0.4s 柔和过渡+</option>
+          <option value="0.45">0.45s 慢过渡</option>
+          <option value="0.5">0.5s 电影感</option>
+          <option value="0.6">0.6s 电影感+</option>
+        </select>
+      </div>
+      <div class="hint" style="padding-bottom:8px" data-page-node-id="rhyHint">转场时长<b data-page-node-id="rhyHintB">包含在总时长内</b>，不额外增加；总时长 = 配音时长，剪映里直接配音无需调整。</div>
+    </div>
+    <div class="row" style="margin-top:10px" data-page-node-id="advRow">
+      <div style="width:118px" data-page-node-id="spdBox"><label data-page-node-id="spdLbl">语速（字/秒）</label>
+        <input type="number" id="spd" value="4.2" min="3" max="6" step="0.1" onchange="onRhy()" data-page-node-id="spdIn"></div>
+      <div style="width:118px" data-page-node-id="pauBox"><label data-page-node-id="pauLbl">句间停顿（秒）</label>
+        <input type="number" id="pause" value="0.35" min="0" max="1" step="0.05" onchange="onRhy()" data-page-node-id="pauIn"></div>
+      <div style="width:118px" data-page-node-id="mxBox"><label data-page-node-id="mxLbl">单镜最长（秒）</label>
+        <input type="number" id="maxShot" value="4.5" min="1.5" max="15" step="0.1" onchange="onRhy()" data-page-node-id="mxIn"></div>
+      <div style="width:140px" data-page-node-id="intBox"><label data-page-node-id="intLbl">调色强度</label>
+        <select id="intensity" data-page-node-id="intSel">
+          <option value="0.5">轻（淡）</option>
+          <option value="1" selected>中（标准）</option>
+          <option value="1.5">强（浓）</option>
+        </select></div>
+      <div style="width:140px" data-page-node-id="motBox"><label data-page-node-id="motLbl">运镜强度</label>
+        <select id="motion" data-page-node-id="motSel">
+          <option value="0.5">轻（稳）</option>
+          <option value="1" selected>中（标准）</option>
+          <option value="1.5">强（推拉明显）</option>
+        </select></div>
+      <div class="hint" style="padding-bottom:8px" data-page-node-id="advHint">总时长 = 字数 ÷ 语速 + 句数 × 停顿。<b data-page-node-id="advHintB">改这里=改成片长度</b>，与配音严格一致。</div>
+    </div>
+      <div class="row" style="margin-top:10px" data-page-node-id="3mQRR5vEPNoWmNyjtVKTjM">
+      <div style="flex:1" data-page-node-id="frNiCwu3kzPU2KLW6F27DO"><label data-page-node-id="bn653bU9TDdxmVM9Kny1e1">AI 图片文件夹（仅方案1，可留空）</label>
+        <input type="text" id="aiFolder" placeholder="例如 C:\Users\Administrator\Pictures\末班车_ai" data-page-node-id="LIE8eCEHL0xEfxh287XlsM"></div>
+      <div class="hint" style="padding-bottom:8px" data-page-node-id="Kwlbz41aYFOaLHq1EKJbu2">留空则<b>自动调用图片 API 出图</b>（需在 .env 填 IMG_KEY）；填了则用该文件夹图片（按文件名排序）逐镜 Ken Burns。</div>
+    </div>
+    <div class="row" style="margin-top:10px" data-page-node-id="platRow">
+      <div style="width:320px" data-page-node-id="platBox">
+        <label data-page-node-id="platLbl">目标平台（自动定比例 + 封面）</label>
+        <select id="plat" onchange="onPlat()" data-page-node-id="platSel"></select>
+      </div>
+      <div style="width:260px" data-page-node-id="qualBox">
+        <label data-page-node-id="qualLbl">成片清晰度（文件大小）</label>
+        <select id="quality" data-page-node-id="qualSel">
+          <option value="hd">高清 1080p（原画 · 体积大）</option>
+          <option value="sd" selected>流畅 720p（推荐 · 约 1/3 体积）</option>
+          <option value="mini">极速 540p（最小 · 秒开预览）</option>
+        </select>
+      </div>
+      <label style="margin:0;white-space:nowrap" data-page-node-id="autoRhLbl"><input type="checkbox" id="autoRh" checked onchange="onPlat()" data-page-node-id="autoRhCb"> 跟随平台爆款节奏</label>
+      <div class="hint" id="platTip" style="padding-bottom:8px" data-page-node-id="platHint">竖屏平台→9:16，横屏平台→16:9；生成后自动套该平台封面尺寸并出图。</div>
+    </div>
+  </div>
+
+  <div class="card" data-page-node-id="QpqyHTwU9dJEoA3Gf2vlRX">
+    <h2 data-page-node-id="EBfUL7LDBQwq2t0j03LCgj">③ 镜头预览 <span class="hint" id="shotCount" data-page-node-id="7EY6SNykOzR03hPiWEKGjM"></span></h2>
+    <div id="shots" data-page-node-id="6GxzRJoYDTCQV6yXTEwofg"></div>
+  </div>
+
+  <div class="card" data-page-node-id="saqX8RlkDV3hS25E1wysbC">
+    <div class="row" data-page-node-id="2Lms64Dg9tTjP2JKULHFsq">
+      <button class="btn" id="gen" onclick="generate()" data-page-node-id="mdp1lmH4FWMxcNFovqiYVO">⚡ 生成纯视频</button>
+      <span id="genState" class="genstate hidden" data-page-node-id="2E1ttGUq9a4DzHWUkZgUZj"><span class="dot"></span><span id="genStateTxt">生成中…</span></span>
+      <span id="doneState" class="genstate done hidden" data-page-node-id="doneState">✅ 生成完成 · 可预览 / 下载</span>
+      <span class="hint" data-page-node-id="2DJl8ACQZB6brBMGhfmqaC">首次生成会联网抓 Pexels 实拍（方案2/3），镜数越多越久（约 2–6 分钟）。</span>
+    </div>
+    <div id="curCopy" class="hint" style="margin:2px 0 10px;font-weight:600;color:var(--pri)"></div>
+    <div id="errBanner" class="banner hidden" data-page-node-id="errBanner"></div>
+    <div id="rpt" class="rpt hidden" data-page-node-id="rpt"></div>
+    <div id="log" style="margin-top:12px" data-page-node-id="mfUxSIGwPwQ7eHWPF1j08m"></div>
+    <video id="video" controls data-page-node-id="UgIQhgtQaxYGJ5DNe2e7j4"></video>
+    <div class="dl" id="dl" data-page-node-id="5a3upHrUYJVsKqD9PKaKv5"><a class="btn ghost" id="dlLink" download data-page-node-id="LESEHNhBXxLavm4V5B5ohX">⬇ 下载成片 (final_silent.mp4)</a></div>
+  </div>
+
+  <div class="card hidden" id="coverCard" data-page-node-id="coverCard">
+    <style>
+      #coverThumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+      #coverThumbs.hidden{display:none}
+      #coverThumbs img{width:96px;height:96px;object-fit:cover;border-radius:8px;border:2px solid transparent;cursor:pointer;opacity:.78;transition:.15s}
+      #coverThumbs img:hover{opacity:1}
+      #coverThumbs img.on{border-color:#2563eb;opacity:1;box-shadow:0 0 0 2px rgba(37,99,235,.25)}
+    </style>
+    <h2 data-page-node-id="coverH2">④ 平台封面（自动生成）<span class="hint" id="coverInfo" data-page-node-id="coverInfo"></span></h2>
+    <div class="row" data-page-node-id="coverRow">
+      <canvas id="coverCanvas" style="max-width:260px;border-radius:10px;background:#000;box-shadow:0 2px 8px rgba(0,0,0,.15)" data-page-node-id="coverCanvas"></canvas>
+      <div data-page-node-id="coverDlBox">
+        <a class="btn ghost" id="dlCover" download="cover.png" data-page-node-id="dlCover">⬇ 下载封面 PNG</a>
+        <div class="hint" style="margin-top:8px;max-width:240px" data-page-node-id="coverTip">封面由免费可商用图源（Pexels/Pixabay）+ 成片抽帧生成，尺寸按所选平台。可点击切换底图、直接下载上传。</div>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:10px" id="coverThumbsTip">封面底图候选（点击切换 · ✅ 免费可商用）：</div>
+    <div id="coverThumbs" class="hidden"></div>
+  </div>
+
+  <div class="card hidden" id="toolsCard" data-page-node-id="toolsCard">
+    <h2 data-page-node-id="toolsH2">⑤ 成片周边工具 <span class="hint">生成后可用：打包下载 / 分镜脚本导出 / 发布文案</span></h2>
+    <div class="row" style="align-items:center" data-page-node-id="tpRow1">
+      <button class="btn ghost" id="btnZip" style="display:none" onclick="zipDownload()">⬇ 一键打包下载 (zip)</button>
+      <span class="hint">含 final_silent.mp4 + 分镜/timing + 封面图，直接导入剪映</span>
+    </div>
+    <div class="row" style="margin-top:10px" data-page-node-id="tpRow2">
+      <label style="margin:0;font-weight:700">分镜脚本导出：</label>
+      <button class="btn ghost" onclick="exportShots('srt')">SRT 字幕稿</button>
+      <button class="btn ghost" onclick="exportShots('md')">Markdown 表</button>
+      <button class="btn ghost" onclick="exportShots('csv')">CSV</button>
+      <button class="btn ghost" onclick="exportShots('json')">JSON</button>
+    </div>
+    <div class="row" style="margin-top:10px" data-page-node-id="tpRow3">
+      <button class="btn ghost" onclick="genPublish()">✍ 生成发布文案（标题/标签/简介/置顶）</button>
+    </div>
+    <div id="publishBox" class="hidden" style="margin-top:12px" data-page-node-id="publishBox"></div>
+  </div>
+
+  <div class="card" data-page-node-id="bgmCard">
+    <h2 data-page-node-id="bgmH2">🎵 BGM / 音效参考库 <span class="hint">免费可商用 · 仅作选曲参考，请自行核对授权与平台规则</span></h2>
+    <div id="bgmList" data-page-node-id="bgmList"></div>
+    <div class="hint" style="margin-top:8px" id="bgmSug" data-page-node-id="bgmSug"></div>
+  </div>
+
+  <div class="card" data-page-node-id="batchCard">
+    <h2 data-page-node-id="batchH2">🗂 批量生成 + 30天排期 <span class="hint">选多集一次出片，自动排发布日历</span></h2>
+    <div class="row" data-page-node-id="bSelRow">
+      <div style="width:200px" data-page-node-id="bCatBox"><label data-page-node-id="bCatLbl">类型（故事类）</label><select id="bCat" onchange="onBCat()" data-page-node-id="bCatSel"></select></div>
+      <div style="width:200px" data-page-node-id="bSerBox"><label data-page-node-id="bSerLbl">系列</label><select id="bSer" onchange="onBSer()" data-page-node-id="bSerSel"></select></div>
+      <div style="width:90px" data-page-node-id="bStartBox"><label data-page-node-id="bStartLbl">起集</label><input type="number" id="bStart" value="1" min="1" data-page-node-id="bStartIn"></div>
+      <div style="width:90px" data-page-node-id="bEndBox"><label data-page-node-id="bEndLbl">止集</label><input type="number" id="bEnd" value="5" min="1" data-page-node-id="bEndIn"></div>
+      <button class="btn ghost" onclick="addBatchRange()">+ 加入队列</button>
+    </div>
+    <div class="hint" data-page-node-id="bQueueHint">队列沿用当前「方案 / 目标平台 / 节奏 / 清晰度」设置，逐集生成到独立目录（互不覆盖）。</div>
+    <div id="batchQueue" class="row" style="margin-top:10px;flex-wrap:wrap;gap:8px" data-page-node-id="batchQueue"></div>
+    <div class="row" style="margin-top:12px" data-page-node-id="bRunRow">
+      <button class="btn" id="btnBatch" onclick="runBatch()" data-page-node-id="btnBatch">⚡ 开始批量生成</button>
+      <button class="btn ghost" onclick="clearBatch()">清空队列</button>
+      <span id="batchState" class="genstate hidden" data-page-node-id="batchState"><span class="dot"></span><span id="batchStateTxt">生成中…</span></span>
+      <span class="hint" data-page-node-id="bRunHint">首次会逐集联网抓 Pexels 实拍，集数越多越久（每集约 1–3 分钟，素材已全局缓存可加速二次生成）。</span>
+    </div>
+    <div id="batchLog" style="margin-top:12px;background:#0f172a;color:#cbd5e1;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;border-radius:10px;padding:12px;height:180px;overflow:auto;white-space:pre-wrap" data-page-node-id="batchLog"></div>
+    <div id="calBox" class="hidden" style="margin-top:14px" data-page-node-id="calBox"></div>
+  </div>
+</div>
+
+<script>
+let scheme=3, mode='lib';
+let shotsCache=[];
+// 平台 -> 视频比例(res) + 封面尺寸(cover，复用 studio_multiplat 7 平台尺寸)
+// 平台 -> 视频比例(res) + 封面尺寸(cover) + 该平台当前爆款节奏(maxShot 单镜上限 / trans 转场)
+// 节奏来源：各平台现期高播放口播/解说类内容的通行剪辑密度（竖屏短带更碎、横屏中视频更缓）
+const PLATS = {
+  "通用默认": {res:"h", cover:[1920,1080], maxShot:4.5, trans:0.25, tip:"通用横屏：4.5s 上限 / 0.25s 快切"},
+  "抖音":   {res:"v", cover:[1080,1440], maxShot:3.6, trans:0.20, tip:"抖音爆款：3.6s 上限 / 0.2s 硬切感，留人第一"},
+  "快手":   {res:"v", cover:[1080,1440], maxShot:4.0, trans:0.25, tip:"快手爆款：4.0s 上限 / 0.25s，略缓于抖音"},
+  "小红书": {res:"v", cover:[1080,1440], maxShot:4.8, trans:0.35, tip:"小红书爆款：4.8s 上限 / 0.35s 柔和过渡，观感更舒服"},
+  "视频号": {res:"v", cover:[1080,1230], maxShot:5.2, trans:0.40, tip:"视频号：5.2s 上限 / 0.4s，偏稳重叙事"},
+  "B站":    {res:"h", cover:[1920,1080], maxShot:7.0, trans:0.45, tip:"B站中视频：7s 上限 / 0.45s，允许长镜铺陈"},
+  "头条":   {res:"h", cover:[1920,1080], maxShot:5.0, trans:0.30, tip:"头条：5s 上限 / 0.3s，兼顾完播与信息量"},
+  "公众号": {res:"h", cover:[900,383],   maxShot:6.5, trans:0.50, tip:"公众号视频：6.5s 上限 / 0.5s，慢节奏适配嵌入阅读"},
+};
+// 节奏模板：maxShot=单镜最长、trans=转场、spd=语速(字/秒)、pause=句间停顿
+// 所有模板都保持 语速 4.2 字/秒 + 0.35s 停顿 —— 因此成片总时长 = 配音时长 = 对应全部文案，
+// 只是按不同平台爆款的内容密度决定"切多碎 / 转场多柔"，绝不截断文案。
+const RHY = {
+  hot:       {maxShot:4.5, trans:0.25, spd:4.2, pause:0.35},
+  douyin:    {maxShot:3.6, trans:0.20, spd:4.2, pause:0.35},
+  kuaishou:  {maxShot:4.0, trans:0.25, spd:4.2, pause:0.35},
+  xhs:       {maxShot:4.8, trans:0.35, spd:4.2, pause:0.35},
+  shipinhao: {maxShot:5.2, trans:0.40, spd:4.2, pause:0.35},
+  bili:      {maxShot:7.0, trans:0.45, spd:4.2, pause:0.35},
+  toutiao:   {maxShot:5.0, trans:0.30, spd:4.2, pause:0.35},
+  gzh:       {maxShot:6.5, trans:0.50, spd:4.2, pause:0.35},
+  std:       {maxShot:5.5, trans:0.35, spd:4.2, pause:0.35},
+  slow:      {maxShot:8.0, trans:0.50, spd:4.0, pause:0.45},
+};
+let curRes="h", curPlat="通用默认";
+// API 基址：正常由本地服务器托管时为空（同源相对路径）；
+// 若以 file:// 或直接双击打开，会自动探测本机服务器并填入 http://127.0.0.1:PORT
+let API="";
+
+function switchTab(t){
+  mode=t;
+  document.getElementById('tabLib').classList.toggle('on',t==='lib');
+  document.getElementById('tabPaste').classList.toggle('on',t==='paste');
+  document.getElementById('pLib').classList.toggle('hidden',t!=='lib');
+  document.getElementById('pPaste').classList.toggle('hidden',t!=='paste');
+  refreshShots();
+}
+function setScheme(s){scheme=s;[1,2,3].forEach(i=>document.getElementById('s'+i).classList.toggle('on',i===s));}
+
+// 运营思路题库 Tab 显示名 + 顺序（与 index.html DEFAULT_TAB_LABELS / tabs.cats 保持一致）
+// 显示名仅影响下拉文字，底层 option.value 仍为原始 cat（API 按 cat 取文案）
+const GHZ_TAB_ORDER = ['健身','知识科普类','生活现实句子','高情商恋爱关系','家庭教育','搞笑类','职场高情商','发布运营','小说推文类','悬疑奇案','历史解说类','生活避坑','普通人真实故事','未解之谜类','分发·小红书','分发·头条','分发·公众号','职业体验','生活困境','年龄切换','阶层穿越','关系倒置','时代副本'];
+const GHZ_TAB_LABELS = {
+  '小说推文类':'②AI短剧·漫剧｜逆袭爽文',
+  '悬疑奇案':'②AI短剧·漫剧｜悬疑奇案',
+  '历史解说类':'②AI短剧·漫剧｜历史解说',
+  '生活避坑':'②AI短剧·漫剧｜生活避坑',
+  '生活现实句子':'①短视频文案类｜生活扎心话',
+  '普通人真实故事':'③情感共鸣·人生感悟｜普通人真实故事',
+  '高情商恋爱关系':'①短视频文案类｜高情商恋爱',
+  '家庭教育':'①短视频文案类｜家庭教育经',
+  '搞笑类':'①短视频文案类｜搞笑段子王',
+  '未解之谜类':'④知识科普·AI动画',
+  '知识科普类':'①短视频文案类｜知识科普类',
+  '健身':'①短视频文案类｜健身打卡记',
+  '职场高情商':'①短视频文案类｜职场高情商',
+  '发布运营':'①短视频文案类｜发布与运营',
+  '分发·小红书':'⑤分发·小红书｜AI视频笔记',
+  '分发·头条':'⑥分发·头条｜AI视频微头条',
+  '分发·公众号':'⑦分发·公众号｜同源图文',
+  '职业体验':'人生副本｜职业体验','生活困境':'人生副本｜生活困境','年龄切换':'人生副本｜年龄切换','阶层穿越':'人生副本｜阶层穿越','关系倒置':'人生副本｜关系倒置','时代副本':'人生副本｜时代副本'
+};
+async function loadTree(){
+  const r=await fetch(API+'/api/tree'); const tree=await r.json();
+  window.__tree=tree;
+  const cat=document.getElementById('cat'); cat.innerHTML='';
+  // 类型下拉：标签与顺序与「运营思路题库」Tab 保持一致
+  const order = GHZ_TAB_ORDER.filter(c=>tree[c]);
+  Object.keys(tree).forEach(c=>{ if(!order.includes(c)) order.push(c); }); // 兜底：树里多出的分类追加末尾
+  order.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=(GHZ_TAB_LABELS[c]||c);cat.appendChild(o);});
+  onCat();
+}
+function onCat(){
+  const tree=window.__tree; if(!tree)return;
+  const c=document.getElementById('cat').value;
+  const ser=document.getElementById('series'); ser.innerHTML='';
+  Object.keys(tree[c]||{}).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;ser.appendChild(o);});
+  onSeries();
+  renderBgm();                       // 切换类型时刷新 BGM 情绪建议
+}
+async function onSeries(){
+  const tree=window.__tree; if(!tree)return;
+  const c=document.getElementById('cat').value, s=document.getElementById('series').value;
+  const ep=document.getElementById('ep'); ep.innerHTML='';
+  const list=(tree[c]?.[s]||[]);
+  // 切类型/系列时先按 kind 切一次版本行的显示（五类故事隐藏）
+  const isStory = list.length>0 && list[0].kind==='story';
+  const vr=document.getElementById('verRow'); if(vr) vr.classList.toggle('hidden', isStory);
+  const li=document.getElementById('lblIntro'), lh=document.getElementById('lblHook');
+  if(li && lh){
+    if(isStory){ li.textContent='含开场白（前3秒钩子·开头）'; lh.textContent='含下集预告（金句·结尾）'; }
+    else { li.textContent='附加前3秒钩子（开头·黄金钩子）'; lh.textContent='附加金句钩子（结尾）'; }
+  }
+  list.forEach(e=>{const o=document.createElement('option');o.value=e.id;let t=(e.title||'').replace(/^第\d+集\s*[·•]\s*/,'');o.textContent=(e.kind==='story'?('第'+(e.ep||'?')+'集 · '+t):t);ep.appendChild(o);});
+  onEp();
+}
+function rhythmParams(){
+  return {
+    spd: parseFloat(document.getElementById('spd').value)||4.2,
+    pause: parseFloat(document.getElementById('pause').value)||0,
+    maxShot: parseFloat(document.getElementById('maxShot').value)||4.5,
+    trans: parseFloat(document.getElementById('trans').value)||0,
+    intensity: parseFloat(document.getElementById('intensity').value)||1.0,
+    motion: parseFloat(document.getElementById('motion').value)||1.0,
+  };
+}
+function onRhy(){
+  const k=document.getElementById('rhy').value;
+  if(RHY[k]){                       // 选模板 -> 写入下方参数（仍然可手动覆盖）
+    document.getElementById('maxShot').value=RHY[k].maxShot;
+    document.getElementById('trans').value=RHY[k].trans;
+    document.getElementById('spd').value=RHY[k].spd;
+    document.getElementById('pause').value=RHY[k].pause;
+  }
+  refreshShots();                   // 重新预测每镜时长
+  return true;
+}
+async function onEp(){
+  const id=document.getElementById('ep').value;
+  if(!id)return;
+  const p=rhythmParams();
+  const ii=document.getElementById('incIntro').checked?1:0;
+  const ih=document.getElementById('incHook').checked?1:0;
+  const ver=(document.getElementById('ver')||{}).value||'v60';
+  const qs='&spd='+p.spd+'&pause='+p.pause+'&maxShot='+p.maxShot+'&intro='+ii+'&hook='+ih+'&ver='+ver;
+  const r=await fetch(API+'/api/episode?id='+encodeURIComponent(id)+qs);
+  const d=await r.json();
+  shotsCache=d.shots||[];
+  window.__epMeta={intro:d.intro||'', hook:d.hook||''};
+  const isStory=(d.kind==='story');
+  const ad=d.addons||[];
+  const hasIntro=ad.some(x=>(x.indexOf('前3秒钩子')>=0||x.indexOf('片头钩子')>=0||x.indexOf('黄金钩子')>=0||x.indexOf('开场白')>=0)&&x.indexOf('本条无')<0);
+  const hasHook=ad.some(x=>(x.indexOf('金句')>=0||x.indexOf('下集预告')>=0)&&x.indexOf('本条无')<0);
+  __firstTag = hasIntro ? (isStory?'开场白':'黄金钩子') : '';
+  __lastTag  = hasHook  ? (isStory?'下集预告':'金句') : '';
+  __firstCls = isStory ? 'story' : 'hook';
+  __lastCls  = isStory ? 'story' : 'quote';
+  // 数据来源：实时显示开头/结尾镜取自题库哪个字段，避免看不出取了哪句
+  const src=(d.addonSrc||{}), srcEl=document.getElementById('addonSrc');
+  if(srcEl){
+    const parts=[];
+    if(src.intro) parts.push('开头镜 = '+src.intro);
+    if(src.hook)  parts.push('结尾镜 = '+src.hook);
+    srcEl.textContent = parts.length ? ('数据来源：'+parts.join('，')+'（取自运营思路题库）')
+                                     : '数据来源：未勾选附加，或本条文案无对应字段';
+  }
+  syncVerRow(d);                 // 八大类显示版本下拉，五类故事隐藏
+  renderShots(d.total||0);
+}
+// 八大类（topic/aux）显示「文案版本」下拉并按条目刷新选项；五类故事(story)隐藏、逻辑不变
+function syncVerRow(d){
+  const row=document.getElementById('verRow'); if(!row)return;
+  const isStory=(d.kind==='story');
+  row.classList.toggle('hidden', isStory);
+  if(isStory) return;
+  const sel=document.getElementById('ver'), hint=document.getElementById('verHint');
+  const cur=sel.value;
+  sel.innerHTML='';
+  (d.vers||[]).forEach(v=>{
+    const o=document.createElement('option'); o.value=v.v;
+    o.textContent=v.label+'（'+v.chars+'字 ≈ '+v.sec+'s）';
+    sel.appendChild(o);
+  });
+  if([...(d.vers||[])].some(v=>v.v===cur)) sel.value=cur;
+  const now=(d.vers||[]).find(v=>v.v===sel.value);
+  if(now && hint) hint.innerHTML='已取 <b>'+now.label+'</b>：'+now.chars+' 字 ≈ '+now.sec+'s 纯口播文案，无分镜标记。';
+  // 八大类没有 intro/下集预告，勾选框语义改成「附加钩子/金句」
+  try{
+    const li=document.getElementById('lblIntro'), lh=document.getElementById('lblHook');
+    if(li) li.textContent='附加前3秒钩子（开头·黄金钩子）';
+    if(lh) lh.textContent='附加金句钩子（结尾）';
+    const hh=document.getElementById('hookHint');
+    if(hh) hh.innerHTML='八大类：勾选后 <b>前3秒钩子</b>（取自短视频方案「黄金钩子」字段）加在开头、<b>金句</b> 加在结尾，镜数与总时长实时更新。';
+  }catch(e){}
+  showAddons(d.addons||[]);
+}
+
+// 把本次实际附加的部件显示出来，勾选有没有生效一眼可见（醒目绿条）
+function showAddons(list){
+  const el=document.getElementById('addonStatus');
+  if(!el) return;
+  const ok=list.filter(x=>x.indexOf('本条无')<0 && x.indexOf('无')<0);
+  const bad=list.filter(x=>x.indexOf('本条无')>=0);
+  if(!list.length || !ok.length){
+    el.classList.remove('show'); el.innerHTML='';
+    const hh=document.getElementById('hookHint');
+    if(hh) hh.innerHTML='（未勾选附加，或本条文案无钩子/金句字段——勾选也不会增加镜数）';
+    return;
+  }
+  let s='✔ 已附加并计入成片：<b>'+ok.join('</b> + <b>')+'</b>';
+  if(bad.length) s+='　<span style="color:#b45309">（'+bad.join('、')+'：本条无该字段，已跳过）</span>';
+  el.innerHTML=s; el.classList.add('show');
+}
+let __planT=null;
+let __firstTag='', __lastTag='', __firstCls='hook', __lastCls='quote';
+async function refreshShots(){
+  if(mode==='paste'){
+    const txt=document.getElementById('copy').value;
+    if(!txt.trim()){shotsCache=[];__firstTag='';__lastTag='';renderShots(0);return;}
+    clearTimeout(__planT);
+    __planT=setTimeout(async()=>{
+      try{
+        const r=await fetch(API+'/api/plan',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({copy:txt,...rhythmParams()})});
+        const d=await r.json();
+        shotsCache=d.shots||[]; __firstTag='';__lastTag=''; renderShots(d.total||0);
+      }catch(e){
+        shotsCache=txt.split(/(?<=[。！？!?；;])/).map(x=>x.trim()).filter(Boolean)
+          .map((s,i)=>({n:i+1,s}));
+        __firstTag='';__lastTag=''; renderShots(0);
+      }
+    },260);
+    return;
+  }
+  await onEp();
+}
+document.getElementById('copy').addEventListener('input',()=>{if(mode==='paste')refreshShots();});
+function renderShots(total){
+  const box=document.getElementById('shots'); box.innerHTML='';
+  const last=shotsCache.length-1;
+  shotsCache.forEach((sh,i)=>{
+    const d=document.createElement('div'); d.className='shot';
+    d.innerHTML='<div class="n">'+(i+1)+'</div>';
+    if(i===0 && __firstTag){
+      const b=document.createElement('span'); b.className='badge '+__firstCls; b.textContent=__firstTag; d.appendChild(b);
+    }
+    if(i===last && __lastTag && i!==0){
+      const b=document.createElement('span'); b.className='badge '+__lastCls; b.textContent=__lastTag; d.appendChild(b);
+    }
+    if(i===0 && i===last && __firstTag && __lastTag){
+      const b=document.createElement('span'); b.className='badge '+__lastCls; b.textContent=__lastTag; d.appendChild(b);
+    }
+    const ta=document.createElement('textarea'); ta.value=sh.s;
+    ta.oninput=()=>{shotsCache[i].s=ta.value;};
+    d.appendChild(ta);
+    if(sh.dur){const s=document.createElement('span');s.className='dur';s.textContent=sh.dur.toFixed(2)+'s';d.appendChild(s);}
+    box.appendChild(d);
+  });
+  const n=shotsCache.length;
+  let txt='共 '+n+' 镜';
+  const tot=total||shotsCache.reduce((a,b)=>a+(b.dur||0),0);
+  if(tot) txt+=' · 预计 '+fmtDur(tot)+'（= 配音时长）';
+  document.getElementById('shotCount').textContent=txt;
+}
+function fmtDur(s){s=+s||0;return (s>=60?(Math.floor(s/60)+'分'+(s%60).toFixed(0)+'秒'):(s.toFixed(1)+'秒'));}
+function collectBody(){
+  const p=rhythmParams();
+  const quality=document.getElementById('quality').value;
+  if(mode==='lib'){
+    return {scheme,mode:'library',id:document.getElementById('ep').value, ...p,
+      aiFolder:document.getElementById('aiFolder').value.trim(),
+      ver:(document.getElementById('ver')||{}).value||'v60',
+      includeIntro:document.getElementById('incIntro').checked,
+      includeHook:document.getElementById('incHook').checked, res:curRes, quality};
+  }else{
+    return {scheme,mode:'paste',copy:shotsCache.map(s=>s.s).join(''), ...p,
+      cat:document.getElementById('pasteCat').value,
+      aiFolder:document.getElementById('aiFolder').value.trim(), res:curRes, quality};
+  }
+}
+function setGenStep(txt){
+  const s=document.getElementById('genState');
+  if(s.classList.contains('hidden')) s.classList.remove('hidden');
+  const t=document.getElementById('genStateTxt');
+  if(t) t.textContent='生成中… '+(txt||'');
+}
+function generate(){
+  const btn=document.getElementById('gen'); btn.disabled=true;
+  const s=document.getElementById('genState'); s.classList.remove('hidden');
+  document.getElementById('doneState').classList.add('hidden');
+  const epSel=document.getElementById('ep');
+  const selOpt=epSel.options[epSel.selectedIndex];
+  const selTitle=selOpt?selOpt.textContent.trim():'';
+  const selCat=document.getElementById('cat')?document.getElementById('cat').value:'';
+  document.getElementById('genStateTxt').textContent='生成中… '+(selTitle?('正在生成：'+selTitle.slice(0,30)):'');
+  document.getElementById('curCopy').textContent='▶ 当前生成文案：'+(selTitle||'(未知)')+(selCat?('　['+selCat+']'):'');
+  document.getElementById('errBanner').classList.add('hidden');
+  const log=document.getElementById('log'); log.textContent='';
+  const video=document.getElementById('video');
+  video.style.display='none'; video.removeAttribute('src'); video.load();
+  document.getElementById('dl').style.display='none';
+  const body=collectBody();
+  // 手写 fetch 流读取 SSE（EventSource 仅支持 GET）
+  fetch(API+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>{
+      const reader=r.body.getReader(); const dec=new TextDecoder(); let buf='';
+      function pump(){return reader.read().then(({done,value})=>{
+        if(done)return;
+        buf+=dec.decode(value,{stream:true});
+        let i; while((i=buf.indexOf('\n\n'))>=0){
+          const line=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+          if(line.startsWith('data: ')){handleLine(JSON.parse(line.slice(6)));}
+        }
+        return pump();
+      });}
+      return pump();
+    }).catch(e=>{showErr('网络/服务异常：'+e.message+'（请确认启动.bat 已运行、端口未被占用）');finish();});
+  function handleLine(d){
+    if(d.msg){logLine(d.msg); setGenStep(d.msg.replace(/^INFO\s*/,'').slice(0,40));}
+    if(d.type==='done'){
+      s.classList.add('hidden');
+      document.getElementById('doneState').classList.remove('hidden');
+      document.getElementById('curCopy').textContent='✔ 已生成文案：'+((d.title||selTitle||'(未知)'))+(d.cat?('　['+d.cat+']'):'')+(d.subtitle?('　·　'+d.subtitle):'');
+      video.muted=true; video.playsInline=true;            // 静音自动播放，立刻看到成片在动（非黑屏）
+      video.onerror=()=>{ showErr('预览加载失败：成片文件可能未生成完或路径异常。请点下方"下载成片"用本地播放器打开确认（文件在 out/_studio 下）。'); };
+      video.src=API+d.url; video.style.display='block'; video.load();
+      video.play().catch(()=>{});
+      const dl=document.getElementById('dlLink');dl.href=API+d.url;document.getElementById('dl').style.display='inline-block';
+      if(d.cover || (d.coverImgs&&d.coverImgs.length)){ setupCover(d); }
+      showReport(d);
+      lastDone=d; setupTools(d);          // ⑤ 成片周边工具：打包/导出/发布文案
+      finish();
+    }
+    if(d.type==='error'){showErr(d.msg||'生成失败');finish();}
+  }
+  function showErr(msg){
+    const b=document.getElementById('errBanner');
+    b.innerHTML='⚠️ <b>生成未完成：</b>'+msg+'<br><span style="font-size:12px">常见原因：Pexels 抓取失败（检查 .env 的 PEXELS_KEY / 代理）、或方案1 未填 AI 图片文件夹且未配 IMG_KEY。可改用方案1并填入 AI 图片文件夹，或检查网络后重试。</span>';
+    b.classList.remove('hidden');
+  }
+  function finish(){btn.disabled=false; s.classList.add('hidden');}
+}
+function onPlat(){
+  const p=document.getElementById('plat').value;
+  curPlat=p;
+  const cfg=PLATS[p]||PLATS["通用默认"];
+  curRes=cfg.res;
+  const tip=document.getElementById('platTip');
+  if(tip) tip.textContent='🎯 '+cfg.tip+'　·　推荐比例 '+(cfg.res==='v'?'9:16 竖屏':'16:9 横屏');
+  // 跟随平台爆款节奏：自动写入单镜上限/转场（不改变语速，保证时长仍=配音时长）
+  if(document.getElementById('autoRh') && document.getElementById('autoRh').checked){
+    const ms=document.getElementById('maxShot'), tr=document.getElementById('trans');
+    if(ms){ms.value=cfg.maxShot;}
+    if(tr){tr.value=cfg.trans;}
+    if(typeof refreshShots==='function') refreshShots();
+  }
+}
+function populatePlat(){
+  const sel=document.getElementById('plat'); sel.innerHTML='';
+  Object.keys(PLATS).forEach(p=>{
+    const o=document.createElement('option'); o.value=p;
+    const cfg=PLATS[p]; const ratio=cfg.res==='v'?'9:16 竖屏':'16:9 横屏';
+    o.textContent=p+'（'+ratio+'）';
+    sel.appendChild(o);
+  });
+  onPlat();
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const chars=(text||'').split('');
+  let line='',yy=y;
+  for(const ch of chars){
+    if(ctx.measureText(line+ch).width>maxW && line){ctx.fillText(line,x,yy);line=ch;yy+=lh;}
+    else line+=ch;
+  }
+  if(line)ctx.fillText(line,x,yy);
+}
+// 封面状态：候选底图列表（成片抽帧 + 免费商用图源）、当前选中、元数据
+let coverState={imgs:[], src:[], title:'', subtitle:'', plat:'', dims:null};
+function setupCover(d){
+  const dims=d.coverDims || (PLATS[curPlat]||PLATS["通用默认"]).cover;
+  coverState={imgs:[], src:[], title:d.title||'', subtitle:d.subtitle||'', plat:curPlat, dims};
+  if(d.cover){ coverState.imgs.push(d.cover); coverState.src.push(null); }            // 0=成片抽帧
+  (d.coverImgs||[]).forEach((u,i)=>{ coverState.imgs.push(u); coverState.src.push((d.coverSrc||[])[i]||null); });
+  buildCoverThumbs();
+  renderCover(0);
+}
+function buildCoverThumbs(){
+  const box=document.getElementById('coverThumbs'); if(!box)return; box.innerHTML='';
+  if(coverState.imgs.length<=1){ box.classList.add('hidden'); return; }
+  box.classList.remove('hidden');
+  coverState.imgs.forEach((u,i)=>{
+    const img=document.createElement('img');
+    img.src=API+u; img.className='thumb'+(i===0?' on':'');
+    img.title=(i===0?'成片抽帧':('免费商用 · '+((coverState.src[i]&&coverState.src[i].src)||'图源')));
+    img.onclick=()=>{ [...box.children].forEach(c=>c.classList.remove('on')); img.classList.add('on'); renderCover(i); };
+    box.appendChild(img);
+  });
+}
+function renderCover(idx){
+  const url=coverState.imgs[idx]; if(!url)return;
+  const [cw,ch]=coverState.dims;
+  const card=document.getElementById('coverCard');
+  const c=document.getElementById('coverCanvas'); c.width=cw; c.height=ch;
+  const ctx=c.getContext('2d');
+  const FONT='"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Heiti SC","SimHei","Source Han Sans SC",sans-serif';
+  const img=new Image();
+  img.crossOrigin='anonymous';   // 跨域取图（file:// 打开时）避免 canvas 被污染无法导出
+  img.onload=()=>{
+    // 居中裁剪铺满（cover 模式）
+    const ir=img.width/img.height, cr=cw/ch; let sx=0,sy=0,sw=img.width,sh=img.height;
+    if(ir>cr){sw=img.height*cr; sx=(img.width-sw)/2;} else {sh=img.width/cr; sy=(img.height-sh)/2;}
+    ctx.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
+    // 底部压暗渐变（保证文字可读）
+    const g=ctx.createLinearGradient(0,ch*0.28,0,ch); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,'rgba(0,0,0,0.82)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,cw,ch);
+    // 顶部轻度压暗（兼顾 kicker 可读性）
+    const g2=ctx.createLinearGradient(0,0,0,ch*0.16); g2.addColorStop(0,'rgba(0,0,0,0.42)'); g2.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g2; ctx.fillRect(0,0,cw,ch*0.16);
+    ctx.textBaseline='middle';
+    // kicker：平台标签
+    const plat=coverState.plat;
+    ctx.font='bold '+Math.round(ch*0.038)+'px '+FONT;
+    const pw=ctx.measureText(plat).width;
+    ctx.fillStyle='rgba(37,99,235,0.92)'; roundRect(ctx,cw*0.045,ch*0.045,pw+30,ch*0.072,10); ctx.fill();
+    ctx.fillStyle='#fff'; ctx.fillText(plat,cw*0.045+15,ch*0.045+ch*0.036);
+    // 主标题：自适应字号 + 双层描边 + 阴影
+    const title=coverState.title||'';
+    const maxW=cw*0.9;
+    let fs=Math.round(ch*0.086);
+    ctx.font='bold '+fs+'px '+FONT;
+    while(fs>Math.round(ch*0.046) && title.length>4 && ctx.measureText(title).width>maxW*1.04){ fs=Math.round(fs*0.92); ctx.font='bold '+fs+'px '+FONT; }
+    const lines=[]; let line='';
+    for(const ch0 of (title||'')){
+      if(ctx.measureText(line+ch0).width>maxW && line){ lines.push(line); line=ch0; } else line+=ch0;
+    }
+    if(line) lines.push(line);
+    const lh=fs*1.16, tx=cw*0.05, baseY=ch*0.82;
+    ctx.shadowColor='rgba(0,0,0,0.55)'; ctx.shadowBlur=fs*0.16; ctx.shadowOffsetX=0; ctx.shadowOffsetY=fs*0.06;
+    lines.forEach((ln,k)=>{
+      const yy=baseY-(lines.length-1)*lh/2+k*lh;
+      ctx.lineWidth=Math.max(3,fs*0.16); ctx.strokeStyle='rgba(0,0,0,0.85)'; ctx.lineJoin='round';
+      ctx.strokeText(ln,tx,yy);                                   // 外层深色描边
+      ctx.fillStyle='#fff'; ctx.fillText(ln,tx,yy);               // 白色填充
+      ctx.lineWidth=Math.max(1,fs*0.04); ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.strokeText(ln,tx,yy);  // 细亮描边
+    });
+    ctx.shadowColor='transparent'; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    // 副标题
+    if(coverState.subtitle){
+      ctx.font=Math.round(ch*0.042)+'px '+FONT; ctx.fillStyle='rgba(255,255,255,0.9)';
+      ctx.fillText(coverState.subtitle, tx, ch*0.93);
+    }
+    document.getElementById('dlCover').href=c.toDataURL('image/png');
+    const srcInfo=(idx===0)?'成片抽帧':((coverState.src[idx]?('免费商用 · '+coverState.src[idx].src+' · '+coverState.src[idx].by):'免费商用图源'));
+    document.getElementById('coverInfo').textContent='（'+cw+'×'+ch+' · '+plat+' · '+srcInfo+'）';
+    card.classList.remove('hidden');
+  };
+  img.onerror=()=>{ if(idx===0){ logLine('WARN 封面底图加载失败，跳过封面'); } else { renderCover(0); } };
+  img.src=API+url;
+}
+function showReport(d){
+  const el=document.getElementById('rpt');
+  const t=+d.total||0, n=+d.nshots||0;
+  const avg=n&&t?t/n:0;
+  let h='<div style="font-weight:800;font-size:15px;margin-bottom:2px">✅ 生成完成：'+(d.title||'(未知文案)')+'</div>';
+  if(d.subtitle) h+='<div style="font-size:12.5px;color:var(--tx2);margin-bottom:4px">'+d.subtitle+'</div>';
+  if(d.cat) h+='<div style="font-size:12px;color:var(--tx2);margin-bottom:6px">类型：'+d.cat+(d.scheme?('　·　方案'+d.scheme):'')+'</div>';
+  h+='<div style="margin-bottom:4px"><span class="kv">总时长 <b>'+fmtDur(t)+'</b></span>';
+  h+='<span class="kv">镜数 <b>'+n+'</b></span>';
+  h+='<span class="kv">平均镜长 <b>'+avg.toFixed(2)+'s</b></span>';
+  h+='<span class="kv">转场 <b>'+(+d.trans?d.trans+'s 交叉淡化（含在总时长内）':'硬切')+'</b></span>';
+  if(d.palette)h+='<span class="kv">调色 <b>'+d.palette+'</b></span>';
+  if(d.motion)h+='<span class="kv">运镜 <b>'+d.motion+'</b></span>';
+  if(d.quality)h+='<span class="kv">清晰度 <b>'+({'hd':'高清 1080p','sd':'流畅 720p','mini':'极速 540p'}[d.quality]||d.quality)+'</b></span>';
+  if(d.coverDims)h+='<span class="kv">尺寸 <b>'+d.coverDims[0]+'×'+d.coverDims[1]+'</b></span>';
+  h+='</div>';
+  h+='<div style="margin-top:6px">剪映用法：导入成片 → <span class="kbd">文本朗读/录音</span> 直接用文案配音即可对齐；'+
+     '或 <span class="kbd">AI 字幕</span> 自动识别。时间轴（每句起止）已存为 ';
+  h+= d.timing?('<a href="'+API+d.timing+'" download target="_blank">timing.srt</a>'):'timing.srt';
+  h+='，可直接导入核对。</div>';
+  el.innerHTML=h; el.classList.remove('hidden');
+}
+function logLine(t){
+  const log=document.getElementById('log');
+  const c=t.startsWith('DONE')?'ok':(t.startsWith('ERR')||t.startsWith('WARN')||t.startsWith('SKIP')?'er':'');
+  log.innerHTML+=('<span class="'+c+'">'+t.replace(/[<>]/g,'')+'</span>\n');
+  log.scrollTop=log.scrollHeight;
+}
+function showBanner(html,ok){const b=document.getElementById('connBanner');b.innerHTML=html;b.classList.remove('hidden');b.classList.toggle('ok',!!ok);}
+function countTree(t){let n=0;for(const c in t){for(const s in t[c]){n+=(t[c][s]||[]).length;}}return n;}
+async function probeServer(){
+  // 自动探测本机已运行的服务器（端口 8731~8738，服务器被占时会自动顺延）
+  for(const p of [8731,8732,8733,8734,8735,8736,8737,8738]){
+    try{
+      const r=await fetch(`http://127.0.0.1:${p}/api/tree`,{signal:AbortSignal.timeout(1200)});
+      if(!r.ok)continue;
+      const t=await r.json();
+      if(t&&Object.keys(t).length)return {base:`http://127.0.0.1:${p}`,tree:t};
+    }catch(e){}
+  }
+  return null;
+}
+async function bootUI(tree){
+  window.__tree=tree;
+  await loadTree();
+  setScheme(3); populatePlat(); onRhy();   // 用默认节奏模板填参数并预测时长
+  populateBatchCats(); renderBgm();         // 批量队列 + BGM 参考初始化
+}
+// ===================== ⑤ 成片周边工具（#359 打包 / #355 分镜导出 / #358 发布文案） =====================
+let lastDone=null;
+function setupTools(d){
+  const card=document.getElementById('toolsCard'); if(card) card.classList.remove('hidden');
+  const zip=document.getElementById('btnZip');
+  if(zip){ if(d.workdir){ zip.style.display=''; zip.onclick=()=>zipDownload(); } else zip.style.display='none'; }
+  const pb=document.getElementById('publishBox'); if(pb) pb.classList.add('hidden');
+}
+function zipDownload(){
+  if(!lastDone||!lastDone.workdir) return;
+  window.open(API+'/api/zip?dir='+encodeURIComponent(lastDone.workdir),'_blank');
+}
+// ---------- #355 分镜脚本导出（SRT / Markdown / CSV / JSON） ----------
+function srtTs(t){t=+t||0;const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${s.toFixed(3).replace('.',',')}`;}
+function downloadText(content,fname,mime){const blob=new Blob([content],{type:mime});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);}
+async function fetchJSON(u){const r=await fetch(API+u);return r.json();}
+async function exportShots(fmt){
+  if(!lastDone){alert('请先生成视频');return;}
+  const src=lastDone.timing||lastDone.storyboard;
+  if(!src){alert('无分镜数据（请先生成）');return;}
+  const tj=await fetchJSON(src);
+  const shots=tj.shots||[];
+  let content='',fname='storyboard',mime='text/plain';
+  if(fmt==='srt'){
+    content=shots.map((s,i)=>`${i+1}\n${srtTs(s.start)} --> ${srtTs(s.end)}\n${s.s||''}\n`).join('\n');
+    fname='storyboard.srt';mime='application/x-subrip';
+  }else if(fmt==='md'){
+    content='# 分镜脚本 · '+(lastDone.title||'')+'\n\n总时长 '+(tj.total||'')+'s · '+(shots.length)+' 镜\n\n| 镜号 | 起始 | 结束 | 时长 | 钩子 | 文案 |\n|---|---|---|---|---|---|\n'
+      +shots.map(s=>`| ${s.n} | ${s.start} | ${s.end} | ${s.dur}s | ${s.hero?'●':''} | ${(s.s||'').replace(/\|/g,'/')} |`).join('\n')+'\n';
+    fname='storyboard.md';mime='text/markdown';
+  }else if(fmt==='csv'){
+    content='n,start,end,dur,hero,s\n'+shots.map(s=>`${s.n},${s.start},${s.end},${s.dur},${s.hero?1:0},"${(s.s||'').replace(/"/g,'""')}"`).join('\n');
+    fname='storyboard.csv';mime='text/csv';
+  }else{
+    content=JSON.stringify(tj,null,2);fname='storyboard.json';mime='application/json';
+  }
+  downloadText(content,fname,mime);
+}
+// ---------- #358 发布文案生成器（按平台自适应） ----------
+const PUB_TAGS={
+  '悬疑奇案':['悬疑','真实案件','都市传说','细思极恐','推理'],
+  '未解之谜类':['未解之谜','科普','涨知识','神秘事件','冷知识'],
+  '生活避坑':['生活避坑','实用干货','防坑指南','消费避坑','生活技巧'],
+  '普通人真实故事':['普通人真实故事','真实故事','人生百态','温情','共鸣'],
+  '小说推文类':['小说推文','好书推荐','情感','都市情感','催泪'],
+  '历史解说类':['历史','历史解说','冷知识','朝代','读史'],
+};
+const PUB_PLAT_TIPS={
+  '抖音':{len:26,style:'前置钩子+悬念，留人第一秒'},
+  '快手':{len:24,style:'接地气、口语化'},
+  '小红书':{len:18,style:'emoji+种草感，前带🔥'},
+  'B站':{len:38,style:'信息量标题，可带「深度」'},
+  '视频号':{len:28,style:'稳重叙事风'},
+  '头条':{len:32,style:'资讯感标题'},
+  '公众号':{len:34,style:'长标题+利益点'},
+};
+function genPublish(){
+  if(!lastDone){alert('请先生成视频');return;}
+  const cat=lastDone.cat||'';
+  const title=(lastDone.title||'').replace(/^第\d+集\s*[·•]\s*/,'');
+  const sub=lastDone.subtitle||'';
+  const intro=(window.__epMeta&&window.__epMeta.intro)||'';
+  const hook=(window.__epMeta&&window.__epMeta.hook)||'';
+  const tags=(PUB_TAGS[cat]||['短视频','干货','每日推荐']);
+  const plats=['抖音','快手','小红书','B站','视频号','头条','公众号'];
+  let html='<div style="font-weight:800;margin-bottom:8px">✍ 发布文案（按平台自适应 · 文案取自运营思路题库，请二次润色后发布）</div>';
+  plats.forEach(p=>{
+    const tip=PUB_PLAT_TIPS[p]||{len:30,style:''};
+    let t=p.startsWith('小红书')?('🔥'+title):title;
+    if(hook && !p.startsWith('小红书')) t=title+'｜'+(hook.length>tip.len?hook.slice(0,tip.len):hook);
+    if(t.length>tip.len+8) t=t.slice(0,tip.len+8);
+    const tagStr='#'+tags.join(' #');
+    const desc=(intro? (intro.slice(0,40)+' '):'')+(hook?('👇'+hook.slice(0,40)):'');
+    const comment='📌 点赞+关注，'+(sub||'更新不断')+'。下集更炸，别错过！';
+    html+=`<div style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:#fff">
+      <div style="font-weight:800;color:var(--pri);margin-bottom:6px">${p} <span style="font-weight:400;color:var(--tx3);font-size:11px">（${tip.style}）</span></div>
+      <div style="margin-bottom:4px"><b>标题：</b>${t}</div>
+      <div style="margin-bottom:4px"><b>标签：</b>${tagStr}</div>
+      <div style="margin-bottom:4px"><b>简介：</b>${desc||'（由文案自动生成）'}</div>
+      <div style="margin-bottom:4px"><b>置顶评论：</b>${comment}</div>
+      <button class="btn ghost" style="padding:5px 10px;font-size:12px" onclick="copyText(this)">复制本条</button>
+      <div class="hidden cp">${t}\n\n${tagStr}\n\n${desc}\n\n${comment}</div>
+    </div>`;
+  });
+  const box=document.getElementById('publishBox');
+  box.innerHTML=html; box.classList.remove('hidden');
+}
+function copyText(btn){const txt=btn.parentElement.querySelector('.cp').textContent;navigator.clipboard.writeText(txt).then(()=>{const o=btn.textContent;btn.textContent='已复制✓';setTimeout(()=>btn.textContent=o,1200);});}
+
+// ===================== BGM / 音效参考库（#354） =====================
+const BGM_LIBS=[
+  {name:'YouTube 音频库', url:'https://www.youtube.com/audiolibrary/music', note:'免费、可商用、免署名；情绪/流派分类齐全'},
+  {name:'Pixabay Music', url:'https://pixabay.com/music/', note:'CC0 免署名，可商用可改'},
+  {name:'Free Music Archive', url:'https://freemusicarchive.org/', note:'需看单曲授权，多数可商用'},
+  {name:'剪映 / 必剪 内置音乐', url:'', note:'抖音系 App 内「音频」→ 推荐/收藏，平台自带版权'},
+  {name:'Epidemic Sound（订阅）', url:'https://www.epidemicsound.com/', note:'短视频爆款常用，月付授权稳'},
+  {name:'爱给网', url:'https://www.aigei.com/', note:'国内音效/配乐，部分免费部分会员'},
+];
+const BGM_MOOD={
+  '悬疑奇案':['低频脉冲','金属嗡鸣','雨声环境','心跳鼓点'],
+  '未解之谜类':['空灵 pad','深空 drone','低频氛围','时钟滴答'],
+  '生活避坑':['轻快钢琴','生活vlog吉他','明亮电子','温馨弦乐'],
+  '普通人真实故事':['温润钢琴','大提琴温柔','治愈环境','民谣吉他'],
+  '小说推文类':['都市钢琴','雨夜爵士','情绪弦乐','深夜 lo-fi'],
+  '历史解说类':['大鼓铺底','古琴泛音','战马嘶鸣','编钟余韵'],
+};
+function renderBgm(){
+  const box=document.getElementById('bgmList'); if(!box)return;
+  let h='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">';
+  BGM_LIBS.forEach(l=>{h+=`<div style="border:1px solid var(--bd);border-radius:10px;padding:10px 12px;background:#fff"><div style="font-weight:700;font-size:13px">${l.name}</div><div style="font-size:12px;color:var(--tx2);margin-top:3px">${l.note}</div>${l.url?('<a href="'+l.url+'" target="_blank" class="btn ghost" style="margin-top:8px;padding:5px 10px;font-size:12px">打开</a>'):''}</div>`;});
+  h+='</div>'; box.innerHTML=h;
+  const cat=document.getElementById('cat')?document.getElementById('cat').value:'';
+  const sug=document.getElementById('bgmSug');
+  const mood=BGM_MOOD[cat];
+  if(sug) sug.innerHTML = mood
+    ? ('🎯 当前类型「'+cat+'」建议 BGM 情绪：'+mood.join(' / ')+'；钩子镜(首/末)可叠心跳/金属刺音类紧张音效，收尾镜淡出留白。')
+    : '选类型后给出对应 BGM 情绪建议；通用原则：钩子镜叠紧张音效、收尾镜留白。';
+}
+
+// ===================== 批量生成 + 30天排期（#356） =====================
+let batchQueue=[];
+function populateBatchCats(){
+  const sel=document.getElementById('bCat'); if(!sel)return; sel.innerHTML='';
+  const tree=window.__tree; if(!tree)return;
+  // 类型下拉：标签与顺序与「运营思路题库」Tab 保持一致
+  const order = GHZ_TAB_ORDER.filter(c=>tree[c]);
+  Object.keys(tree).forEach(c=>{ if(!order.includes(c)) order.push(c); });
+  order.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=(GHZ_TAB_LABELS[c]||c);sel.appendChild(o);});
+  onBCat();
+}
+function onBCat(){
+  const tree=window.__tree; if(!tree)return;
+  const c=document.getElementById('bCat').value;
+  const ser=document.getElementById('bSer'); ser.innerHTML='';
+  Object.keys(tree[c]||{}).forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;ser.appendChild(o);});
+}
+function onBSer(){}
+function addBatchRange(){
+  const tree=window.__tree; if(!tree)return;
+  const c=document.getElementById('bCat').value, s=document.getElementById('bSer').value;
+  const list=(tree[c]?.[s]||[]).filter(e=>e.kind==='story');
+  const a=parseInt(document.getElementById('bStart').value)||1, b=parseInt(document.getElementById('bEnd').value)||999;
+  let added=0;
+  list.forEach(e=>{const ep=parseInt(e.ep)||0; if(ep>=a&&ep<=b){
+    pushQueue({id:e.id, label:'第'+(e.ep||'?')+'集 · '+((e.title||'').replace(/^第\d+集\s*[·•]\s*/,'')),
+      ver:(document.getElementById('ver')||{}).value||'v60',
+      includeIntro:document.getElementById('incIntro').checked,
+      includeHook:document.getElementById('incHook').checked}); added++; }});
+  if(!added) alert('该系列范围内没有故事集（请确保选的是故事类，且集数在范围内）');
+}
+function pushQueue(it){ if(batchQueue.some(q=>q.id===it.id))return; batchQueue.push(it); renderBatchQueue(); }
+function renderBatchQueue(){
+  const box=document.getElementById('batchQueue'); if(!box)return; box.innerHTML='';
+  if(!batchQueue.length){ box.innerHTML='<span class="hint">队列为空，先加入集数</span>'; return; }
+  batchQueue.forEach((q,i)=>{
+    const chip=document.createElement('span');
+    chip.style.cssText='display:inline-flex;align-items:center;gap:6px;background:var(--pp-l);color:var(--pp);border-radius:99px;padding:5px 10px;font-size:12px;font-weight:600';
+    chip.innerHTML=(q.label||('第'+(i+1)))+' <span style="cursor:pointer" onclick="rmBatch('+i+')">✕</span>';
+    box.appendChild(chip);
+  });
+}
+function rmBatch(i){ batchQueue.splice(i,1); renderBatchQueue(); }
+function clearBatch(){ batchQueue=[]; renderBatchQueue(); }
+async function runBatch(){
+  if(!batchQueue.length){alert('请先加入集数');return;}
+  const btn=document.getElementById('btnBatch'); btn.disabled=true;
+  const st=document.getElementById('batchState'); if(st) st.classList.remove('hidden');
+  const log=document.getElementById('batchLog'); if(log) log.textContent='';
+  const g={scheme, res:curRes, quality:document.getElementById('quality').value,
+    spd:parseFloat(document.getElementById('spd').value)||4.2, pause:parseFloat(document.getElementById('pause').value)||0.35,
+    maxShot:parseFloat(document.getElementById('maxShot').value)||4.5, trans:parseFloat(document.getElementById('trans').value)||0.3,
+    intensity:parseFloat(document.getElementById('intensity').value)||1.0, motion:parseFloat(document.getElementById('motion').value)||1.0};
+  const body=JSON.stringify(Object.assign({},g,{items:batchQueue}));
+  fetch(API+'/api/batch',{method:'POST',headers:{'Content-Type':'application/json'},body})
+    .then(r=>{const reader=r.body.getReader();const dec=new TextDecoder();let buf='';
+      function pump(){return reader.read().then(({done,value})=>{if(done)return;buf+=dec.decode(value,{stream:true});let i;
+        while((i=buf.indexOf('\n\n'))>=0){const line=buf.slice(0,i).trim();buf=buf.slice(i+2);
+          if(line.startsWith('data: ')){const d=JSON.parse(line.slice(6));
+            if(d.msg) batchLogLine(d.msg);
+            if(d.type==='batch_done') renderCal(d.manifest||[]);} }
+        return pump();});}
+      return pump();})
+    .catch(e=>{batchLogLine('ERR 批量失败：'+e.message);})
+    .finally(()=>{ if(btn) btn.disabled=false; if(st) st.classList.add('hidden'); });
+}
+function batchLogLine(t){
+  const log=document.getElementById('batchLog'); if(!log)return;
+  const c=t.startsWith('DONE')?'ok':(t.startsWith('ERR')||t.startsWith('WARN')?'er':'');
+  log.innerHTML+=('<span class="'+c+'">'+t.replace(/[<>]/g,'')+'</span>\n'); log.scrollTop=log.scrollHeight;
+}
+function renderCal(manifest){
+  const box=document.getElementById('calBox'); if(!box)return; box.classList.remove('hidden');
+  const today=new Date();
+  let html='<div style="font-weight:800;margin-bottom:8px">📅 30 天发布排期（自动从明天起每天 1 集）</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';
+  const byDate={};
+  manifest.forEach(m=>{ if(m.pub) byDate[m.pub]=(byDate[m.pub]||[]).concat(m); });
+  for(let d=1;d<=30;d++){
+    const dt=new Date(today); dt.setDate(today.getDate()+d);
+    const ds=dt.toISOString().slice(0,10);
+    const items=byDate[ds]||[];
+    html+=`<div style="border:1px solid var(--bd);border-radius:8px;padding:6px;min-height:54px;background:#fff">
+      <div style="font-size:10px;color:var(--tx3);font-weight:700">${dt.getMonth()+1}/${dt.getDate()}</div>
+      ${items.map(m=>`<div style="font-size:11px;margin-top:3px;color:var(--pri);cursor:pointer" onclick="openVid('${m.url||''}')" title="${m.title||''}">${m.ok?'▶':'✕'} ${(m.label||'').slice(0,10)}</div>`).join('')}
+    </div>`;
+  }
+  html+='</div>';
+  const fail=manifest.filter(m=>!m.ok).length;
+  if(fail) html+='<div class="hint" style="margin-top:8px;color:var(--dg)">⚠️ 有 '+fail+' 集生成失败（见上方日志），可单独重试。</div>';
+  box.innerHTML=html;
+}
+function openVid(u){ if(u) window.open(API+u,'_blank'); }
+
+window.addEventListener('load',async()=>{
+  // ① 正常由本地服务器托管（http://127.0.0.1:8731）
+  if(location.protocol!=='file:'){
+    try{
+      const r=await fetch('/api/tree');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const tree=await r.json();
+      if(!tree||!Object.keys(tree).length)throw new Error('文案库为空');
+      await bootUI(tree);
+      return;
+    }catch(e){ /* 落到 ② 去探测真实端口 */ }
+  }
+  // ② file:// 双击打开 / 预览器托管：自动探测本机服务器并连上
+  const hit=await probeServer();
+  if(hit){
+    API=hit.base;
+    await bootUI(hit.tree);
+    showBanner(`✅ <b>已自动连上本机服务器 ${hit.base}</b>，文案库 ${countTree(hit.tree)} 条已加载，可正常生成视频。`+
+      `（下次想更省事：直接双击 <b>启动.bat</b>，它会自动起服务并开浏览器。）`,true);
+    return;
+  }
+  // ③ 确实没有服务器在跑
+  showBanner('⚠️ <b>没检测到本地服务器，所以拉不到文案库、也无法生成视频。</b>'+
+    '请双击同目录的 <b>启动.bat</b>（它会自动启动服务并打开正确的网址），或手动访问 '+
+    '<a href="http://127.0.0.1:8731" target="_blank">http://127.0.0.1:8731</a>。'+
+    ' <button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="location.reload()">🔄 重试</button>'+
+    '<br><span style="font-size:12px">说明：生成视频需要本机跑 Python+ffmpeg，纯网页做不到，所以必须有一个本地服务在后台。</span>');
+});
+</script>
+</body>
+</html>
