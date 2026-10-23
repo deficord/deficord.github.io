@@ -4520,39 +4520,6 @@
       "wcSave": "说中你了点个赞，想常看这类关注我，用得上的先收着。"
     },
     {
-      "title": "不回消息，是成年人的优先级",
-      "cat": "高情商恋爱关系",
-      "date": "2026-08-29",
-      "source": "原创选题",
-      "kind": "topic",
-      "content": "【总时长】50s-60s（口播实拍版）\n【0-3s 钩子】他三小时没回消息，你脑补了一整部连续剧——其实他只是在开会，或者，就是不想回。\n【3-12s 场景】你盯着对话框，已读不回比已读更折磨人。\n【12-52s 口播】成年人的「不回」，往往不是忙碌，是优先级。有些话值得立刻回，有些事可以等。别把对方的沉默当成不爱，也别因为被冷落就疯狂发「在吗」。关系里最贵的，是松弛感：该聊时认真聊，该各自安静时，也给彼此留白。把安全感建立在「他回不回」上，迟早累垮自己。先把自己填满，消息才不再是情绪的开关。\n【52-60s 升华+互动】你最怕哪种「不回」？评论区说说，我帮你拆。点个关注，我把「亲密关系松弛感」整理成清单，系统课里逐条聊。\n【画面/BGM/字幕】电影级真实感口播，4K 超清，浅景深，自然光，生活流质感，真实微表情，不摆拍无美颜，暖色调；画面：人盯着手机等待；中景手持跟拍｜机位：侧平拍｜景别：中景+特写（手机屏幕/表情）｜运镜：固定｜表演：真人真实，不夸张｜焦段：主摄广角，特写切2x｜灯光：暖光｜机位高度：眼平｜收音：领夹麦，BGM压至15%｜剪辑节奏：慢叙事卡点｜BGM：轻缓钢琴｜字幕：大字高亮，70%静音可懂",
-      "quote": "不回消息，是成年人的优先级。",
-      "coverTitle": "不回是优先级",
-      "sceneTitle": "已读不回",
-      "s1Title": "别脑补连续剧",
-      "s2Title": "留白也是爱",
-      "hook": "他三小时没回消息，你脑补了一整部连续剧——其实他只是在开会，或者，就是不想回。",
-      "short50": {
-        "text": "他三小时没回消息，你脑补了一整部连续剧——其实他只是在开会，或者，就是不想回。成年人的「不回」往往不是忙碌，是优先级。别把沉默当成不爱，也别疯狂发「在吗」。关系里最贵的是松弛感：该聊时认真聊，该安静时给彼此留白。把安全感建立在「他回不回」上，迟早累垮自己。先把自己填满，消息才不是情绪的开关。你最怕哪种「不回」？评论区说说。",
-        "footageTag": "mid_love_0",
-        "aiPrompt": "[0:00-0:08] A person staring at a phone waiting for a reply, night, medium shot, cinematic, --ar 16:9\n[0:08-0:35] Phone screen showing no new message, dim, static, cinematic, --ar 16:9\n[0:35-1:05] Person putting phone down and reading a book, calm, warm, cinematic, --ar 16:9\n[1:05-1:35] Person relaxed smiling, soft light, handheld, cinematic, --ar 16:9\n[1:35-1:50] Walking alone peacefully, golden-hour, cinematic, --ar 16:9",
-        "aiPromptCn": "[0:00-0:08] 一个人深夜盯着手机等回复，中景，电影感静帧，--ar 16:9\n[0:08-0:35] 手机屏幕显示无新消息，昏暗，固定，电影感静帧，--ar 16:9\n[0:35-1:05] 放下手机读本书，平静，暖色，电影感静帧，--ar 16:9\n[1:05-1:35] 轻松微笑，柔光，手持，电影感静帧，--ar 16:9\n[1:35-1:50] 独处散步，黄金时刻，电影感静帧，--ar 16:9"
-      },
-      "short30": {
-        "text": "「不回消息」不是不爱，是优先级。别把安全感建立在对方回不回上。该聊时认真，该安静时留白，松弛感才是关系里的奢侈品。",
-        "footageTag": "phone_wait",
-        "aiPrompt": "a person calmly putting down a phone and reading, warm light, peaceful, cinematic lighting, shallow depth of field, no text, 9:16 vertical, high quality --ar 9:16",
-        "aiPromptCn": "一个人平静放下手机读书，暖光，安宁，电影感打光，浅景深，无文字，竖屏 9:16，高清 --ar 9:16"
-      },
-      "short15": {
-        "text": "他三小时没回，你脑补了一整部连续剧——其实，只是不想回。",
-        "footageTag": "phone_night",
-        "aiPrompt": "a person looking at a dark phone screen at night, calm, cinematic close-up, soft bokeh, no text, 9:16 vertical, high quality --ar 9:16",
-        "aiPromptCn": "夜里看着暗掉的手机屏幕，平静，电影感近景，柔焦散景，无文字，竖屏 9:16，高清 --ar 9:16"
-      },
-      "wcSave": "说中你了点个赞，想常看这类关注我，用得上的先收着。"
-    },
-    {
       "title": "周一上班，比月底还难熬",
       "cat": "搞笑类",
       "date": "2026-08-29",
