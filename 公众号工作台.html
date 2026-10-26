@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公众号工作台 · GLUCK</title>
+<style>
+:root{
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#2b2f36; --sub:#6b7280;
+  --line:#e6e8eb; --brand:#e01030; --brand2:#ff5a76; --accent:#2f6df6;
+  --ok:#1f9d55; --warn:#e08a00; --soft:#f0f3f7;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;}
+.topbar{display:flex;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(90deg,var(--brand),var(--brand2));color:#fff;flex-wrap:wrap;}
+.topbar h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.5px;}
+.topbar .tag{font-size:12px;opacity:.85;}
+.topbar .grow{flex:1;}
+.cfg{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);padding:5px 8px;border-radius:8px;}
+.cfg label{font-size:12px;opacity:.9;}
+.cfg input{background:#fff;color:#222;border:0;border-radius:5px;padding:5px 7px;font-size:12px;outline:none;}
+.cfg input.key{width:170px;}
+.cfg input.num{width:46px;text-align:center;}
+.main{display:grid;grid-template-columns:300px 1fr 440px;gap:14px;padding:14px;align-items:start;}
+.card{border:1px solid var(--line);border-radius:14px;background:var(--panel);}
+.card .hd{padding:10px 14px;border-bottom:1px solid var(--line);font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+.card .bd{padding:12px 14px;max-height:78vh;overflow:auto;}
+.search{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:10px;font-size:13px;outline:none;}
+.clist{display:flex;flex-direction:column;gap:7px;}
+.ci{border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;transition:.15s;}
+.ci:hover{border-color:var(--brand2);background:var(--soft);}
+.ci.on{border-color:var(--brand);background:#fff3f5;box-shadow:0 0 0 2px #ffe0e7 inset;}
+.ci .t{font-size:13px;font-weight:600;line-height:1.4;}
+.ci .m{font-size:11px;color:var(--sub);margin-top:3px;}
+.empty{color:var(--sub);font-size:13px;padding:20px;text-align:center;}
+.section{border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin-bottom:9px;}
+.section .lbl{font-size:11px;color:var(--sub);margin-bottom:4px;display:flex;gap:6px;align-items:center;}
+.section .lbl b{color:var(--brand);}
+.section textarea{width:100%;border:1px solid var(--line);border-radius:7px;padding:6px 8px;font-size:12.5px;resize:vertical;min-height:34px;outline:none;font-family:inherit;}
+.section .txt{font-size:12px;color:#444;background:var(--soft);border-radius:7px;padding:6px 8px;margin-bottom:5px;line-height:1.5;}
+.btn{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn.primary{background:var(--brand);color:#fff;}
+.btn.ghost{background:var(--soft);color:var(--ink);border:1px solid var(--line);}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.status{font-size:12px;color:var(--sub);margin-top:8px;min-height:16px;}
+.phone{background:#fff;border-radius:18px;border:1px solid var(--line);overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.06);}
+.phone .ph-h{background:#111;color:#fff;text-align:center;font-size:12px;padding:7px;}
+.article{padding:18px 16px;max-height:74vh;overflow:auto;}
+.article img.hero{width:100%;border-radius:10px;display:block;margin-bottom:12px;background:var(--soft);}
+.article .brand{font-size:12px;color:var(--brand);font-weight:700;margin-bottom:12px;}
+.article p{font-size:16px;line-height:1.75;color:#3f3f3f;letter-spacing:.5px;margin:1.3em 0;}
+.article p.lead{font-weight:600;}
+.article img.in{width:100%;border-radius:8px;display:block;margin:14px 0;background:var(--soft);border:1px solid #eee;box-sizing:border-box;}
+.article img.end{margin-top:18px;}
+.article .guide{background:#fff7f8;border-left:3px solid var(--brand);padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;color:#444;margin:1.2em 0;line-height:1.7;}
+.article .disclaimer{font-size:12px;color:#9aa0a6;line-height:1.6;margin-top:14px;border-top:1px dashed var(--line);padding-top:10px;}
+.hint{font-size:11px;color:var(--sub);margin-top:6px;line-height:1.5;}
+.ph-prog{font-size:12px;color:var(--accent);margin:6px 0;}
+@media(max-width:1080px){.main{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>公众号工作台</h1>
+  <span class="tag">自动配图 · 公众号排版 · 复制发布</span>
+  <span class="grow"></span>
+  <div class="cfg">
+    <label>Pexels Key</label>
+    <input class="key" id="key" placeholder="粘贴 Pexels API key" />
+  </div>
+</div>
+
+<div class="main">
+  <!-- 左：卡片列表 -->
+  <div class="card">
+    <div class="hd">公众号文案卡 <span id="cnt" class="m"></span></div>
+    <div class="bd">
+      <input class="search" id="filt" placeholder="筛选标题…" />
+      <div class="clist" id="list"></div>
+      <div class="empty" id="empty">加载中…</div>
+    </div>
+  </div>
+
+  <!-- 中：配图编辑 -->
+  <div class="card">
+    <div class="hd">配图设置 <span id="sel" class="m"></span></div>
+    <div class="bd" id="editor">
+      <div class="empty">← 从左侧选一张公众号卡</div>
+    </div>
+  </div>
+
+  <!-- 右：预览 -->
+  <div class="card">
+    <div class="hd">公众号预览（手机视图）</div>
+    <div class="bd">
+      <div class="phone">
+        <div class="ph-h">公众号文章预览</div>
+        <div class="article" id="preview"><div class="empty">生成后在此预览</div></div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="gen" disabled>生成图文</button>
+        <button class="btn ghost" id="copy" disabled>复制文章</button>
+        <button class="btn ghost" id="dl" disabled>下载 HTML</button>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="hint">排版按公众号通用规范：正文 16px / 行距 1.75 / 深灰 #3f3f3f / 不缩进。配图 3 张（开头封面 + 中部情境图 + 结尾引导图），每张与文字间留白、统一圆角。图片经免费图床代理转 base64 内嵌，复制后可直粘公众号后台（后台自动上传图片）。正文仅取 content 字段，不含 videoPlan（视频号方案）。搜索词都可手动改。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=(s)=>document.querySelector(s);
+let CARDS=[], SEL=null, ART=null;
+
+// ---------- 配置 ----------
+function loadCfg(){
+  $('#key').value = localStorage.getItem('gzh_pexels_key')||'';
+}
+$('#key').addEventListener('input',e=>localStorage.setItem('gzh_pexels_key',e.target.value.trim()));
+function KEY(){return ($('#key').value||'').trim();}
+const PROXY='https://images.weserv.nl/?url='; // CORS 友好的免费图床代理，把 pexels 图转成带跨域头的图
+
+// ---------- 加载卡片 ----------
+async function loadCards(){
+  let data=null;
+  try{
+    const r=await fetch('data.json',{cache:'no-store'});
+    if(r.ok) data=await r.json();
+  }catch(e){}
+  if(!data){
+    $('#empty').textContent='未能自动读取 data.json（本地打开时请用下方粘贴）。可手动粘贴文案。';
+    return;
+  }
+  CARDS=(data.operationIdeas||[]).filter(x=>x.cat==='分发·公众号');
+  renderList();
+}
+function renderList(){
+  const f=$('#filt').value.trim();
+  const list=CARDS.filter(c=>(c.title||'').includes(f));
+  $('#cnt').textContent='共 '+CARDS.length+' 张';
+  $('#empty').style.display=list.length?'none':'block';
+  $('#list').innerHTML=list.map((c,i)=>{
+    const idx=CARDS.indexOf(c);
+    return `<div class="ci${SEL&&SEL.idx===idx?' on':''}" data-i="${idx}">
+      <div class="t">${esc(c.title)}</div>
+      <div class="m">${esc(c.cat||'')} · ${esc(c.date||'')}</div></div>`;
+  }).join('');
+  $('#list').querySelectorAll('.ci').forEach(el=>el.onclick=()=>selectCard(+el.dataset.i));
+}
+$('#filt').addEventListener('input',renderList);
+
+// ---------- 解析 content ----------
+function parseContent(content){
+  const blocks=(content||'').split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  let account='', disclaimer='', body=[];
+  blocks.forEach(b=>{
+    if(b.startsWith('【账号】')){ account=b; }
+    else if(/免责|不构成医疗|本文仅|仅供参考|特此声明/.test(b)){ disclaimer=b; }
+    else { body.push(b); }
+  });
+  // 把含 ① ② ③ 的块拆成单点
+  const parts=[];
+  body.forEach(b=>{
+    if(/[①②③④⑤]/.test(b)){
+      const segs=b.split(/(?=[①②③④⑤])/).map(s=>s.trim()).filter(Boolean);
+      segs.forEach(s=>parts.push(s));
+    } else parts.push(b);
+  });
+  // 关注引导单独标记（不作为配图段）
+  const guideIdx=[];
+  parts.forEach((p,i)=>{ if(/关注我|点个关注|转发|欢迎关注|看更多/.test(p)) guideIdx.push(i); });
+  const imageParts=parts.filter((p,i)=>!guideIdx.includes(i));
+  return {account,disclaimer,parts,imageParts,guideIdx};
+}
+
+// ---------- 选卡 ----------
+function selectCard(i){
+  SEL={idx:i,card:CARDS[i]};
+  const p=parseContent(SEL.card.content);
+  SEL.parsed=p;
+  const ip=p.imageParts;
+  SEL.coverQ=cleanTitle(SEL.card.title);
+  SEL.midQ=defQuery(ip[Math.floor(ip.length/2)]||'生活');
+  SEL.endQ=defQuery(ip[ip.length-1]||'生活');
+  renderEditor();
+  $('#gen').disabled=false;
+  $('#sel').textContent=SEL.card.title;
+}
+function cleanTitle(t){
+  const noPre=t.replace(/^早场·Day\d+\s*[^｜]*｜/,'').replace(/^晚场·Day\d+\s*[^｜]*｜/,'');
+  // 优先取「？」前的钩子场景（更具体、易搜图）；否则取「｜」后的前半
+  const hook=noPre.split('？')[0];
+  const q=(hook&&hook.length>=4?hook:noPre).replace(/[，。、！？：；""''（）()\s]/g,'').slice(0,16);
+  return q||noPre.slice(0,12);
+}
+function defQuery(t){
+  return t.replace(/^[①②③④⑤]\s*/,'').replace(/[，。、！？：；""''（）()\s]/g,'').slice(0,14)||'生活';
+}
+function renderEditor(){
+  const p=SEL.parsed, ip=p.imageParts;
+  const midT=ip[Math.floor(ip.length/2)]||'', endT=ip[ip.length-1]||'';
+  let h='';
+  h+=`<div class="section"><div class="lbl"><b>开头图</b>（封面·用标题搜图）</div><textarea data-k="cover">${esc(SEL.coverQ)}</textarea></div>`;
+  h+=`<div class="section"><div class="lbl"><b>中间图</b> 搜索词（文章中部情境图）</div><div class="txt">${esc(midT.slice(0,60))}</div><textarea data-k="mid">${esc(SEL.midQ)}</textarea></div>`;
+  h+=`<div class="section"><div class="lbl"><b>结尾图</b> 搜索词（收尾引导图）</div><div class="txt">${esc(endT.slice(0,60))}</div><textarea data-k="end">${esc(SEL.endQ)}</textarea></div>`;
+  $('#editor').innerHTML=h;
+  $('#editor').querySelectorAll('textarea').forEach(ta=>{
+    ta.addEventListener('input',e=>{
+      const k=e.target.dataset.k;
+      if(k==='cover')SEL.coverQ=e.target.value;
+      else if(k==='mid')SEL.midQ=e.target.value;
+      else SEL.endQ=e.target.value;
+    });
+  });
+}
+
+// ---------- Pexels ----------
+async function pexelsSearch(q){
+  const url='https://api.pexels.com/v1/search?query='+encodeURIComponent(q)+'&per_page=12&locale=zh-CN';
+  const r=await fetch(url,{headers:{Authorization:KEY()}});
+  if(!r.ok) throw new Error('Pexels '+r.status+' '+(await r.text()).slice(0,80));
+  const j=await r.json();
+  return j.photos||[];
+}
+function pickPhoto(photos){
+  if(!photos.length) return null;
+  // 偏好横构图、宽度适中
+  const ok=photos.filter(p=>p.width>=900 && p.height>=600);
+  const pool=ok.length?ok:photos;
+  pool.sort((a,b)=>Math.abs(b.width/b.height-1.5)-Math.abs(a.width/a.height-1.5));
+  return pool[0];
+}
+async function toBase64(pexelsUrl){
+  const targets=[PROXY+encodeURIComponent(pexelsUrl.replace(/^https?:\/\//,'')), pexelsUrl];
+  for(const u of targets){
+    try{
+      const r=await fetch(u,{mode:'cors'});
+      if(!r.ok) continue;
+      const blob=await r.blob();
+      if(!blob.type.startsWith('image/')) continue;
+      const b64=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(blob);});
+      return b64;
+    }catch(e){/* try next */}
+  }
+  return null;
+}
+
+// ---------- 生成 ----------
+async function fetchOne(q){
+  try{
+    let ph=await pexelsSearch(q);
+    if(!ph.length) ph=await pexelsSearch('生活');
+    const pic=pickPhoto(ph);
+    if(pic){ const b=await toBase64(pic.src.large2x||pic.src.large); if(b) return {b64:b,alt:pic.alt||q}; }
+  }catch(e){}
+  return null;
+}
+async function generate(){
+  if(!KEY()){ setStatus('请先填写 Pexels Key（上方输入框）。','warn'); return; }
+  if(!SEL) return;
+  setStatus('正在搜索配图（开头 / 中间 / 结尾）…','');
+  $('#gen').disabled=true;
+  try{
+    let cover=await fetchOne(SEL.coverQ); if(!cover) setStatus('开头图搜索失败，可手动改搜索词重试。','warn');
+    setStatus('开头图✓ · 搜中间图…','');
+    let mid=await fetchOne(SEL.midQ);
+    setStatus('中间图✓ · 搜结尾图…','');
+    let end=await fetchOne(SEL.endQ);
+    ART={cover,mid,end,parsed:SEL.parsed,title:SEL.card.title};
+    renderPreview();
+    setStatus(`完成。开头${cover?'✓':'✗'} · 中间${mid?'✓':'✗'} · 结尾${end?'✓':'✗'}（共 3 张）`,'ok');
+    $('#copy').disabled=false; $('#dl').disabled=false;
+  }catch(e){
+    setStatus('生成出错：'+e.message,'warn');
+  }finally{
+    $('#gen').disabled=false;
+  }
+}
+
+// 公共：拼接文章正文 HTML（预览与下载共用）
+function buildBodyHTML(){
+  const p=ART.parsed;
+  let h='';
+  if(ART.cover) h+=`<img class="hero" src="${ART.cover.b64}" alt="${esc(ART.cover.alt||'')}">`;
+  else h+=`<div class="hero" style="height:120px;display:flex;align-items:center;justify-content:center;color:#bbb;background:var(--soft);border-radius:10px;margin-bottom:12px;">（无封面图）</div>`;
+  if(p.account) h+=`<div class="brand">${esc(p.account)}</div>`;
+  const midText=p.imageParts[Math.floor(p.imageParts.length/2)];
+  const midPos=midText?p.parts.indexOf(midText):-1;
+  p.parts.forEach((t,i)=>{
+    if(p.guideIdx.includes(i)){ h+=`<div class="guide">${esc(t)}</div>`; return; }
+    const isLead=/[①②③④⑤]/.test(t);
+    h+=`<p class="${isLead?'lead':''}">${esc(t)}</p>`;
+    if(i===midPos && ART.mid) h+=`<img class="in" src="${ART.mid.b64}" alt="${esc(ART.mid.alt||'')}">`;
+  });
+  if(ART.end) h+=`<img class="in end" src="${ART.end.b64}" alt="${esc(ART.end.alt||'')}">`;
+  if(p.disclaimer) h+=`<div class="disclaimer">${esc(p.disclaimer)}</div>`;
+  return h;
+}
+function renderPreview(){
+  $('#preview').innerHTML=buildBodyHTML();
+}
+
+// ---------- 复制 / 下载 ----------
+function buildHtml(){
+  const p=ART.parsed;
+  const STYLE=`<style>
+ body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;}
+ .gzh{max-width:680px;margin:0 auto;padding:18px 16px;}
+ .gzh img.hero{width:100%;border-radius:10px;display:block;margin-bottom:12px;}
+ .gzh .brand{font-size:13px;color:#e01030;font-weight:700;margin-bottom:12px;}
+ .gzh p{font-size:16px;line-height:1.75;color:#3f3f3f;letter-spacing:.5px;margin:1.3em 0;}
+ .gzh p.lead{font-weight:600;}
+ .gzh img.in{width:100%;border-radius:8px;display:block;margin:14px 0;border:1px solid #eee;box-sizing:border-box;}
+ .gzh img.end{margin-top:18px;}
+ .gzh .guide{background:#fff7f8;border-left:3px solid #e01030;padding:10px 12px;border-radius:0 8px 8px 0;font-size:14px;color:#444;margin:1.2em 0;line-height:1.7;}
+ .gzh .disclaimer{font-size:12px;color:#9aa0a6;line-height:1.6;margin-top:14px;border-top:1px dashed #e6e8eb;padding-top:10px;}
+</style>`;
+  const body=buildBodyHTML();
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>${esc(ART.title)}</title>${STYLE}</head><body><div class="gzh">${body}</div></body></html>`;
+}
+async function copyArticle(){
+  if(!ART) return;
+  const html=buildHtml();
+  try{
+    const htmlBlob=new Blob([html],{type:'text/html'});
+    const txtBlob=new Blob([html],{type:'text/plain'});
+    await navigator.clipboard.write([new ClipboardItem({'text/html':htmlBlob,'text/plain':txtBlob})]);
+    setStatus('已复制为公众号富文本，去后台 Ctrl+V 粘贴即可。','ok');
+  }catch(e){
+    // 兜底：选中预览节点后 execCommand
+    const node=$('#preview');
+    const r=document.createRange(); r.selectNodeContents(node);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    try{document.execCommand('copy'); setStatus('已复制（兼容模式），去后台粘贴。','ok');}
+    catch(e2){ setStatus('复制失败，请手动全选预览区复制。','warn'); }
+  }
+}
+function downloadHtml(){
+  if(!ART) return;
+  const html=buildHtml();
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([html],{type:'text/html'}));
+  a.download=(ART.title.replace(/[\\/:*?"<>|]/g,'')||'公众号文章')+'.html';
+  a.click();
+  setStatus('已下载自包含 HTML（图片已内嵌）。','ok');
+}
+
+// ---------- 工具 ----------
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function setStatus(msg,type){const el=$('#status');el.textContent=msg;el.style.color=type==='ok'?'var(--ok)':type==='warn'?'var(--warn)':'var(--sub)';}
+
+// ---------- 绑定 ----------
+$('#gen').onclick=generate;
+$('#copy').onclick=copyArticle;
+$('#dl').onclick=downloadHtml;
+loadCfg();
+loadCards();
+</script>
+</body>
+</html>
