@@ -180,9 +180,10 @@ function selectCard(i){
   const p=parseContent(SEL.card.content);
   SEL.parsed=p;
   const ip=p.imageParts;
-  SEL.coverQ=cleanTitle(SEL.card.title);
-  SEL.midQ=defQuery(ip[Math.floor(ip.length/2)]||'生活');
-  SEL.endQ=defQuery(ip[ip.length-1]||'生活');
+  const kw=gzhKW(SEL.card.title); // 优先用修正版推荐词；未命中才走旧抽词兜底
+  SEL.coverQ = kw ? kw[0] : cleanTitle(SEL.card.title);
+  SEL.midQ   = kw ? kw[1] : defQuery(ip[Math.floor(ip.length/2)]||'生活');
+  SEL.endQ   = kw ? kw[2] : defQuery(ip[ip.length-1]||'生活');
   renderEditor();
   $('#gen').disabled=false;
   $('#sel').textContent=SEL.card.title;
@@ -197,13 +198,54 @@ function cleanTitle(t){
 function defQuery(t){
   return t.replace(/^[①②③④⑤]\s*/,'').replace(/[，。、！？：；""''（）()\s]/g,'').slice(0,14)||'生活';
 }
+
+// ---------- 公众号配图关键词【修正版】----------
+// 按 早/晚 + Day 编号映射，每篇 3 个 Pexels 可搜的中文名词短语（封面 / 中间情境 / 结尾引导）。
+// 来源：《公众号配图关键词_修正版.txt》，用户 2026-10-28 确认，覆盖 28 篇（早14养生 + 晚10情感 + 晚4防骗）。
+// 旧抽词逻辑（cleanTitle/defQuery）仅作未命中时的兜底。
+const GZH_KW={
+ '早1':['清晨早餐老人','厨房做饭老人','阳光微笑老人'],
+ '早2':['午餐餐桌老人','米饭菜肴中式','午后休息老人'],
+ '早3':['夜晚卧室睡眠','手机夜间蓝光','安睡老人床'],
+ '早4':['楼梯老人运动','居家拉伸老人','散步老人户外'],
+ '早5':['医院体检老人','医生检查健康','健康安心老人'],
+ '早6':['老人午休沙发','泡脚养生木盆','安睡老人床'],
+ '早7':['秋冬养生润喉','加湿器居家温暖','滋润老人微笑'],
+ '早8':['老人饮食软食','厨房炖菜暖食','营养餐食老人'],
+ '早9':['久坐老人办公','居家抬腿运动','散步老人户外'],
+ '早10':['手机眼睛老人','窗边远眺休息','清晰视野微笑'],
+ '早11':['餐桌七分饱老人','青菜米饭中式','舒适用餐老人'],
+ '早12':['夏日清淡饮食老人','凉菜西红柿家常','开胃餐食微笑'],
+ '早13':['散步老人户外','泡脚居家放松','舒适走路老人'],
+ '早14':['老人记忆居家','便签提醒居家','安心居家老人'],
+ '晚1':['祖孙家庭日常','老人带孩子居家','老人独处安静'],
+ '晚2':['电话诈骗警示','手机老人谨慎','家人守护老人'],
+ '晚3':['老人存折家庭','家人交谈沟通','安心晚年老人'],
+ '晚4':['老年夫妻居家','老两口日常相处','和睦夫妻微笑'],
+ '晚5':['上门推销警示','老人居家谨慎','家人陪伴老人'],
+ '晚6':['退休生活爱好','书法老人兴趣','快乐晚年老人'],
+ '晚7':['婆媳家庭代际','老人居家相处','亲情温暖家庭'],
+ '晚8':['老人电话孤独','阳台养花老人','陪伴亲情温暖'],
+ '晚9':['手机短视频防骗','老人看手机谨慎','家人提醒守护'],
+ '晚10':['老年朋友聚会','广场舞老人欢笑','满足晚年微笑'],
+ '晚11':['独居老人用餐','厨房简单饭菜','温暖居家老人'],
+ '晚12':['银行防骗警示','老人谨慎证件','家人守护老人'],
+ '晚13':['祖孙玩具家庭','孩子玩耍家庭','亲情温暖微笑'],
+ '晚14':['退休生活满足','老人喝茶休闲','快乐晚年微笑'],
+};
+function gzhKW(title){
+  const m=(title||'').match(/(早场|晚场)·Day(\d+)/);
+  if(!m) return null;
+  const key=(m[1]==='早场'?'早':'晚')+parseInt(m[2],10);
+  return GZH_KW[key]||null;
+}
 function renderEditor(){
   const p=SEL.parsed, ip=p.imageParts;
   const midT=ip[Math.floor(ip.length/2)]||'', endT=ip[ip.length-1]||'';
   let h='';
-  h+=`<div class="section"><div class="lbl"><b>开头图</b>（封面·用标题搜图）</div><textarea data-k="cover">${esc(SEL.coverQ)}</textarea></div>`;
-  h+=`<div class="section"><div class="lbl"><b>中间图</b> 搜索词（文章中部情境图）</div><div class="txt">${esc(midT.slice(0,60))}</div><textarea data-k="mid">${esc(SEL.midQ)}</textarea></div>`;
-  h+=`<div class="section"><div class="lbl"><b>结尾图</b> 搜索词（收尾引导图）</div><div class="txt">${esc(endT.slice(0,60))}</div><textarea data-k="end">${esc(SEL.endQ)}</textarea></div>`;
+  h+=`<div class="section"><div class="lbl"><b>开头图</b>（封面·推荐词，可改）</div><textarea data-k="cover">${esc(SEL.coverQ)}</textarea></div>`;
+  h+=`<div class="section"><div class="lbl"><b>中间图</b> 搜索词（中部情境图·推荐词，可改）</div><div class="txt">${esc(midT.slice(0,60))}</div><textarea data-k="mid">${esc(SEL.midQ)}</textarea></div>`;
+  h+=`<div class="section"><div class="lbl"><b>结尾图</b> 搜索词（收尾引导图·推荐词，可改）</div><div class="txt">${esc(endT.slice(0,60))}</div><textarea data-k="end">${esc(SEL.endQ)}</textarea></div>`;
   $('#editor').innerHTML=h;
   $('#editor').querySelectorAll('textarea').forEach(ta=>{
     ta.addEventListener('input',e=>{
