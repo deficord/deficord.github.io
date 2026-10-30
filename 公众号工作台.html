@@ -133,6 +133,8 @@ async function loadCards(){
     return;
   }
   CARDS=(data.operationIdeas||[]).filter(x=>x.cat==='分发·公众号');
+  // 按 Day 升序、同 Day 早场先于晚场，确保展示/导出始终按每天顺序，不受数据源追加顺序影响
+  CARDS.sort((a,b)=>{const ma=(a.title||'').match(/(早场|晚场)·Day(\d+)/),mb=(b.title||'').match(/(早场|晚场)·Day(\d+)/);const da=ma?+ma[2]:0,db=mb?+mb[2]:0;if(da!==db)return da-db;const sa=ma?(ma[1]==='早场'?0:1):0,sb=mb?(mb[1]==='晚场'?1:0):0;return sa-sb;});
   renderList();
 }
 function renderList(){
